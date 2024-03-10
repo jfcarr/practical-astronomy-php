@@ -97,6 +97,28 @@ function greenwich_sidereal_time_to_universal_time($gstHours, $gstMinutes, $gstS
     echo "[Greenwich] {$gwMonth}/{$gwDay}/{$gwYear} {$gstHours}:{$gstMinutes}:{$gstSeconds} = [Universal] {$hours}:{$minutes}:{$seconds}\n";
 }
 
+function greenwich_sidereal_time_to_local_sidereal_time($gstHours, $gstMinutes, $gstSeconds, $geographicalLongitude, $expectedHours, $expectedMinutes, $expectedSeconds)
+{
+    list($hours, $minutes, $seconds)  = PA_DateTime\greenwich_sidereal_time_to_local_sidereal_time($gstHours, $gstMinutes, $gstSeconds, $geographicalLongitude);
+
+    assert($hours == $expectedHours);
+    assert($minutes == $expectedMinutes);
+    assert($seconds == $expectedSeconds);
+
+    echo "[Greenwich] {$gstHours}:{$gstMinutes}:{$gstSeconds} = [Sidereal] {$hours}:{$minutes}:{$seconds}\n";
+}
+
+function local_sidereal_time_to_greenwich_sidereal_time($lstHours, $lstMinutes, $lstSeconds, $geographicalLongitude, $expectedHours, $expectedMinutes, $expectedSeconds)
+{
+    list($hours, $minutes, $seconds) = PA_DateTime\local_sidereal_time_to_greenwich_sidereal_time($lstHours, $lstMinutes, $lstSeconds, $geographicalLongitude);
+
+    assert($hours == $expectedHours);
+    assert($minutes == $expectedMinutes);
+    assert($seconds == $expectedSeconds);
+
+    echo "[Sidereal] {$lstHours}:{$lstMinutes}:{$lstSeconds} = [Greenwich] {$hours}:{$minutes}:{$seconds}\n";
+}
+
 date_of_easter(2023, 4, 9);
 
 civil_date_to_day_number(1, 1, 2000, 1);
@@ -115,3 +137,7 @@ universal_time_to_local_civil_time(22, 37, 0, true, 4, 30, 6, 2013, 3, 37, 0, 1,
 universal_time_to_greenwich_sidereal_time(14, 36, 51.67, 22, 4, 1980, 4, 40, 5.23);
 
 greenwich_sidereal_time_to_universal_time(4, 40, 5.23, 22, 4, 1980, 14, 36, 51.67, "OK");
+
+greenwich_sidereal_time_to_local_sidereal_time(4, 40, 5.23, -64, 0, 24, 5.23);
+
+local_sidereal_time_to_greenwich_sidereal_time(0, 24, 5.23, -64, 4, 40, 5.23);
