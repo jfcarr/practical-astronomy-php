@@ -74,6 +74,29 @@ function universal_time_to_local_civil_time($utHours, $utMinutes, $utSeconds, $i
     echo "[Universal] {$utHours}:{$utMinutes}:{$utSeconds} {$gwMonth}/{$gwDay}/{$gwYear} = [Local] {$hours}:{$minutes}:{$seconds} {$month}/{$day}/{$year}\n";
 }
 
+function universal_time_to_greenwich_sidereal_time($utHours, $utMinutes, $utSeconds, $gwDay, $gwMonth, $gwYear, $expectedHours, $expectedMinutes, $expectedSeconds)
+{
+    list($hours, $minutes, $seconds) = PA_DateTime\universal_time_to_greenwich_sidereal_time($utHours, $utMinutes, $utSeconds, $gwDay, $gwMonth, $gwYear);
+
+    assert($hours == $expectedHours);
+    assert($minutes == $expectedMinutes);
+    assert($seconds == $expectedSeconds);
+
+    echo "[Universal] {$gwMonth}/{$gwDay}/{$gwYear} {$utHours}:{$utMinutes}:{$utSeconds} = [Greenwich] {$hours}:{$minutes}:{$seconds}\n";
+}
+
+function greenwich_sidereal_time_to_universal_time($gstHours, $gstMinutes, $gstSeconds, $gwDay, $gwMonth, $gwYear, $expectedHours, $expectedMinutes, $expectedSeconds, $expectedWarningFlag)
+{
+    list($hours, $minutes, $seconds, $warningFlag) = PA_DateTime\greenwich_sidereal_time_to_universal_time($gstHours, $gstMinutes, $gstSeconds, $gwDay, $gwMonth, $gwYear);
+
+    assert($hours == $expectedHours);
+    assert($minutes == $expectedMinutes);
+    assert($seconds == $expectedSeconds);
+    assert($warningFlag == $expectedWarningFlag);
+
+    echo "[Greenwich] {$gwMonth}/{$gwDay}/{$gwYear} {$gstHours}:{$gstMinutes}:{$gstSeconds} = [Universal] {$hours}:{$minutes}:{$seconds}\n";
+}
+
 date_of_easter(2023, 4, 9);
 
 civil_date_to_day_number(1, 1, 2000, 1);
@@ -88,3 +111,7 @@ decimal_hours_to_civil_time(18.52416667, 18, 31, 27);
 local_civil_time_to_universal_time(3.0, 37.0, 0.0, true, 4, 1.0, 7, 2013, 22, 37, 0, 30, 6, 2013);
 
 universal_time_to_local_civil_time(22, 37, 0, true, 4, 30, 6, 2013, 3, 37, 0, 1, 7, 2013);
+
+universal_time_to_greenwich_sidereal_time(14, 36, 51.67, 22, 4, 1980, 4, 40, 5.23);
+
+greenwich_sidereal_time_to_universal_time(4, 40, 5.23, 22, 4, 1980, 14, 36, 51.67, "OK");

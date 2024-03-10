@@ -133,3 +133,49 @@ function universal_time_to_local_civil_time($utHours, $utMinutes, $utSeconds, $i
         $localYear
     );
 }
+
+/**
+ * Convert Universal Time to Greenwich Sidereal Time
+ */
+function universal_time_to_greenwich_sidereal_time($utHours, $utMinutes, $utSeconds, $gwDay, $gwMonth, $gwYear)
+{
+    $jd = PA_Macros\civil_date_to_julian_date($gwDay, $gwMonth, $gwYear);
+    $s = $jd - 2451545;
+    $t = $s / 36525;
+    $t01 = 6.697374558 + (2400.051336 * $t) + (0.000025862 * $t * $t);
+    $t02 = $t01 - (24.0 * floor($t01 / 24));
+    $ut = PA_Macros\hours_minutes_seconds_to_decimal_hours($utHours, $utMinutes, $utSeconds);
+    $a = $ut * 1.002737909;
+    $gst1 = $t02 + $a;
+    $gst2 = $gst1 - (24.0 * floor($gst1 / 24));
+
+    $gstHours = PA_Macros\decimal_hours_hour($gst2);
+    $gstMinutes = PA_Macros\decimal_hours_minute($gst2);
+    $gstSeconds = PA_Macros\decimal_hours_second($gst2);
+
+    return array($gstHours, $gstMinutes, $gstSeconds);
+}
+
+/**
+ * Convert Greenwich Sidereal Time to Universal Time
+ */
+function greenwich_sidereal_time_to_universal_time($gstHours, $gstMinutes, $gstSeconds, $gwDay, $gwMonth, $gwYear)
+{
+    $jd = PA_Macros\civil_date_to_julian_date($gwDay, $gwMonth, $gwYear);
+    $s = $jd - 2451545;
+    $t = $s / 36525;
+    $t01 = 6.697374558 + (2400.051336 * $t) + (0.000025862 * $t * $t);
+    $t02 = $t01 - (24 * floor($t01 / 24));
+    $gstHours1 = PA_Macros\hours_minutes_seconds_to_decimal_hours($gstHours, $gstMinutes, $gstSeconds);
+
+    $a = $gstHours1 - $t02;
+    $b = $a - (24 * floor($a / 24));
+    $ut = $b * 0.9972695663;
+    $utHours = PA_Macros\decimal_hours_hour($ut);
+    $utMinutes = PA_Macros\decimal_hours_minute($ut);
+    $utSeconds = PA_Macros\decimal_hours_second($ut);
+
+    $warningFlag = ($ut < 0.065574) ? "Warning" : "OK";
+
+    return array($utHours, $utMinutes, $utSeconds, $warningFlag);
+}
