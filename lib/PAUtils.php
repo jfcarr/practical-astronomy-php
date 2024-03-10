@@ -1,5 +1,7 @@
 <?php
 
+namespace PA\Utils;
+
 /**
  * Determine if year is a leap year. 
  */

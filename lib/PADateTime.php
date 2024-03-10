@@ -1,7 +1,12 @@
 <?php
 
+namespace PA\DateTime;
+
 include 'PAMacros.php';
 include 'PAUtils.php';
+
+use PA\Macros as PA_Macros;
+use PA\Utils as PA_Utils;
 
 /**
  * Calculates the date of Easter for the year specified.
@@ -39,11 +44,11 @@ function civil_date_to_day_number($month, $day, $year)
 {
     if ($month <= 2) {
         $month = $month - 1;
-        $month = (is_leap_year($year)) ? $month * 62 : $month * 63;
+        $month = (PA_Utils\is_leap_year($year)) ? $month * 62 : $month * 63;
         $month = floor((int)((float)$month / 2));
     } else {
         $month = floor((int)(((float)$month + 1) * 30.6));
-        $month = (is_leap_year($year)) ? $month - 62 : $month - 63;
+        $month = (PA_Utils\is_leap_year($year)) ? $month - 62 : $month - 63;
     }
 
     return $month + $day;
@@ -55,7 +60,7 @@ function civil_date_to_day_number($month, $day, $year)
  */
 function civil_time_to_decimal_hours($hours, $minutes, $seconds)
 {
-    return convert_civil_time_to_decimal_hours($hours, $minutes, $seconds);
+    return PA_Macros\hours_minutes_seconds_to_decimal_hours($hours, $minutes, $seconds);
 }
 
 /**
@@ -63,9 +68,9 @@ function civil_time_to_decimal_hours($hours, $minutes, $seconds)
  */
 function decimal_hours_to_civil_time($decimalHours)
 {
-    $hours = decimal_hours_hour($decimalHours);
-    $minutes = decimal_hours_minute($decimalHours);
-    $seconds = decimal_hours_second($decimalHours);
+    $hours = PA_Macros\decimal_hours_hour($decimalHours);
+    $minutes = PA_Macros\decimal_hours_minute($decimalHours);
+    $seconds = PA_Macros\decimal_hours_second($decimalHours);
 
     return array($hours, $minutes, $seconds);
 }
@@ -82,18 +87,18 @@ function local_civil_time_to_universal_time($lctHours, $lctMinutes, $lctSeconds,
     $utInterim = $lct - $daylightSavingsOffset - $zoneCorrection;
     $gdayInterim = $localDay + ($utInterim / 24);
 
-    $jd = civil_date_to_julian_date($gdayInterim, $localMonth, $localYear);
+    $jd = PA_Macros\civil_date_to_julian_date($gdayInterim, $localMonth, $localYear);
 
-    $gDay = julian_date_day($jd);
-    $gMonth = julian_date_month($jd);
-    $gYear = julian_date_year($jd);
+    $gDay = PA_Macros\julian_date_day($jd);
+    $gMonth = PA_Macros\julian_date_month($jd);
+    $gYear = PA_Macros\julian_date_year($jd);
 
     $ut = 24 * ($gDay - floor($gDay));
 
     $returnValue = array(
-        decimal_hours_hour($ut),
-        decimal_hours_minute($ut),
-        (int)decimal_hours_second($ut),
+        PA_Macros\decimal_hours_hour($ut),
+        PA_Macros\decimal_hours_minute($ut),
+        (int)PA_Macros\decimal_hours_second($ut),
         (int)floor($gDay),
         $gMonth,
         $gYear
@@ -108,21 +113,21 @@ function local_civil_time_to_universal_time($lctHours, $lctMinutes, $lctSeconds,
 function universal_time_to_local_civil_time($utHours, $utMinutes, $utSeconds, $isDaylightSavings, $zoneCorrection, $gwDay, $gwMonth, $gwYear)
 {
     $dstValue = ($isDaylightSavings) ? 1 : 0;
-    $ut = convert_civil_time_to_decimal_hours($utHours, $utMinutes, $utSeconds);
+    $ut = PA_Macros\hours_minutes_seconds_to_decimal_hours($utHours, $utMinutes, $utSeconds);
     $zoneTime = $ut + $zoneCorrection;
     $localTime = $zoneTime + $dstValue;
-    $localJDPlusLocalTime = civil_date_to_julian_date($gwDay, $gwMonth, $gwYear) + ($localTime / 24);
-    $localDay = julian_date_day($localJDPlusLocalTime);
+    $localJDPlusLocalTime = PA_Macros\civil_date_to_julian_date($gwDay, $gwMonth, $gwYear) + ($localTime / 24);
+    $localDay = PA_Macros\julian_date_day($localJDPlusLocalTime);
     $integerDay = floor($localDay);
-    $localMonth = julian_date_month($localJDPlusLocalTime);
-    $localYear = julian_date_year($localJDPlusLocalTime);
+    $localMonth = PA_Macros\julian_date_month($localJDPlusLocalTime);
+    $localYear = PA_Macros\julian_date_year($localJDPlusLocalTime);
 
     $lct = 24 * ($localDay - $integerDay);
 
     return array(
-        decimal_hours_hour($lct),
-        decimal_hours_minute($lct),
-        (int) decimal_hours_second($lct),
+        PA_Macros\decimal_hours_hour($lct),
+        PA_Macros\decimal_hours_minute($lct),
+        (int) PA_Macros\decimal_hours_second($lct),
         (int) $integerDay,
         $localMonth,
         $localYear

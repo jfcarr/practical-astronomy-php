@@ -1,11 +1,13 @@
 <?php
 
+namespace PA\Macros;
+
 /**
  * Convert a Civil Time (hours,minutes,seconds) to Decimal Hours
  * 
  * Original macro name: HMSDH
  */
-function convert_civil_time_to_decimal_hours($hours,  $minutes,  $seconds)
+function hours_minutes_seconds_to_decimal_hours($hours,  $minutes,  $seconds)
 {
     (float) $fHours = $hours;
     (float) $fMinutes = $minutes;
