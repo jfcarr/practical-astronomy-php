@@ -6,7 +6,7 @@ include 'PAUtils.php';
 /**
  * Calculates the date of Easter for the year specified.
  */
-function getDateOfEaster($inputYear)
+function get_date_of_easter($inputYear)
 {
     $year = $inputYear;
 
@@ -35,15 +35,15 @@ function getDateOfEaster($inputYear)
 /**
  * Calculate day number for a date.
  */
-function civilDateToDayNumber($month, $day, $year)
+function civil_date_to_day_number($month, $day, $year)
 {
     if ($month <= 2) {
         $month = $month - 1;
-        $month = (isLeapYear($year)) ? $month * 62 : $month * 63;
+        $month = (is_leap_year($year)) ? $month * 62 : $month * 63;
         $month = floor((int)((float)$month / 2));
     } else {
         $month = floor((int)(((float)$month + 1) * 30.6));
-        $month = (isLeapYear($year)) ? $month - 62 : $month - 63;
+        $month = (is_leap_year($year)) ? $month - 62 : $month - 63;
     }
 
     return $month + $day;
@@ -53,19 +53,19 @@ function civilDateToDayNumber($month, $day, $year)
 /**
  * Convert a Civil Time (hours,minutes,seconds) to Decimal Hours
  */
-function civilTimeToDecimalHours($hours, $minutes, $seconds)
+function civil_time_to_decimal_hours($hours, $minutes, $seconds)
 {
-    return convertCivilTimeToDecimalHours($hours, $minutes, $seconds);
+    return convert_civil_time_to_decimal_hours($hours, $minutes, $seconds);
 }
 
 /**
  * Convert Decimal Hours to Civil Time
  */
-function decimalHoursToCivilTime($decimalHours)
+function decimal_hours_to_civil_time($decimalHours)
 {
-    $hours = decimalHoursHour($decimalHours);
-    $minutes = decimalHoursMinute($decimalHours);
-    $seconds = decimalHoursSecond($decimalHours);
+    $hours = decimal_hours_hour($decimalHours);
+    $minutes = decimal_hours_minute($decimalHours);
+    $seconds = decimal_hours_second($decimalHours);
 
     return array($hours, $minutes, $seconds);
 }
@@ -73,27 +73,27 @@ function decimalHoursToCivilTime($decimalHours)
 /**
  * Convert local Civil Time to Universal Time
  */
-function localCivilTimeToUniversalTime($lctHours, $lctMinutes, $lctSeconds, $isDaylightSavings, $zoneCorrection, $localDay, $localMonth, $localYear)
+function local_civil_time_to_universal_time($lctHours, $lctMinutes, $lctSeconds, $isDaylightSavings, $zoneCorrection, $localDay, $localMonth, $localYear)
 {
-    $lct = civilTimeToDecimalHours($lctHours, $lctMinutes, $lctSeconds);
+    $lct = civil_time_to_decimal_hours($lctHours, $lctMinutes, $lctSeconds);
 
     $daylightSavingsOffset = ($isDaylightSavings) ? 1 : 0;
 
     $utInterim = $lct - $daylightSavingsOffset - $zoneCorrection;
     $gdayInterim = $localDay + ($utInterim / 24);
 
-    $jd = civilDateToJulianDate($gdayInterim, $localMonth, $localYear);
+    $jd = civil_date_to_julian_date($gdayInterim, $localMonth, $localYear);
 
-    $gDay = julianDateDay($jd);
-    $gMonth = julianDateMonth($jd);
-    $gYear = julianDateYear($jd);
+    $gDay = julian_date_day($jd);
+    $gMonth = julian_date_month($jd);
+    $gYear = julian_date_year($jd);
 
     $ut = 24 * ($gDay - floor($gDay));
 
     $returnValue = array(
-        decimalHoursHour($ut),
-        decimalHoursMinute($ut),
-        (int)decimalHoursSecond($ut),
+        decimal_hours_hour($ut),
+        decimal_hours_minute($ut),
+        (int)decimal_hours_second($ut),
         (int)floor($gDay),
         $gMonth,
         $gYear
@@ -105,24 +105,24 @@ function localCivilTimeToUniversalTime($lctHours, $lctMinutes, $lctSeconds, $isD
 /**
  * Convert Universal Time to local Civil Time
  */
-function universalTimeToLocalCivilTime($utHours, $utMinutes, $utSeconds, $isDaylightSavings, $zoneCorrection, $gwDay, $gwMonth, $gwYear)
+function universal_time_to_local_civil_time($utHours, $utMinutes, $utSeconds, $isDaylightSavings, $zoneCorrection, $gwDay, $gwMonth, $gwYear)
 {
     $dstValue = ($isDaylightSavings) ? 1 : 0;
-    $ut = convertCivilTimeToDecimalHours($utHours, $utMinutes, $utSeconds);
+    $ut = convert_civil_time_to_decimal_hours($utHours, $utMinutes, $utSeconds);
     $zoneTime = $ut + $zoneCorrection;
     $localTime = $zoneTime + $dstValue;
-    $localJDPlusLocalTime = civilDateToJulianDate($gwDay, $gwMonth, $gwYear) + ($localTime / 24);
-    $localDay = julianDateDay($localJDPlusLocalTime);
+    $localJDPlusLocalTime = civil_date_to_julian_date($gwDay, $gwMonth, $gwYear) + ($localTime / 24);
+    $localDay = julian_date_day($localJDPlusLocalTime);
     $integerDay = floor($localDay);
-    $localMonth = julianDateMonth($localJDPlusLocalTime);
-    $localYear = julianDateYear($localJDPlusLocalTime);
+    $localMonth = julian_date_month($localJDPlusLocalTime);
+    $localYear = julian_date_year($localJDPlusLocalTime);
 
     $lct = 24 * ($localDay - $integerDay);
 
     return array(
-        decimalHoursHour($lct),
-        decimalHoursMinute($lct),
-        (int) decimalHoursSecond($lct),
+        decimal_hours_hour($lct),
+        decimal_hours_minute($lct),
+        (int) decimal_hours_second($lct),
         (int) $integerDay,
         $localMonth,
         $localYear

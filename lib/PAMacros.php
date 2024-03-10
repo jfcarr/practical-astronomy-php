@@ -5,7 +5,7 @@
  * 
  * Original macro name: HMSDH
  */
-function convertCivilTimeToDecimalHours($hours,  $minutes,  $seconds)
+function convert_civil_time_to_decimal_hours($hours,  $minutes,  $seconds)
 {
     (float) $fHours = $hours;
     (float) $fMinutes = $minutes;
@@ -23,7 +23,7 @@ function convertCivilTimeToDecimalHours($hours,  $minutes,  $seconds)
  * 
  * Original macro name: DHHour
  */
-function decimalHoursHour($decimalHours)
+function decimal_hours_hour($decimalHours)
 {
     $a = abs($decimalHours);
     $b = $a * 3600;
@@ -38,7 +38,7 @@ function decimalHoursHour($decimalHours)
  *
  * Original macro name: DHMin
  */
-function decimalHoursMinute($decimalHours)
+function decimal_hours_minute($decimalHours)
 {
     $a = abs($decimalHours);
     $b = $a * 3600;
@@ -53,7 +53,7 @@ function decimalHoursMinute($decimalHours)
  *
  * Original macro name: DHSec
  */
-function decimalHoursSecond($decimalHours)
+function decimal_hours_second($decimalHours)
 {
     $a = abs($decimalHours);
     $b = $a * 3600;
@@ -68,7 +68,7 @@ function decimalHoursSecond($decimalHours)
  *
  * Original macro name: CDJD
  */
-function civilDateToJulianDate($day, $month, $year)
+function civil_date_to_julian_date($day, $month, $year)
 {
     $fDay = (float) $day;
     $fMonth = (float) $month;
@@ -106,7 +106,7 @@ function civilDateToJulianDate($day, $month, $year)
  *
  * Original macro name: JDCDay
  */
-function julianDateDay($julianDate)
+function julian_date_day($julianDate)
 {
     $i = floor($julianDate + 0.5);
     $f = $julianDate + 0.5 - $i;
@@ -125,7 +125,7 @@ function julianDateDay($julianDate)
  *
  * Original macro name: JDCMonth
  */
-function julianDateMonth($julianDate)
+function julian_date_month($julianDate)
 {
     $i = floor($julianDate + 0.5);
     $a = floor(($i - 1867216.25) / 36524.25);
@@ -145,7 +145,7 @@ function julianDateMonth($julianDate)
  *
  * Original macro name: JDCYear
  */
-function julianDateYear($julianDate)
+function julian_date_year($julianDate)
 {
     $i = floor($julianDate + 0.5);
     $a = floor(($i - 1867216.25) / 36524.25);

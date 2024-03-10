@@ -3,7 +3,7 @@
 /**
  * Determine if year is a leap year. 
  */
-function isLeapYear($inputYear)
+function is_leap_year($inputYear)
 {
     $year = $inputYear;
 
