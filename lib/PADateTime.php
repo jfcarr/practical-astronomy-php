@@ -69,3 +69,62 @@ function decimalHoursToCivilTime($decimalHours)
 
     return array($hours, $minutes, $seconds);
 }
+
+/**
+ * Convert local Civil Time to Universal Time
+ */
+function localCivilTimeToUniversalTime($lctHours, $lctMinutes, $lctSeconds, $isDaylightSavings, $zoneCorrection, $localDay, $localMonth, $localYear)
+{
+    $lct = civilTimeToDecimalHours($lctHours, $lctMinutes, $lctSeconds);
+
+    $daylightSavingsOffset = ($isDaylightSavings) ? 1 : 0;
+
+    $utInterim = $lct - $daylightSavingsOffset - $zoneCorrection;
+    $gdayInterim = $localDay + ($utInterim / 24);
+
+    $jd = civilDateToJulianDate($gdayInterim, $localMonth, $localYear);
+
+    $gDay = julianDateDay($jd);
+    $gMonth = julianDateMonth($jd);
+    $gYear = julianDateYear($jd);
+
+    $ut = 24 * ($gDay - floor($gDay));
+
+    $returnValue = array(
+        decimalHoursHour($ut),
+        decimalHoursMinute($ut),
+        (int)decimalHoursSecond($ut),
+        (int)floor($gDay),
+        $gMonth,
+        $gYear
+    );
+
+    return $returnValue;
+}
+
+/**
+ * Convert Universal Time to local Civil Time
+ */
+function universalTimeToLocalCivilTime($utHours, $utMinutes, $utSeconds, $isDaylightSavings, $zoneCorrection, $gwDay, $gwMonth, $gwYear)
+{
+    $dstValue = ($isDaylightSavings) ? 1 : 0;
+    $ut = convertCivilTimeToDecimalHours($utHours, $utMinutes, $utSeconds);
+    $zoneTime = $ut + $zoneCorrection;
+    $localTime = $zoneTime + $dstValue;
+    $localJDPlusLocalTime = civilDateToJulianDate($gwDay, $gwMonth, $gwYear) + ($localTime / 24);
+    $localDay = julianDateDay($localJDPlusLocalTime);
+    $integerDay = floor($localDay);
+    $localMonth = julianDateMonth($localJDPlusLocalTime);
+    $localYear = julianDateYear($localJDPlusLocalTime);
+
+    $lct = 24 * ($localDay - $integerDay);
+
+    return array(
+        decimalHoursHour($lct),
+        decimalHoursMinute($lct),
+        (int) decimalHoursSecond($lct),
+        (int) $integerDay,
+        $localMonth,
+        $localYear
+    );
+}
