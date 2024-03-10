@@ -179,3 +179,43 @@ function greenwich_sidereal_time_to_universal_time($gstHours, $gstMinutes, $gstS
 
     return array($utHours, $utMinutes, $utSeconds, $warningFlag);
 }
+
+/**
+ * Convert Greenwich Sidereal Time to Local Sidereal Time
+ */
+function greenwich_sidereal_time_to_local_sidereal_time($gstHours, $gstMinutes, $gstSeconds, $geographicalLongitude)
+{
+    $gst = PA_Macros\hours_minutes_seconds_to_decimal_hours($gstHours, $gstMinutes, $gstSeconds);
+    $offset = $geographicalLongitude / 15;  // Convert longitude to hours
+
+    // Handle negative longitudes
+    if ($offset < 0) {
+        $offset += 24;
+    }
+
+    $lstHours1 = $gst + $offset;
+    $lstHours2 = $lstHours1 - (24 * floor($lstHours1 / 24));
+
+    $lstHours = PA_Macros\decimal_hours_hour($lstHours2);
+    $lstMinutes = PA_Macros\decimal_hours_minute($lstHours2);
+    $lstSeconds = PA_Macros\decimal_hours_second($lstHours2);
+
+    return array($lstHours, $lstMinutes, $lstSeconds);
+}
+
+/**
+ * Convert Local Sidereal Time to Greenwich Sidereal Time
+ */
+function local_sidereal_time_to_greenwich_sidereal_time($lstHours, $lstMinutes, $lstSeconds, $geographicalLongitude)
+{
+    $gst = PA_Macros\hours_minutes_seconds_to_decimal_hours($lstHours, $lstMinutes, $lstSeconds);
+    $longHours = $geographicalLongitude / 15;
+    $gst1 = $gst - $longHours;
+    $gst2 = $gst1 - (24 * floor($gst1 / 24));
+
+    $gstHours = PA_Macros\decimal_hours_hour($gst2);
+    $gstMinutes = PA_Macros\decimal_hours_minute($gst2);
+    $gstSeconds = PA_Macros\decimal_hours_second($gst2);
+
+    return array($gstHours, $gstMinutes, $gstSeconds);
+}
