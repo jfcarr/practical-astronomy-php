@@ -69,3 +69,44 @@ function hour_angle_to_right_ascension($hourAngleHours, $hourAngleMinutes, $hour
 
     return array($rightAscensionHours, $rightAscensionMinutes, $rightAscensionSeconds);
 }
+
+/**
+ * Convert Equatorial Coordinates to Horizon Coordinates
+ */
+function equatorial_coordinates_to_horizon_coordinates($hourAngleHours, $hourAngleMinutes, $hourAngleSeconds, $declinationDegrees, $declinationMinutes, $declinationSeconds, $geographicalLatitude)
+{
+    $azimuthInDecimalDegrees = PA_Macros\equatorial_coordinates_to_azimuth($hourAngleHours, $hourAngleMinutes, $hourAngleSeconds, $declinationDegrees, $declinationMinutes, $declinationSeconds, $geographicalLatitude);
+
+    $altitudeInDecimalDegrees = PA_Macros\equatorial_coordinates_to_altitude($hourAngleHours, $hourAngleMinutes, $hourAngleSeconds, $declinationDegrees, $declinationMinutes, $declinationSeconds, $geographicalLatitude);
+
+    $azimuthDegrees = PA_Macros\decimal_degrees_degrees($azimuthInDecimalDegrees);
+    $azimuthMinutes = PA_Macros\decimal_degrees_minutes($azimuthInDecimalDegrees);
+    $azimuthSeconds = PA_Macros\decimal_degrees_seconds($azimuthInDecimalDegrees);
+
+    $altitudeDegrees = PA_Macros\decimal_degrees_degrees($altitudeInDecimalDegrees);
+    $altitudeMinutes = PA_Macros\decimal_degrees_minutes($altitudeInDecimalDegrees);
+    $altitudeSeconds = PA_Macros\decimal_degrees_seconds($altitudeInDecimalDegrees);
+
+    return array($azimuthDegrees, $azimuthMinutes, $azimuthSeconds, $altitudeDegrees, $altitudeMinutes, $altitudeSeconds);
+}
+
+/**
+ * Convert Horizon Coordinates to Equatorial Coordinates
+ */
+
+function horizon_coordinates_to_equatorial_coordinates($azimuthDegrees, $azimuthMinutes, $azimuthSeconds, $altitudeDegrees, $altitudeMinutes, $altitudeSeconds, $geographicalLatitude)
+{
+    $hourAngleInDecimalDegrees = PA_Macros\horizon_coordinates_to_hour_angle($azimuthDegrees, $azimuthMinutes, $azimuthSeconds, $altitudeDegrees, $altitudeMinutes, $altitudeSeconds, $geographicalLatitude);
+
+    $declinationInDecimalDegrees = PA_Macros\horizon_coordinates_to_declination($azimuthDegrees, $azimuthMinutes, $azimuthSeconds, $altitudeDegrees, $altitudeMinutes, $altitudeSeconds, $geographicalLatitude);
+
+    $hourAngleHours = PA_Macros\decimal_hours_hour($hourAngleInDecimalDegrees);
+    $hourAngleMinutes = PA_Macros\decimal_hours_minute($hourAngleInDecimalDegrees);
+    $hourAngleSeconds = PA_Macros\decimal_hours_second($hourAngleInDecimalDegrees);
+
+    $declinationDegrees = PA_Macros\decimal_degrees_degrees($declinationInDecimalDegrees);
+    $declinationMinutes = PA_Macros\decimal_degrees_minutes($declinationInDecimalDegrees);
+    $declinationSeconds = PA_Macros\decimal_degrees_seconds($declinationInDecimalDegrees);
+
+    return array($hourAngleHours, $hourAngleMinutes, $hourAngleSeconds, $declinationDegrees, $declinationMinutes, $declinationSeconds);
+}
