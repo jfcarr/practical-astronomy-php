@@ -162,3 +162,143 @@ function julian_date_year($julianDate)
 
     return  $returnValue;
 }
+
+/**
+ * Convert Right Ascension to Hour Angle
+ * 
+ * Original macro name: RAHA
+ */
+function right_ascension_to_hour_angle($raHours, $raMinutes, $raSeconds, $lctHours, $lctMinutes, $lctSeconds, $daylightSaving, $zoneCorrection, $localDay, $localMonth, $localYear, $geographicalLongitude)
+{
+    $a = local_civil_time_to_universal_time($lctHours, $lctMinutes, $lctSeconds, $daylightSaving, $zoneCorrection, $localDay, $localMonth, $localYear);
+    $b = local_civil_time_greenwich_day($lctHours, $lctMinutes, $lctSeconds, $daylightSaving, $zoneCorrection, $localDay, $localMonth, $localYear);
+    $c = local_civil_time_greenwich_month($lctHours, $lctMinutes, $lctSeconds, $daylightSaving, $zoneCorrection, $localDay, $localMonth, $localYear);
+    $d = local_civil_time_greenwich_year($lctHours, $lctMinutes, $lctSeconds, $daylightSaving, $zoneCorrection, $localDay, $localMonth, $localYear);
+    $e = universal_time_to_greenwich_sidereal_time($a, 0, 0, $b, $c, $d);
+    $f = greenwich_sidereal_time_to_local_sidereal_time($e, 0, 0, $geographicalLongitude);
+
+    $g = hours_minutes_seconds_to_decimal_hours($raHours, $raMinutes, $raSeconds);
+    $h = $f - $g;
+
+    return ($h < 0) ? 24 + $h : $h;
+}
+
+/**
+ * Convert Hour Angle to Right Ascension
+ * 
+ * Original macro name: HARA
+ */
+function hour_angle_to_right_ascension($hourAngleHours, $hourAngleMinutes, $hourAngleSeconds, $lctHours, $lctMinutes, $lctSeconds, $daylightSaving, $zoneCorrection, $localDay, $localMonth, $localYear, $geographicalLongitude)
+{
+    $a = local_civil_time_to_universal_time($lctHours, $lctMinutes, $lctSeconds, $daylightSaving, $zoneCorrection, $localDay, $localMonth, $localYear);
+    $b = local_civil_time_greenwich_day($lctHours, $lctMinutes, $lctSeconds, $daylightSaving, $zoneCorrection, $localDay, $localMonth, $localYear);
+    $c = local_civil_time_greenwich_month($lctHours, $lctMinutes, $lctSeconds, $daylightSaving, $zoneCorrection, $localDay, $localMonth, $localYear);
+    $d = local_civil_time_greenwich_year($lctHours, $lctMinutes, $lctSeconds, $daylightSaving, $zoneCorrection, $localDay, $localMonth, $localYear);
+    $e = universal_time_to_greenwich_sidereal_time($a, 0, 0, $b, $c, $d);
+    $f = greenwich_sidereal_time_to_local_sidereal_time($e, 0, 0, $geographicalLongitude);
+
+    $g = hours_minutes_seconds_to_decimal_hours($hourAngleHours, $hourAngleMinutes, $hourAngleSeconds);
+    $h = $f - $g;
+
+    return ($h < 0) ? 24 + $h : $h;
+}
+
+/**
+ * Convert Local Civil Time to Universal Time
+ * 
+ * Original macro name: LctUT
+ */
+function local_civil_time_to_universal_time($lctHours, $lctMinutes, $lctSeconds, $daylightSaving, $zoneCorrection, $localDay, $localMonth, $localYear)
+{
+    $a = hours_minutes_seconds_to_decimal_hours($lctHours, $lctMinutes, $lctSeconds);
+    $b = $a - $daylightSaving - $zoneCorrection;
+    $c = $localDay + ($b / 24);
+
+    $d = civil_date_to_julian_date($c, $localMonth, $localYear);
+
+    $e = julian_date_day($d);
+    $e1 = floor($e);
+
+    return 24 * ($e - $e1);
+}
+
+/**
+ * Determine Greenwich Day for Local Time
+ * 
+ * Original macro name: LctGDay
+ */
+function local_civil_time_greenwich_day($lctHours, $lctMinutes, $lctSeconds, $daylightSaving, $zoneCorrection, $localDay, $localMonth, $localYear)
+{
+    $a = hours_minutes_seconds_to_decimal_hours($lctHours, $lctMinutes, $lctSeconds);
+    $b = $a - $daylightSaving - $zoneCorrection;
+    $c = $localDay + ($b / 24);
+    $d = civil_date_to_julian_date($c, $localMonth, $localYear);
+    $e = julian_date_day($d);
+
+    return floor($e);
+}
+
+/**
+ * Determine Greenwich Month for Local Time
+ * 
+ * Original macro name: LctGMonth
+ */
+function local_civil_time_greenwich_month($lctHours, $lctMinutes, $lctSeconds, $daylightSaving, $zoneCorrection, $localDay, $localMonth, $localYear)
+{
+    $a = hours_minutes_seconds_to_decimal_hours($lctHours, $lctMinutes, $lctSeconds);
+    $b = $a - $daylightSaving - $zoneCorrection;
+    $c = $localDay + ($b / 24);
+    $d = civil_date_to_julian_date($c, $localMonth, $localYear);
+
+    return julian_date_month($d);
+}
+
+/**
+ * Determine Greenwich Year for Local Time
+ * 
+ * Original macro name: LctGYear
+ * 
+ */
+function local_civil_time_greenwich_year($lctHours, $lctMinutes, $lctSeconds, $daylightSaving, $zoneCorrection, $localDay, $localMonth, $localYear)
+{
+    $a = hours_minutes_seconds_to_decimal_hours($lctHours, $lctMinutes, $lctSeconds);
+    $b = $a - $daylightSaving - $zoneCorrection;
+    $c = $localDay + ($b / 24);
+    $d = civil_date_to_julian_date($c, $localMonth, $localYear);
+
+    return julian_date_year($d);
+}
+
+/**
+ * Convert Universal Time to Greenwich Sidereal Time
+ * 
+ * Original macro name: UTGST
+ */
+function universal_time_to_greenwich_sidereal_time($uHours, $uMinutes, $uSeconds, $greenwichDay, $greenwichMonth, $greenwichYear)
+{
+    $a =  civil_date_to_julian_date($greenwichDay, $greenwichMonth, $greenwichYear);
+    $b = $a - 2451545;
+    $c = $b / 36525;
+    $d = 6.697374558 + (2400.051336 * $c) + (0.000025862 * $c * $c);
+    $e = $d - floor($d / 24) * 24;
+
+    $f = $uHours + $uMinutes / 60 + $uSeconds / 3600;
+    $g = $f * 1.002737909;
+    $h = $e + $g;
+
+    return $h - floor($h / 24) * 24;
+}
+
+/**
+ * Convert Greenwich Sidereal Time to Local Sidereal Time
+ * 
+ * Original macro name: GSTLST
+ */
+function greenwich_sidereal_time_to_local_sidereal_time($greenwichHours, $greenwichMinutes, $greenwichSeconds, $geographicalLongitude)
+{
+    $a = hours_minutes_seconds_to_decimal_hours($greenwichHours, $greenwichMinutes, $greenwichSeconds);
+    $b = $geographicalLongitude / 15;
+    $c = $a + $b;
+
+    return $c - (24 * floor($c / 24));
+}

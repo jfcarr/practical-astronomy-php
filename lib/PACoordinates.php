@@ -37,3 +37,35 @@ function decimal_degrees_to_angle($decimalDegrees)
 
     return array($signedDegrees, $minutes, floor($correctedSeconds));
 }
+
+/**
+ * Convert Right Ascension to Hour Angle
+ */
+function right_ascension_to_hour_angle($raHours, $raMinutes, $raSeconds, $lctHours, $lctMinutes, $lctSeconds, $isDaylightSavings, $zoneCorrection, $localDay, $localMonth, $localYear, $geographicalLongitude)
+{
+    $daylightSaving = ($isDaylightSavings) ? 1 : 0;
+
+    $hourAngle = PA_Macros\right_ascension_to_hour_angle($raHours, $raMinutes, $raSeconds, $lctHours, $lctMinutes, $lctSeconds, $daylightSaving, $zoneCorrection, $localDay, $localMonth, $localYear, $geographicalLongitude);
+
+    $hourAngleHours = PA_Macros\decimal_hours_hour($hourAngle);
+    $hourAngleMinutes = PA_Macros\decimal_hours_minute($hourAngle);
+    $hourAngleSeconds = PA_Macros\decimal_hours_second($hourAngle);
+
+    return array($hourAngleHours, $hourAngleMinutes, $hourAngleSeconds);
+}
+
+/**
+ * Convert Hour Angle to Right Ascension
+ */
+function hour_angle_to_right_ascension($hourAngleHours, $hourAngleMinutes, $hourAngleSeconds, $lctHours, $lctMinutes, $lctSeconds, $isDaylightSaving, $zoneCorrection, $localDay, $localMonth, $localYear, $geographicalLongitude)
+{
+    $daylightSaving = ($isDaylightSaving) ? 1 : 0;
+
+    $rightAscension = PA_Macros\hour_angle_to_right_ascension($hourAngleHours, $hourAngleMinutes, $hourAngleSeconds, $lctHours, $lctMinutes, $lctSeconds, $daylightSaving, $zoneCorrection, $localDay, $localMonth, $localYear, $geographicalLongitude);
+
+    $rightAscensionHours = PA_Macros\decimal_hours_hour($rightAscension);
+    $rightAscensionMinutes = PA_Macros\decimal_hours_minute($rightAscension);
+    $rightAscensionSeconds = PA_Macros\decimal_hours_second($rightAscension);
+
+    return array($rightAscensionHours, $rightAscensionMinutes, $rightAscensionSeconds);
+}
