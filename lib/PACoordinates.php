@@ -110,3 +110,17 @@ function horizon_coordinates_to_equatorial_coordinates($azimuthDegrees, $azimuth
 
     return array($hourAngleHours, $hourAngleMinutes, $hourAngleSeconds, $declinationDegrees, $declinationMinutes, $declinationSeconds);
 }
+
+/**
+ * Calculate Mean Obliquity of the Ecliptic for a Greenwich Date
+ */
+function mean_obliquity_of_the_ecliptic($greenwichDay, $greenwichMonth, $greenwichYear)
+{
+    $jd = PA_Macros\civil_date_to_julian_date($greenwichDay, $greenwichMonth, $greenwichYear);
+    $mjd = $jd - 2451545;
+    $t = $mjd / 36525;
+    $de1 = $t * (46.815 + $t * (0.0006 - ($t * 0.00181)));
+    $de2 = $de1 / 3600;
+
+    return 23.439292 - $de2;
+}

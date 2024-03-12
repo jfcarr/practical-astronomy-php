@@ -76,6 +76,15 @@ function horizon_coordinates_to_equatorial_coordinates($azimuthDegrees, $azimuth
     echo "[Horizon Coord] Azimuth {$azimuthDegrees} d {$azimuthMinutes} m {$azimuthSeconds} s, Altitude {$altitudeDegrees} d {$altitudeMinutes} m {$altitudeSeconds} s == [Equatorial Coord] HA {$hourAngleHours}:{$hourAngleMinutes}:{$hourAngleSeconds} Declination {$declinationDegrees} d {$declinationMinutes} m {$declinationSeconds} s\n";
 }
 
+function mean_obliquity_of_the_ecliptic($greenwichDay, $greenwichMonth, $greenwichYear, $expectedObliquity)
+{
+    $obliquity = round(PA_Coord\mean_obliquity_of_the_ecliptic($greenwichDay, $greenwichMonth, $greenwichYear), 8);
+
+    assert($obliquity == $expectedObliquity);
+
+    echo "[Greenwich Date] {$greenwichMonth}/{$greenwichDay}/{$greenwichYear} = [Obliquity] {$obliquity}\n";
+}
+
 angle_to_decimal_degrees(182, 31, 27, 182.524167);
 
 decimal_degrees_to_angle(182.524167, 182, 31, 27);
@@ -87,3 +96,5 @@ hour_angle_to_right_ascension(9, 52, 23.66, 14, 36, 51.67, false, -4, 22, 4, 198
 equatorial_coordinates_to_horizon_coordinates(5, 51, 44, 23, 13, 10, 52, 283, 16, 15.7, 19, 20, 3.64);
 
 horizon_coordinates_to_equatorial_coordinates(283, 16, 15.7, 19, 20, 3.64, 52, 5, 51, 44, 23, 13, 10);
+
+mean_obliquity_of_the_ecliptic(6, 7, 2009, 23.43805531);
