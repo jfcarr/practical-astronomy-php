@@ -160,13 +160,13 @@ function equatorial_coordinates_to_altitude($hourAngleHours, $hourAngleMinutes, 
 {
     $a = hours_minutes_seconds_to_decimal_hours($hourAngleHours, $hourAngleMinutes, $hourAngleSeconds);
     $b = $a * 15;
-    $c = PA_Math\to_radians($b);
+    $c = PA_Math\degrees_to_radians($b);
     $d = degrees_minutes_seconds_to_decimal_degrees($declinationDegrees, $declinationMinutes, $declinationSeconds);
-    $e = PA_Math\to_radians($d);
-    $f = PA_Math\to_radians($geographicalLatitude);
-    $g = PA_Math\sine($e) * PA_Math\sine($f) + PA_Math\cosine($e) * PA_Math\cosine($f) * PA_Math\cosine($c);
+    $e = PA_Math\degrees_to_radians($d);
+    $f = PA_Math\degrees_to_radians($geographicalLatitude);
+    $g = sin($e) * sin($f) + cos($e) * cos($f) * cos($c);
 
-    return degrees(PA_Math\a_sine($g));
+    return degrees(asin($g));
 }
 
 /**
@@ -178,15 +178,14 @@ function equatorial_coordinates_to_azimuth($hourAngleHours, $hourAngleMinutes, $
 {
     $a = hours_minutes_seconds_to_decimal_hours($hourAngleHours, $hourAngleMinutes, $hourAngleSeconds);
     $b = $a * 15;
-    $c = PA_Math\to_radians($b);
+    $c = PA_Math\degrees_to_radians($b);
     $d = degrees_minutes_seconds_to_decimal_degrees($declinationDegrees, $declinationMinutes, $declinationSeconds);
-    $e = PA_Math\to_radians($d);
-    $f = PA_Math\to_radians($geographicalLatitude);
-    $g = PA_Math\sine($e) * PA_Math\sine($f) + PA_Math\cosine($e) * PA_Math\cosine($f) * PA_Math\cosine($c);
-    // $h = PA_Math\cosine(-$e) * PA_Math\cosine($f) * PA_Math\sine($c);
-    $h = -PA_Math\cosine($e) * PA_Math\cosine($f) * PA_Math\sine($c);
-    $i = PA_Math\sine($e) - (PA_Math\sine($f) * $g);
-    $j = degrees(PA_Math\angle_tangent2($h, $i));
+    $e = PA_Math\degrees_to_radians($d);
+    $f = PA_Math\degrees_to_radians($geographicalLatitude);
+    $g = sin($e) * sin($f) + cos($e) * cos($f) * cos($c);
+    $h = -cos($e) * cos($f) * sin($c);
+    $i = sin($e) - (sin($f) * $g);
+    $j = degrees(atan2($h, $i));
 
     return $j - 360.0 * floor($j / 360);
 }
@@ -214,12 +213,12 @@ function horizon_coordinates_to_declination($azimuthDegrees, $azimuthMinutes, $a
 {
     $a = degrees_minutes_seconds_to_decimal_degrees($azimuthDegrees, $azimuthMinutes, $azimuthSeconds);
     $b = degrees_minutes_seconds_to_decimal_degrees($altitudeDegrees, $altitudeMinutes, $altitudeSeconds);
-    $c = PA_Math\to_radians($a);
-    $d = PA_Math\to_radians($b);
-    $e = PA_Math\to_radians($geographicalLatitude);
-    $f = PA_Math\sine($d) * PA_Math\sine($e) + PA_Math\cosine($d) * PA_Math\cosine($e) * PA_Math\cosine($c);
+    $c = PA_Math\degrees_to_radians($a);
+    $d = PA_Math\degrees_to_radians($b);
+    $e = PA_Math\degrees_to_radians($geographicalLatitude);
+    $f = sin($d) * sin($e) + cos($d) * cos($e) * cos($c);
 
-    return degrees(PA_Math\a_sine($f));
+    return degrees(asin($f));
 }
 
 /**
@@ -231,13 +230,13 @@ function horizon_coordinates_to_hour_angle($azimuthDegrees, $azimuthMinutes, $az
 {
     $a = degrees_minutes_seconds_to_decimal_degrees($azimuthDegrees, $azimuthMinutes, $azimuthSeconds);
     $b = degrees_minutes_seconds_to_decimal_degrees($altitudeDegrees, $altitudeMinutes, $altitudeSeconds);
-    $c = PA_Math\to_radians($a);
-    $d = PA_Math\to_radians($b);
-    $e = PA_Math\to_radians($geographicalLatitude);
-    $f = PA_Math\sine($d) * PA_Math\sine($e) + PA_Math\cosine($d) * PA_Math\cosine($e) * PA_Math\cosine($c);
-    $g = -PA_Math\cosine($d) * PA_Math\cosine($e) * PA_Math\sine($c);
-    $h = PA_Math\sine($d) - PA_Math\sine($e) * $f;
-    $i = decimal_degrees_to_degree_hours(degrees(PA_Math\angle_tangent2($g, $h)));
+    $c = PA_Math\degrees_to_radians($a);
+    $d = PA_Math\degrees_to_radians($b);
+    $e = PA_Math\degrees_to_radians($geographicalLatitude);
+    $f = sin($d) * sin($e) + cos($d) * cos($e) * cos($c);
+    $g = -cos($d) * cos($e) * sin($c);
+    $h = sin($d) - sin($e) * $f;
+    $i = decimal_degrees_to_degree_hours(degrees(atan2($g, $h)));
 
     return $i - 24 * floor($i / 24);
 }
