@@ -595,3 +595,36 @@ function degree_hours_to_decimal_degrees($degreeHours)
 {
     return $degreeHours * 15;
 }
+
+/**
+ * Convert Greenwich Sidereal Time to Universal Time
+ *
+ * Original macro name: GSTUT
+ */
+function greenwich_sidereal_time_to_universal_time($greenwichSiderealHours, $greenwichSiderealMinutes, $greenwichSiderealSeconds, $greenwichDay, $greenwichMonth, $greenwichYear)
+{
+    $a = civil_date_to_julian_date($greenwichDay, $greenwichMonth, $greenwichYear);
+    $b = $a - 2451545;
+    $c = $b / 36525;
+    $d = 6.697374558 + (2400.051336 * $c) + (0.000025862 * $c * $c);
+    $e = $d - (24 * floor($d / 24));
+    $f = hours_minutes_seconds_to_decimal_hours($greenwichSiderealHours, $greenwichSiderealMinutes, $greenwichSiderealSeconds);
+    $g = $f - $e;
+    $h = $g - (24 * floor($g / 24));
+
+    return $h * 0.9972695663;
+}
+
+/**
+ * Convert Local Sidereal Time to Greenwich Sidereal Time
+ *
+ * Original macro name: LSTGST
+ */
+function local_sidereal_time_to_greenwich_sidereal_time($localHours, $localMinutes, $localSeconds, $longitude)
+{
+    $a = hours_minutes_seconds_to_decimal_hours($localHours, $localMinutes, $localSeconds);
+    $b = $longitude / 15;
+    $c = $a - $b;
+
+    return $c - (24 * floor($c / 24));
+}

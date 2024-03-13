@@ -283,3 +283,40 @@ function angle_between_two_objects($raLong1HourDeg, $raLong1Min, $raLong1Sec, $d
 
     return array($angleDeg, $angleMin, $angleSec);
 }
+
+/**
+ * Calculate rising and setting times for an object.
+ */
+function rising_and_setting($raHours, $raMinutes, $raSeconds, $decDeg, $decMin, $decSec, $gwDateDay, $gwDateMonth, $gwDateYear, $geogLongDeg, $geogLatDeg, $vertShiftDeg)
+{
+    $raHours1 = PA_Macros\hours_minutes_seconds_to_decimal_hours($raHours, $raMinutes, $raSeconds);
+    $decRad = PA_Math\degrees_to_radians(PA_Macros\degrees_minutes_seconds_to_decimal_degrees($decDeg, $decMin, $decSec));
+    $verticalDisplRadians = PA_Math\degrees_to_radians($vertShiftDeg);
+    $geoLatRadians = PA_Math\degrees_to_radians($geogLatDeg);
+    $cosH = - (sin($verticalDisplRadians) + sin($geoLatRadians) * sin($decRad)) / (cos($geoLatRadians) * cos($decRad));
+    $hHours = PA_Macros\decimal_degrees_to_degree_hours(PA_Macros\degrees(acos($cosH)));
+    $lstRiseHours = ($raHours1 - $hHours) - 24 * floor(($raHours1 - $hHours) / 24);
+    $lstSetHours = ($raHours1 + $hHours) - 24 * floor(($raHours1 + $hHours) / 24);
+    $aDeg = PA_Macros\degrees(acos((sin($decRad) + sin($verticalDisplRadians) * sin($geoLatRadians)) / (cos($verticalDisplRadians) * cos($geoLatRadians))));
+    $azRiseDeg = $aDeg - 360 * floor($aDeg / 360);
+    $azSetDeg = (360 - $aDeg) - 360 * floor((360 - $aDeg) / 360);
+    $utRiseHours1 = PA_Macros\greenwich_sidereal_time_to_universal_time(PA_Macros\local_sidereal_time_to_greenwich_sidereal_time($lstRiseHours, 0, 0, $geogLongDeg), 0, 0, $gwDateDay, $gwDateMonth, $gwDateYear);
+    $utSetHours1 = PA_Macros\greenwich_sidereal_time_to_universal_time(PA_Macros\local_sidereal_time_to_greenwich_sidereal_time($lstSetHours, 0, 0, $geogLongDeg), 0, 0, $gwDateDay, $gwDateMonth, $gwDateYear);
+    $utRiseAdjustedHours = $utRiseHours1 + 0.008333;
+    $utSetAdjustedHours = $utSetHours1 + 0.008333;
+
+    $riseSetStatus = PA_Types\RiseSetStatus::OK;
+    if ($cosH > 1)
+        $riseSetStatus = PA_Types\RiseSetStatus::NeverRises;
+    if ($cosH < -1)
+        $riseSetStatus = PA_Types\RiseSetStatus::Circumpolar;
+
+    $utRiseHour = ($riseSetStatus == PA_Types\RiseSetStatus::OK) ? PA_Macros\decimal_hours_hour($utRiseAdjustedHours) : 0;
+    $utRiseMin = ($riseSetStatus == PA_Types\RiseSetStatus::OK) ? PA_Macros\decimal_hours_minute($utRiseAdjustedHours) : 0;
+    $utSetHour = ($riseSetStatus == PA_Types\RiseSetStatus::OK) ? PA_Macros\decimal_hours_hour($utSetAdjustedHours) : 0;
+    $utSetMin = ($riseSetStatus == PA_Types\RiseSetStatus::OK) ? PA_Macros\decimal_hours_minute($utSetAdjustedHours) : 0;
+    $azRise = ($riseSetStatus == PA_Types\RiseSetStatus::OK) ? round($azRiseDeg, 2) : 0;
+    $azSet = ($riseSetStatus == PA_Types\RiseSetStatus::OK) ? round($azSetDeg, 2) : 0;
+
+    return array($riseSetStatus, $utRiseHour, $utRiseMin, $utSetHour, $utSetMin, $azRise, $azSet);
+}
