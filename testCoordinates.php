@@ -2,7 +2,7 @@
 
 namespace PA\Test\Coordinates;
 
-include 'lib/PACoordinates.php';
+include_once 'lib/PACoordinates.php';
 
 use PA\Coordinates as PA_Coord;
 
@@ -85,6 +85,34 @@ function mean_obliquity_of_the_ecliptic($greenwichDay, $greenwichMonth, $greenwi
     echo "[Greenwich Date] {$greenwichMonth}/{$greenwichDay}/{$greenwichYear} = [Obliquity] {$obliquity}\n";
 }
 
+function ecliptic_coordinate_to_equatorial_coordinate($eclipticLongitudeDegrees, $eclipticLongitudeMinutes, $eclipticLongitudeSeconds, $eclipticLatitudeDegrees, $eclipticLatitudeMinutes, $eclipticLatitudeSeconds, $greenwichDay, $greenwichMonth, $greenwichYear, $expectedOutRAHours, $expectedOutRAMinutes, $expectedOutRASeconds, $expectedOutDecDegrees, $expectedOutDecMinutes, $expectedOutDecSeconds)
+{
+    list($outRAHours, $outRAMinutes, $outRASeconds, $outDecDegrees, $outDecMinutes, $outDecSeconds) = PA_Coord\ecliptic_coordinate_to_equatorial_coordinate($eclipticLongitudeDegrees, $eclipticLongitudeMinutes, $eclipticLongitudeSeconds, $eclipticLatitudeDegrees, $eclipticLatitudeMinutes, $eclipticLatitudeSeconds, $greenwichDay, $greenwichMonth, $greenwichYear);
+
+    assert($outRAHours == $expectedOutRAHours);
+    assert($outRAMinutes == $expectedOutRAMinutes);
+    assert($outRASeconds == $expectedOutRASeconds);
+    assert($outDecDegrees == $expectedOutDecDegrees);
+    assert($outDecMinutes == $expectedOutDecMinutes);
+    assert($outDecSeconds == $expectedOutDecSeconds);
+
+    echo "[Ecliptic] Longitude {$eclipticLongitudeDegrees} d {$eclipticLongitudeMinutes} m {$eclipticLongitudeSeconds} s, Latitude {$eclipticLatitudeDegrees} d {$eclipticLatitudeMinutes} m {$eclipticLatitudeSeconds} s = [Equatorial] RA {$outRAHours} h {$outRAMinutes} m {$outRASeconds} s, Dec {$outDecDegrees} d {$outDecMinutes} m {$outDecSeconds} s\n";
+}
+
+function equatorial_coordinate_to_ecliptic_coordinate($raHours, $raMinutes, $raSeconds, $decDegrees, $decMinutes, $decSeconds, $gwDay, $gwMonth, $gwYear, $expectedOutEclLongDeg, $expectedOutEclLongMin, $expectedOutEclLongSec, $expectedOutEclLatDeg, $expectedOutEclLatMin, $expectedOutEclLatSec)
+{
+    list($outEclLongDeg, $outEclLongMin, $outEclLongSec, $outEclLatDeg, $outEclLatMin, $outEclLatSec) = PA_Coord\equatorial_coordinate_to_ecliptic_coordinate($raHours, $raMinutes, $raSeconds, $decDegrees, $decMinutes, $decSeconds, $gwDay, $gwMonth, $gwYear);
+
+    assert($outEclLongDeg == $expectedOutEclLongDeg);
+    assert($outEclLongMin == $expectedOutEclLongMin);
+    assert($outEclLongSec == $expectedOutEclLongSec);
+    assert($outEclLatDeg == $expectedOutEclLatDeg);
+    assert($outEclLatMin == $expectedOutEclLatMin);
+    assert($outEclLatSec == $expectedOutEclLatSec);
+
+    echo "[Equatorial] RA {$raHours} h {$raMinutes} m {$raSeconds}, Declination {$decDegrees} d {$decMinutes} m {$decSeconds} s = [Ecliptic] Longitude {$outEclLongDeg} d {$outEclLongMin} m {$outEclLongSec} s, Latitude {$outEclLatDeg} d {$outEclLatMin} m {$outEclLatSec} s\n";
+}
+
 angle_to_decimal_degrees(182, 31, 27, 182.524167);
 
 decimal_degrees_to_angle(182.524167, 182, 31, 27);
@@ -98,3 +126,7 @@ equatorial_coordinates_to_horizon_coordinates(5, 51, 44, 23, 13, 10, 52, 283, 16
 horizon_coordinates_to_equatorial_coordinates(283, 16, 15.7, 19, 20, 3.64, 52, 5, 51, 44, 23, 13, 10);
 
 mean_obliquity_of_the_ecliptic(6, 7, 2009, 23.43805531);
+
+ecliptic_coordinate_to_equatorial_coordinate(139, 41, 10, 4, 52, 31, 6, 7, 2009, 9, 34, 53.4, 19, 32, 8.52);
+
+equatorial_coordinate_to_ecliptic_coordinate(9, 34, 53.4, 19, 32, 8.52, 6, 7, 2009, 139, 41, 9.97, 4, 52, 30.99);

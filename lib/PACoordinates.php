@@ -2,11 +2,11 @@
 
 namespace PA\Coordinates;
 
-include 'PAMacros.php';
-include 'PAUtils.php';
+include_once 'PAMacros.php';
+include_once 'PAMathExtensions.php';
 
 use PA\Macros as PA_Macros;
-use PA\Utils as PA_Utils;
+use PA\MathExtensions as PA_Math;
 
 /**
  * Convert an Angle (degrees, minutes, and seconds) to Decimal Degrees
@@ -123,4 +123,65 @@ function mean_obliquity_of_the_ecliptic($greenwichDay, $greenwichMonth, $greenwi
     $de2 = $de1 / 3600;
 
     return 23.439292 - $de2;
+}
+
+/**
+ * Convert Ecliptic Coordinates to Equatorial Coordinates
+ */
+function ecliptic_coordinate_to_equatorial_coordinate($eclipticLongitudeDegrees, $eclipticLongitudeMinutes, $eclipticLongitudeSeconds, $eclipticLatitudeDegrees, $eclipticLatitudeMinutes, $eclipticLatitudeSeconds, $greenwichDay, $greenwichMonth, $greenwichYear)
+{
+    $eclonDeg = PA_Macros\degrees_minutes_seconds_to_decimal_degrees($eclipticLongitudeDegrees, $eclipticLongitudeMinutes, $eclipticLongitudeSeconds);
+    $eclatDeg = PA_Macros\degrees_minutes_seconds_to_decimal_degrees($eclipticLatitudeDegrees, $eclipticLatitudeMinutes, $eclipticLatitudeSeconds);
+    $eclonRad = PA_Math\degrees_to_radians($eclonDeg);
+    $eclatRad = PA_Math\degrees_to_radians($eclatDeg);
+    $obliqDeg = PA_Macros\obliq($greenwichDay, $greenwichMonth, $greenwichYear);
+    $obliqRad = PA_Math\degrees_to_radians($obliqDeg);
+    $sinDec = sin($eclatRad) * cos($obliqRad) + cos($eclatRad) * sin($obliqRad) * sin($eclonRad);
+    $decRad = asin($sinDec);
+    $decDeg = PA_Macros\degrees($decRad);
+    $y = sin($eclonRad) * cos($obliqRad) - tan($eclatRad) * sin($obliqRad);
+    $x = cos($eclonRad);
+    $raRad = atan2($y, $x);
+    $raDeg1 = PA_Macros\degrees($raRad);
+    $raDeg2 = $raDeg1 - 360 * floor($raDeg1 / 360);
+    $raHours = PA_Macros\decimal_degrees_to_degree_hours($raDeg2);
+
+    $outRAHours = PA_Macros\decimal_hours_hour($raHours);
+    $outRAMinutes = PA_Macros\decimal_hours_minute($raHours);
+    $outRASeconds = PA_Macros\decimal_hours_second($raHours);
+    $outDecDegrees = PA_Macros\decimal_degrees_degrees($decDeg);
+    $outDecMinutes = PA_Macros\decimal_degrees_minutes($decDeg);
+    $outDecSeconds = PA_Macros\decimal_degrees_seconds($decDeg);
+
+    return array($outRAHours, $outRAMinutes, $outRASeconds, $outDecDegrees, $outDecMinutes, $outDecSeconds);
+}
+
+/**
+ * Convert Equatorial Coordinates to Ecliptic Coordinates
+ */
+function equatorial_coordinate_to_ecliptic_coordinate($raHours, $raMinutes, $raSeconds, $decDegrees, $decMinutes, $decSeconds, $gwDay, $gwMonth, $gwYear)
+{
+    $raDeg = PA_Macros\degree_hours_to_decimal_degrees(PA_Macros\hours_minutes_seconds_to_decimal_hours($raHours, $raMinutes, $raSeconds));
+    $decDeg = PA_Macros\degrees_minutes_seconds_to_decimal_degrees($decDegrees, $decMinutes, $decSeconds);
+    $raRad = PA_Math\degrees_to_radians($raDeg);
+    $decRad = PA_Math\degrees_to_radians($decDeg);
+    $obliqDeg = PA_Macros\obliq($gwDay, $gwMonth, $gwYear);
+    $obliqRad = PA_Math\degrees_to_radians($obliqDeg);
+    $sinEclLat = sin($decRad) * cos($obliqRad) - cos($decRad) * sin($obliqRad) * sin($raRad);
+    $eclLatRad = asin($sinEclLat);
+    $eclLatDeg = PA_Macros\degrees($eclLatRad);
+    $y = sin($raRad) * cos($obliqRad) + tan($decRad) * sin($obliqRad);
+    $x = cos($raRad);
+    $eclLongRad = atan2($y, $x);
+    $eclLongDeg1 = PA_Macros\degrees($eclLongRad);
+    $eclLongDeg2 = $eclLongDeg1 - 360 * floor($eclLongDeg1 / 360);
+
+    $outEclLongDeg = PA_Macros\decimal_degrees_degrees($eclLongDeg2);
+    $outEclLongMin = PA_Macros\decimal_degrees_minutes($eclLongDeg2);
+    $outEclLongSec = PA_Macros\decimal_degrees_seconds($eclLongDeg2);
+    $outEclLatDeg = PA_Macros\decimal_degrees_degrees($eclLatDeg);
+    $outEclLatMin = PA_Macros\decimal_degrees_minutes($eclLatDeg);
+    $outEclLatSec = PA_Macros\decimal_degrees_seconds($eclLatDeg);
+
+    return array($outEclLongDeg, $outEclLongMin, $outEclLongSec, $outEclLatDeg, $outEclLatMin, $outEclLatSec);
 }

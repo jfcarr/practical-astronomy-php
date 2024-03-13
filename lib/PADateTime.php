@@ -2,8 +2,8 @@
 
 namespace PA\DateTime;
 
-include 'PAMacros.php';
-include 'PAUtils.php';
+include_once 'PAMacros.php';
+include_once 'PAUtils.php';
 
 use PA\Macros as PA_Macros;
 use PA\Utils as PA_Utils;
