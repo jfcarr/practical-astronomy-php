@@ -2,7 +2,7 @@
 
 namespace PA\Test\DateTime;
 
-include 'lib/PADateTime.php';
+include_once 'lib/PADateTime.php';
 
 use PA\DateTime as PA_DateTime;
 
