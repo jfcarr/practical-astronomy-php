@@ -4,9 +4,11 @@ namespace PA\Coordinates;
 
 include_once 'PAMacros.php';
 include_once 'PAMathExtensions.php';
+include_once 'PATypes.php';
 
 use PA\Macros as PA_Macros;
 use PA\MathExtensions as PA_Math;
+use PA\Types as PA_Types;
 
 /**
  * Convert an Angle (degrees, minutes, and seconds) to Decimal Degrees
@@ -240,4 +242,44 @@ function galactic_coordinate_to_equatorial_coordinate($galLongDeg, $galLongMin, 
     $decSeconds = PA_Macros\decimal_degrees_seconds($decDeg);
 
     return array($raHours, $raMinutes, $raSeconds, $decDegrees, $decMinutes, $decSeconds);
+}
+
+/**
+ * Calculate the angle between two celestial objects
+ */
+function angle_between_two_objects($raLong1HourDeg, $raLong1Min, $raLong1Sec, $decLat1Deg, $decLat1Min, $decLat1Sec, $raLong2HourDeg, $raLong2Min, $raLong2Sec, $decLat2Deg, $decLat2Min, $decLat2Sec, PA_Types\AngleMeasure $hourOrDegree)
+{
+    $raLong1Decimal =
+        ($hourOrDegree == PA_Types\AngleMeasure::Hours)
+        ? PA_Macros\hours_minutes_seconds_to_decimal_hours($raLong1HourDeg, $raLong1Min, $raLong1Sec)
+        : PA_Macros\degrees_minutes_seconds_to_decimal_degrees($raLong1HourDeg, $raLong1Min, $raLong1Sec);
+    $raLong1Deg =
+        ($hourOrDegree == PA_Types\AngleMeasure::Hours)
+        ? PA_Macros\degree_hours_to_decimal_degrees($raLong1Decimal)
+        : $raLong1Decimal;
+
+    $raLong1Rad = PA_Math\degrees_to_radians($raLong1Deg);
+    $decLat1Deg1 = PA_Macros\degrees_minutes_seconds_to_decimal_degrees($decLat1Deg, $decLat1Min, $decLat1Sec);
+    $decLat1Rad = PA_Math\degrees_to_radians($decLat1Deg1);
+
+    $raLong2Decimal =
+        ($hourOrDegree == PA_Types\AngleMeasure::Hours)
+        ? PA_Macros\hours_minutes_seconds_to_decimal_hours($raLong2HourDeg, $raLong2Min, $raLong2Sec)
+        : PA_Macros\degrees_minutes_seconds_to_decimal_degrees($raLong2HourDeg, $raLong2Min, $raLong2Sec);
+    $raLong2Deg = ($hourOrDegree == PA_Types\AngleMeasure::Hours)
+        ? PA_Macros\degree_hours_to_decimal_degrees($raLong2Decimal)
+        : $raLong2Decimal;
+    $raLong2Rad = PA_Math\degrees_to_radians($raLong2Deg);
+    $decLat2Deg1 = PA_Macros\degrees_minutes_seconds_to_decimal_degrees($decLat2Deg, $decLat2Min, $decLat2Sec);
+    $decLat2Rad = PA_Math\degrees_to_radians($decLat2Deg1);
+
+    $cosD = sin($decLat1Rad) * sin($decLat2Rad) + cos($decLat1Rad) * cos($decLat2Rad) * cos($raLong1Rad - $raLong2Rad);
+    $dRad = acos($cosD);
+    $dDeg = PA_Macros\degrees($dRad);
+
+    $angleDeg = PA_Macros\decimal_degrees_degrees($dDeg);
+    $angleMin = PA_Macros\decimal_degrees_minutes($dDeg);
+    $angleSec = PA_Macros\decimal_degrees_seconds($dDeg);
+
+    return array($angleDeg, $angleMin, $angleSec);
 }

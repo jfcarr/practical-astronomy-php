@@ -3,8 +3,10 @@
 namespace PA\Test\Coordinates;
 
 include_once 'lib/PACoordinates.php';
+include_once 'lib/PATypes.php';
 
 use PA\Coordinates as PA_Coord;
+use PA\Types as PA_Types;
 
 function angle_to_decimal_degrees($degrees, $minutes, $seconds, $expectedDecimalDegrees)
 {
@@ -141,6 +143,17 @@ function galactic_coordinate_to_equatorial_coordinate($galLongDeg, $galLongMin, 
     echo "[Galactic] Longitude {$galLongDeg} d {$galLongMin} m {$galLongSec} s, Latitude {$galLatDeg} d {$galLatMin} m {$galLatSec} s = [Equatorial] RA {$raHours}:{$raMinutes}:{$raSeconds}, Declination {$decDegrees} d {$decMinutes} m {$decSeconds} s\n";
 }
 
+function angle_between_two_objects($raLong1HourDeg, $raLong1Min, $raLong1Sec, $decLat1Deg, $decLat1Min, $decLat1Sec, $raLong2HourDeg, $raLong2Min, $raLong2Sec, $decLat2Deg, $decLat2Min, $decLat2Sec, PA_Types\AngleMeasure $hourOrDegree, $expectedAngleDeg, $expectedAngleMin, $expectedAngleSec)
+{
+    list($angleDeg, $angleMin, $angleSec) = PA_Coord\angle_between_two_objects($raLong1HourDeg, $raLong1Min, $raLong1Sec, $decLat1Deg, $decLat1Min, $decLat1Sec, $raLong2HourDeg, $raLong2Min, $raLong2Sec, $decLat2Deg, $decLat2Min, $decLat2Sec, $hourOrDegree);
+
+    assert($angleDeg == $expectedAngleDeg);
+    assert($angleMin == $expectedAngleMin);
+    assert($angleSec == $expectedAngleSec);
+
+    echo "[Object 1] RA/Longitude {$raLong1HourDeg} d {$raLong1Min} m {$raLong1Sec} s, Declination/Latitude {$decLat1Deg} d {$decLat1Min} m {$decLat1Sec} s [Object 2] RA/Longitude {$raLong2HourDeg} d {$raLong2Min} m {$raLong2Sec} s, Declination/Latitude {$decLat2Deg} d {$decLat2Min} m {$decLat2Sec} s = [Angle] {$angleDeg} d {$angleMin} m {$angleSec} s\n";
+}
+
 angle_to_decimal_degrees(182, 31, 27, 182.524167);
 
 decimal_degrees_to_angle(182.524167, 182, 31, 27);
@@ -162,3 +175,5 @@ equatorial_coordinate_to_ecliptic_coordinate(9, 34, 53.4, 19, 32, 8.52, 6, 7, 20
 equatorial_coordinate_to_galactic_coordinate(10, 21, 0, 10, 3, 11, 232, 14, 52.38, 51, 7, 20.16);
 
 galactic_coordinate_to_equatorial_coordinate(232, 14, 52.38, 51, 7, 20.16, 10, 21, 0, 10, 3, 11);
+
+angle_between_two_objects(5, 13, 31.7, -8, 13, 30, 6, 44, 13.4, -16, 41, 11, PA_Types\AngleMeasure::Hours, 23, 40, 25.86);
