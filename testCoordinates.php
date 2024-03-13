@@ -113,6 +113,34 @@ function equatorial_coordinate_to_ecliptic_coordinate($raHours, $raMinutes, $raS
     echo "[Equatorial] RA {$raHours} h {$raMinutes} m {$raSeconds}, Declination {$decDegrees} d {$decMinutes} m {$decSeconds} s = [Ecliptic] Longitude {$outEclLongDeg} d {$outEclLongMin} m {$outEclLongSec} s, Latitude {$outEclLatDeg} d {$outEclLatMin} m {$outEclLatSec} s\n";
 }
 
+function equatorial_coordinate_to_galactic_coordinate($raHours, $raMinutes, $raSeconds, $decDegrees, $decMinutes, $decSeconds, $expectedGalLongDeg, $expectedGalLongMin, $expectedGalLongSec, $expectedGalLatDeg, $expectedGalLatMin, $expectedGalLatSec)
+{
+    list($galLongDeg, $galLongMin, $galLongSec, $galLatDeg, $galLatMin, $galLatSec) = PA_Coord\equatorial_coordinate_to_galactic_coordinate($raHours, $raMinutes, $raSeconds, $decDegrees, $decMinutes, $decSeconds);
+
+    assert($galLongDeg == $expectedGalLongDeg);
+    assert($galLongMin == $expectedGalLongMin);
+    assert($galLongSec = $expectedGalLongSec);
+    assert($galLatDeg == $expectedGalLatDeg);
+    assert($galLatMin == $expectedGalLatMin);
+    assert($galLatSec == $expectedGalLatSec);
+
+    echo "[Equatorial] RA {$raHours} h {$raMinutes} m {$raSeconds}, Declination {$decDegrees} d {$decMinutes} m {$decSeconds} s = [Galactic] Longitude {$galLongDeg} d {$galLongMin} m {$galLongSec} s, Latitude {$galLatDeg} d {$galLatMin} m {$galLatSec} s\n";
+}
+
+function galactic_coordinate_to_equatorial_coordinate($galLongDeg, $galLongMin, $galLongSec, $galLatDeg, $galLatMin, $galLatSec, $expectedRaHours, $expectedRaMinutes, $expectedRaSeconds, $expectedDecDegrees, $expectedDecMinutes, $expectedDecSeconds)
+{
+    list($raHours, $raMinutes, $raSeconds, $decDegrees, $decMinutes, $decSeconds) = PA_Coord\galactic_coordinate_to_equatorial_coordinate($galLongDeg, $galLongMin, $galLongSec, $galLatDeg, $galLatMin, $galLatSec);
+
+    assert($raHours == $expectedRaHours);
+    assert($raMinutes == $expectedRaMinutes);
+    assert($raSeconds == $expectedRaSeconds);
+    assert($decDegrees == $expectedDecDegrees);
+    assert($decMinutes == $expectedDecMinutes);
+    assert($decSeconds == $expectedDecSeconds);
+
+    echo "[Galactic] Longitude {$galLongDeg} d {$galLongMin} m {$galLongSec} s, Latitude {$galLatDeg} d {$galLatMin} m {$galLatSec} s = [Equatorial] RA {$raHours}:{$raMinutes}:{$raSeconds}, Declination {$decDegrees} d {$decMinutes} m {$decSeconds} s\n";
+}
+
 angle_to_decimal_degrees(182, 31, 27, 182.524167);
 
 decimal_degrees_to_angle(182.524167, 182, 31, 27);
@@ -130,3 +158,7 @@ mean_obliquity_of_the_ecliptic(6, 7, 2009, 23.43805531);
 ecliptic_coordinate_to_equatorial_coordinate(139, 41, 10, 4, 52, 31, 6, 7, 2009, 9, 34, 53.4, 19, 32, 8.52);
 
 equatorial_coordinate_to_ecliptic_coordinate(9, 34, 53.4, 19, 32, 8.52, 6, 7, 2009, 139, 41, 9.97, 4, 52, 30.99);
+
+equatorial_coordinate_to_galactic_coordinate(10, 21, 0, 10, 3, 11, 232, 14, 52.38, 51, 7, 20.16);
+
+galactic_coordinate_to_equatorial_coordinate(232, 14, 52.38, 51, 7, 20.16, 10, 21, 0, 10, 3, 11);
