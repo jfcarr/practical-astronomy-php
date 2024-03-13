@@ -185,3 +185,59 @@ function equatorial_coordinate_to_ecliptic_coordinate($raHours, $raMinutes, $raS
 
     return array($outEclLongDeg, $outEclLongMin, $outEclLongSec, $outEclLatDeg, $outEclLatMin, $outEclLatSec);
 }
+
+/**
+ * Convert Equatorial Coordinates to Galactic Coordinates
+ */
+function equatorial_coordinate_to_galactic_coordinate($raHours, $raMinutes, $raSeconds, $decDegrees, $decMinutes, $decSeconds)
+{
+    $raDeg = PA_Macros\degree_hours_to_decimal_degrees(PA_Macros\hours_minutes_seconds_to_decimal_hours($raHours, $raMinutes, $raSeconds));
+    $decDeg = PA_Macros\degrees_minutes_seconds_to_decimal_degrees($decDegrees, $decMinutes, $decSeconds);
+    $raRad = PA_Math\degrees_to_radians($raDeg);
+    $decRad = PA_Math\degrees_to_radians($decDeg);
+    $sinB = cos($decRad) * cos(PA_Math\degrees_to_radians(27.4))  * cos($raRad - PA_Math\degrees_to_radians(192.25)) + sin($decRad) * sin(PA_Math\degrees_to_radians(27.4));
+    $bRadians = asin($sinB);
+    $bDeg = PA_Macros\degrees($bRadians);
+    $y = sin($decRad) - $sinB * sin(PA_Math\degrees_to_radians(27.4));
+    $x = cos($decRad) * sin($raRad - PA_Math\degrees_to_radians(192.25)) * cos(PA_Math\degrees_to_radians(27.4));
+    $longDeg1 = PA_Macros\degrees(atan2($y, $x)) + 33;
+    $longDeg2 = $longDeg1 - 360 * floor($longDeg1 / 360);
+
+    $galLongDeg = PA_Macros\decimal_degrees_degrees($longDeg2);
+    $galLongMin = PA_Macros\decimal_degrees_minutes($longDeg2);
+    $galLongSec = PA_Macros\decimal_degrees_seconds($longDeg2);
+    $galLatDeg = PA_Macros\decimal_degrees_degrees($bDeg);
+    $galLatMin = PA_Macros\decimal_degrees_minutes($bDeg);
+    $galLatSec = PA_Macros\decimal_degrees_seconds($bDeg);
+
+    return array($galLongDeg, $galLongMin, $galLongSec, $galLatDeg, $galLatMin, $galLatSec);
+}
+
+/**
+ * Convert Galactic Coordinates to Equatorial Coordinates
+ */
+function galactic_coordinate_to_equatorial_coordinate($galLongDeg, $galLongMin, $galLongSec, $galLatDeg, $galLatMin, $galLatSec)
+{
+    $glongDeg = PA_Macros\degrees_minutes_seconds_to_decimal_degrees($galLongDeg, $galLongMin, $galLongSec);
+    $glatDeg = PA_Macros\degrees_minutes_seconds_to_decimal_degrees($galLatDeg, $galLatMin, $galLatSec);
+    $glongRad = PA_Math\degrees_to_radians($glongDeg);
+    $glatRad = PA_Math\degrees_to_radians($glatDeg);
+    $sinDec = cos($glatRad) * cos(PA_Math\degrees_to_radians(27.4)) * sin($glongRad - PA_Math\degrees_to_radians(33.0)) + sin($glatRad) * sin(PA_Math\degrees_to_radians(27.4));
+    $decRadians = asin($sinDec);
+    $decDeg = PA_Macros\degrees($decRadians);
+    $y = cos($glatRad) * cos($glongRad - PA_Math\degrees_to_radians(33.0));
+    $x = sin($glatRad) * cos(PA_Math\degrees_to_radians(27.4)) - cos($glatRad) * sin(PA_Math\degrees_to_radians(27.4)) * sin($glongRad - PA_Math\degrees_to_radians(33.0));
+
+    $raDeg1 = PA_Macros\degrees(atan2($y, $x)) + 192.25;
+    $raDeg2 = $raDeg1 - 360 * floor($raDeg1 / 360);
+    $raHours1 = PA_Macros\decimal_degrees_to_degree_hours($raDeg2);
+
+    $raHours = PA_Macros\decimal_hours_hour($raHours1);
+    $raMinutes = PA_Macros\decimal_hours_minute($raHours1);
+    $raSeconds = PA_Macros\decimal_hours_second($raHours1);
+    $decDegrees = PA_Macros\decimal_degrees_degrees($decDeg);
+    $decMinutes = PA_Macros\decimal_degrees_minutes($decDeg);
+    $decSeconds = PA_Macros\decimal_degrees_seconds($decDeg);
+
+    return array($raHours, $raMinutes, $raSeconds, $decDegrees, $decMinutes, $decSeconds);
+}
