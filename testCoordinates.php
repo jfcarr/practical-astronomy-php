@@ -154,6 +154,21 @@ function angle_between_two_objects($raLong1HourDeg, $raLong1Min, $raLong1Sec, $d
     echo "[Object 1] RA/Longitude {$raLong1HourDeg} d {$raLong1Min} m {$raLong1Sec} s, Declination/Latitude {$decLat1Deg} d {$decLat1Min} m {$decLat1Sec} s [Object 2] RA/Longitude {$raLong2HourDeg} d {$raLong2Min} m {$raLong2Sec} s, Declination/Latitude {$decLat2Deg} d {$decLat2Min} m {$decLat2Sec} s = [Angle] {$angleDeg} d {$angleMin} m {$angleSec} s\n";
 }
 
+function rising_and_setting($raHours, $raMinutes, $raSeconds, $decDeg, $decMin, $decSec, $gwDateDay, $gwDateMonth, $gwDateYear, $geogLongDeg, $geogLatDeg, $vertShiftDeg, $expectedRiseSetStatus, $expectedUtRiseHour, $expectedUtRiseMin, $expectedUtSetHour, $expectedUtSetMin, $expectedAzRise, $expectedAzSet)
+{
+    list($riseSetStatus, $utRiseHour, $utRiseMin, $utSetHour, $utSetMin, $azRise, $azSet) = PA_Coord\rising_and_setting($raHours, $raMinutes, $raSeconds, $decDeg, $decMin, $decSec, $gwDateDay, $gwDateMonth, $gwDateYear, $geogLongDeg, $geogLatDeg, $vertShiftDeg);
+
+    assert($riseSetStatus == $expectedRiseSetStatus);
+    assert($utRiseHour == $expectedUtRiseHour);
+    assert($utRiseMin == $expectedUtRiseMin);
+    assert($utSetHour == $expectedUtSetHour);
+    assert($utSetMin == $expectedUtSetMin);
+    assert($azRise == $expectedAzRise);
+    assert($azSet == $expectedAzSet);
+
+    echo "[Rise/Set] status {$riseSetStatus->value} UT Rise {$utRiseHour}:{$utRiseMin} UT Set {$utSetHour}:{$utSetMin} AZ Rise/Set {$azRise}/{$azSet}\n";
+}
+
 angle_to_decimal_degrees(182, 31, 27, 182.524167);
 
 decimal_degrees_to_angle(182.524167, 182, 31, 27);
@@ -177,3 +192,5 @@ equatorial_coordinate_to_galactic_coordinate(10, 21, 0, 10, 3, 11, 232, 14, 52.3
 galactic_coordinate_to_equatorial_coordinate(232, 14, 52.38, 51, 7, 20.16, 10, 21, 0, 10, 3, 11);
 
 angle_between_two_objects(5, 13, 31.7, -8, 13, 30, 6, 44, 13.4, -16, 41, 11, PA_Types\AngleMeasure::Hours, 23, 40, 25.86);
+
+rising_and_setting(23, 39, 20, 21, 42, 0, 24, 8, 2010, 64, 30, 0.5667, PA_Types\RiseSetStatus::OK, 14, 16, 4, 10, 64.36, 295.64);
