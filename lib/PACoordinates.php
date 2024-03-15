@@ -320,3 +320,29 @@ function rising_and_setting($raHours, $raMinutes, $raSeconds, $decDeg, $decMin, 
 
     return array($riseSetStatus, $utRiseHour, $utRiseMin, $utSetHour, $utSetMin, $azRise, $azSet);
 }
+
+/**
+ * Calculate precession (corrected coordinates between two epochs)
+ */
+function correct_for_precession($raHour, $raMinutes, $raSeconds, $decDeg, $decMinutes, $decSeconds, $epoch1Day, $epoch1Month, $epoch1Year, $epoch2Day, $epoch2Month, $epoch2Year)
+{
+    $ra1Rad = PA_Math\degrees_to_radians(PA_Macros\degree_hours_to_decimal_degrees(PA_Macros\hours_minutes_seconds_to_decimal_hours($raHour, $raMinutes, $raSeconds)));
+    $dec1Rad = PA_Math\degrees_to_radians(PA_Macros\degrees_minutes_seconds_to_decimal_degrees($decDeg, $decMinutes, $decSeconds));
+    $tCenturies = (PA_Macros\civil_date_to_julian_date($epoch1Day, $epoch1Month, $epoch1Year) - 2415020) / 36525;
+    $mSec = 3.07234 + (0.00186 * $tCenturies);
+    $nArcsec = 20.0468 - (0.0085 * $tCenturies);
+    $nYears = (PA_Macros\civil_date_to_julian_date($epoch2Day, $epoch2Month, $epoch2Year) - PA_Macros\civil_date_to_julian_date($epoch1Day, $epoch1Month, $epoch1Year)) / 365.25;
+    $s1Hours = (($mSec + ($nArcsec * sin($ra1Rad) * tan($dec1Rad) / 15)) * $nYears) / 3600;
+    $ra2Hours = PA_Macros\hours_minutes_seconds_to_decimal_hours($raHour, $raMinutes, $raSeconds) + $s1Hours;
+    $s2Deg = ($nArcsec * cos($ra1Rad) * $nYears) / 3600;
+    $dec2Deg = PA_Macros\degrees_minutes_seconds_to_decimal_degrees($decDeg, $decMinutes, $decSeconds) + $s2Deg;
+
+    $correctedRAHour = PA_Macros\decimal_hours_hour($ra2Hours);
+    $correctedRAMinutes = PA_Macros\decimal_hours_minute($ra2Hours);
+    $correctedRASeconds = PA_Macros\decimal_hours_second($ra2Hours);
+    $correctedDecDeg = PA_Macros\decimal_degrees_degrees($dec2Deg);
+    $correctedDecMinutes = PA_Macros\decimal_degrees_minutes($dec2Deg);
+    $correctedDecSeconds = PA_Macros\decimal_degrees_seconds($dec2Deg);
+
+    return array($correctedRAHour, $correctedRAMinutes, $correctedRASeconds, $correctedDecDeg, $correctedDecMinutes, $correctedDecSeconds);
+}
