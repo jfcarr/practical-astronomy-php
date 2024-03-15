@@ -169,6 +169,20 @@ function rising_and_setting($raHours, $raMinutes, $raSeconds, $decDeg, $decMin, 
     echo "[Rise/Set] status {$riseSetStatus->value} UT Rise {$utRiseHour}:{$utRiseMin} UT Set {$utSetHour}:{$utSetMin} AZ Rise/Set {$azRise}/{$azSet}\n";
 }
 
+function correct_for_precession($raHour, $raMinutes, $raSeconds, $decDeg, $decMinutes, $decSeconds, $epoch1Day, $epoch1Month, $epoch1Year, $epoch2Day, $epoch2Month, $epoch2Year, $expectedCorrectedRAHour, $expectedCorrectedRAMinutes, $expectedCorrectedRASeconds, $expectedCorrectedDecDeg, $expectedCorrectedDecMinutes, $expectedCorrectedDecSeconds)
+{
+    list($correctedRAHour, $correctedRAMinutes, $correctedRASeconds, $correctedDecDeg, $correctedDecMinutes, $correctedDecSeconds) = PA_Coord\correct_for_precession($raHour, $raMinutes, $raSeconds, $decDeg, $decMinutes, $decSeconds, $epoch1Day, $epoch1Month, $epoch1Year, $epoch2Day, $epoch2Month, $epoch2Year);
+
+    assert($correctedRAHour == $expectedCorrectedRAHour);
+    assert($correctedRAMinutes == $expectedCorrectedRAMinutes);
+    assert($correctedRASeconds == $expectedCorrectedRASeconds);
+    assert($correctedDecDeg == $expectedCorrectedDecDeg);
+    assert($correctedDecMinutes == $expectedCorrectedDecMinutes);
+    assert($correctedDecSeconds == $expectedCorrectedDecSeconds);
+
+    echo "[Original] RA {$raHour}:{$raMinutes}:{$raSeconds} Declination {$decDeg} d {$decMinutes} m {$decSeconds} s, Epoch 1 {$epoch1Month}/{$epoch1Day}/{$epoch1Year} Epoch 2 {$epoch2Month}/{$epoch2Day}/{$epoch2Year} = [Corrected] RA {$correctedRAHour}:{$correctedRAMinutes}:{$correctedRASeconds} Declination {$correctedDecDeg} d {$correctedDecMinutes} m {$correctedDecSeconds} s\n";
+}
+
 angle_to_decimal_degrees(182, 31, 27, 182.524167);
 
 decimal_degrees_to_angle(182.524167, 182, 31, 27);
@@ -194,3 +208,5 @@ galactic_coordinate_to_equatorial_coordinate(232, 14, 52.38, 51, 7, 20.16, 10, 2
 angle_between_two_objects(5, 13, 31.7, -8, 13, 30, 6, 44, 13.4, -16, 41, 11, PA_Types\AngleMeasure::Hours, 23, 40, 25.86);
 
 rising_and_setting(23, 39, 20, 21, 42, 0, 24, 8, 2010, 64, 30, 0.5667, PA_Types\RiseSetStatus::OK, 14, 16, 4, 10, 64.36, 295.64);
+
+correct_for_precession(9, 10, 43, 14, 23, 25, 0.923, 1, 1950, 1, 6, 1979, 9, 12, 20.18, 14, 16, 9.12);
