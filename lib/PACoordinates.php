@@ -346,3 +346,28 @@ function correct_for_precession($raHour, $raMinutes, $raSeconds, $decDeg, $decMi
 
     return array($correctedRAHour, $correctedRAMinutes, $correctedRASeconds, $correctedDecDeg, $correctedDecMinutes, $correctedDecSeconds);
 }
+
+/**
+ * Calculate nutation for two values: ecliptic longitude and obliquity, for a Greenwich date.
+ */
+function nutation_in_ecliptic_longitude_and_obliquity($greenwichDay, $greenwichMonth, $greenwichYear)
+{
+    $jdDays = PA_Macros\civil_date_to_julian_date($greenwichDay, $greenwichMonth, $greenwichYear);
+    $tCenturies = ($jdDays - 2415020) / 36525;
+    $aDeg = 100.0021358 * $tCenturies;
+    $l1Deg = 279.6967 + (0.000303 * $tCenturies * $tCenturies);
+    $lDeg1 = $l1Deg + 360 * ($aDeg - floor($aDeg));
+    $lDeg2 = $lDeg1 - 360 * floor($lDeg1 / 360);
+    $lRad = PA_Math\degrees_to_radians($lDeg2);
+    $bDeg = 5.372617 * $tCenturies;
+    $nDeg1 = 259.1833 - 360 * ($bDeg - floor($bDeg));
+    $nDeg2 = $nDeg1 - 360 * (floor($nDeg1 / 360));
+    $nRad = PA_Math\degrees_to_radians($nDeg2);
+    $nutInLongArcsec = -17.2 * sin($nRad) - 1.3 * sin(2 * $lRad);
+    $nutInOblArcsec = 9.2 * cos($nRad) + 0.5 * cos(2 * $lRad);
+
+    $nutInLongDeg = $nutInLongArcsec / 3600;
+    $nutInOblDeg = $nutInOblArcsec / 3600;
+
+    return array($nutInLongDeg, $nutInOblDeg);
+}
