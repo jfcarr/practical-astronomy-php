@@ -628,3 +628,114 @@ function local_sidereal_time_to_greenwich_sidereal_time($localHours, $localMinut
 
     return $c - (24 * floor($c / 24));
 }
+
+/**
+ * Calculate Sun's ecliptic longitude
+ *
+ * Original macro name: SunLong
+ */
+function sun_long($lch, $lcm, $lcs, $ds, $zc, $ld, $lm, $ly)
+{
+    $aa = local_civil_time_greenwich_day($lch, $lcm, $lcs, $ds, $zc, $ld, $lm, $ly);
+    $bb = local_civil_time_greenwich_month($lch, $lcm, $lcs, $ds, $zc, $ld, $lm, $ly);
+    $cc = local_civil_time_greenwich_year($lch, $lcm, $lcs, $ds, $zc, $ld, $lm, $ly);
+    $ut = local_civil_time_to_universal_time($lch, $lcm, $lcs, $ds, $zc, $ld, $lm, $ly);
+    $dj = civil_date_to_julian_date($aa, $bb, $cc) - 2415020;
+    $t = ($dj / 36525) + ($ut / 876600);
+    $t2 = $t * $t;
+    $a = 100.0021359 * $t;
+    $b = 360.0 * ($a - floor($a));
+
+    $l = 279.69668 + 0.0003025 * $t2 + $b;
+    $a = 99.99736042 * $t;
+    $b = 360 * ($a - floor($a));
+
+    $m1 = 358.47583 - (0.00015 + 0.0000033 * $t) * $t2 + $b;
+    $ec = 0.01675104 - 0.0000418 * $t - 0.000000126 * $t2;
+
+    $am = PA_Math\degrees_to_radians($m1);
+    $at = true_anomaly($am, $ec);
+
+    $a = 62.55209472 * $t;
+    $b = 360 * ($a - floor($a));
+
+    $a1 = PA_Math\degrees_to_radians(153.23 + $b);
+    $a = 125.1041894 * $t;
+    $b = 360 * ($a - floor($a));
+
+    $b1 = PA_Math\degrees_to_radians(216.57 + $b);
+    $a = 91.56766028 * $t;
+    $b = 360.0 * ($a - floor($a));
+
+    $c1 = PA_Math\degrees_to_radians(312.69 + $b);
+    $a = 1236.853095 * $t;
+    $b = 360.0 * ($a - floor($a));
+
+    $d1 = PA_Math\degrees_to_radians(350.74 - 0.00144 * $t2 + $b);
+    $e1 = PA_Math\degrees_to_radians(231.19 + 20.2 * $t);
+    $a = 183.1353208 * $t;
+    $b = 360.0 * ($a - floor($a));
+    $h1 = PA_Math\degrees_to_radians(353.4 + $b);
+
+    $d2 = 0.00134 * cos($a1) + 0.00154 * cos($b1) + 0.002 * cos($c1);
+    $d2 = $d2 + 0.00179 * sin($d1) + 0.00178 * sin($e1);
+    $d3 = 0.00000543 * sin($a1) + 0.00001575 * sin($b1);
+    $d3 = $d3 + 0.00001627 * sin($c1) + 0.00003076 * cos($d1);
+
+    $sr = $at + PA_Math\degrees_to_radians($l - $m1 + $d2);
+    $tp = 6.283185308;
+
+    $sr = $sr - $tp * floor($sr / $tp);
+
+    return degrees($sr);
+}
+
+/**
+ * Solve Kepler's equation, and return value of the true anomaly in radians
+ *
+ * Original macro name: TrueAnomaly
+ */
+function true_anomaly($am, $ec)
+{
+    $tp = 6.283185308;
+    $m = $am - $tp * floor($am / $tp);
+    $ae = $m;
+
+    while (1 == 1) {
+        $d = $ae - ($ec * sin($ae)) - $m;
+        if (abs($d) < 0.000001) {
+            break;
+        }
+        $d = $d / (1.0 - ($ec * cos($ae)));
+        $ae = $ae - $d;
+    }
+    $a = sqrt((1 + $ec) / (1 - $ec)) * tan($ae / 2);
+    $at = 2.0 * atan($a);
+
+    return $at;
+}
+
+/**
+ * Solve Kepler's equation, and return value of the eccentric anomaly in radians
+ *
+ * Original macro name: EccentricAnomaly
+ */
+function eccentric_anomaly($am, $ec)
+{
+    $tp = 6.283185308;
+    $m = $am - $tp * floor($am / $tp);
+    $ae = $m;
+
+    while (1 == 1) {
+        $d = $ae - ($ec * sin($ae)) - $m;
+
+        if (abs($d) < 0.000001) {
+            break;
+        }
+
+        $d = $d / (1 - ($ec * cos($ae)));
+        $ae = $ae - $d;
+    }
+
+    return $ae;
+}

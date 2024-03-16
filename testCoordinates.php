@@ -193,6 +193,20 @@ function nutation_in_ecliptic_longitude_and_obliquity($greenwichDay, $greenwichM
     echo "[Greenwich Date] {$greenwichMonth}/{$greenwichDay}/{$greenwichYear} = [Long Deg] {$nutInLongDeg}, [Obl Deg] {$nutInOblDeg}\n";
 }
 
+function correct_for_aberration($utHour, $utMinutes, $utSeconds, $gwDay, $gwMonth, $gwYear, $trueEclLongDeg, $trueEclLongMin, $trueEclLongSec, $trueEclLatDeg, $trueEclLatMin, $trueEclLatSec, $expectedApparentEclLongDeg, $expectedApparentEclLongMin, $expectedApparentEclLongSec, $expectedApparentEclLatDeg, $expectedApparentEclLatMin, $expectedApparentEclLatSec)
+{
+    list($apparentEclLongDeg, $apparentEclLongMin, $apparentEclLongSec, $apparentEclLatDeg, $apparentEclLatMin, $apparentEclLatSec) = PA_Coord\correct_for_aberration($utHour, $utMinutes, $utSeconds, $gwDay, $gwMonth, $gwYear, $trueEclLongDeg, $trueEclLongMin, $trueEclLongSec, $trueEclLatDeg, $trueEclLatMin, $trueEclLatSec);
+
+    assert($apparentEclLongDeg == $expectedApparentEclLongDeg);
+    assert($apparentEclLongMin == $expectedApparentEclLongMin);
+    assert($apparentEclLongSec == $expectedApparentEclLongSec);
+    assert($apparentEclLatDeg == $expectedApparentEclLatDeg);
+    assert($apparentEclLatMin == $expectedApparentEclLatMin);
+    assert($apparentEclLatSec == $expectedApparentEclLatSec);
+
+    echo "[UT] {$utHour}:{$utMinutes}:{$utSeconds} [GW] {$gwMonth}/{$gwDay}/{$gwYear} [True Ecl Long] {$trueEclLongDeg} d {$trueEclLongMin} m {$trueEclLongSec} s [True Ecl Lat] {$trueEclLatDeg} d {$trueEclLatMin} m {$trueEclLatSec} s = [Apparent] [Ecliptic Longitude] {$apparentEclLongDeg} d {$apparentEclLongMin} m {$apparentEclLongSec} s [Ecliptic Latitude] {$apparentEclLatDeg} d {$apparentEclLatMin} m {$apparentEclLatSec} s\n";
+}
+
 angle_to_decimal_degrees(182, 31, 27, 182.524167);
 
 decimal_degrees_to_angle(182.524167, 182, 31, 27);
@@ -222,3 +236,5 @@ rising_and_setting(23, 39, 20, 21, 42, 0, 24, 8, 2010, 64, 30, 0.5667, PA_Types\
 correct_for_precession(9, 10, 43, 14, 23, 25, 0.923, 1, 1950, 1, 6, 1979, 9, 12, 20.18, 14, 16, 9.12);
 
 nutation_in_ecliptic_longitude_and_obliquity(1, 9, 1988, 0.001525808, 0.0025671);
+
+correct_for_aberration(0, 0, 0, 8, 9, 1988, 352, 37, 10.1, -1, 32, 56.4, 352, 37, 30.45, -1, 32, 56.33);

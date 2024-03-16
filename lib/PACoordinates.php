@@ -371,3 +371,26 @@ function nutation_in_ecliptic_longitude_and_obliquity($greenwichDay, $greenwichM
 
     return array($nutInLongDeg, $nutInOblDeg);
 }
+
+/**
+ * Correct ecliptic coordinates for the effects of aberration.
+ */
+function correct_for_aberration($utHour, $utMinutes, $utSeconds, $gwDay, $gwMonth, $gwYear, $trueEclLongDeg, $trueEclLongMin, $trueEclLongSec, $trueEclLatDeg, $trueEclLatMin, $trueEclLatSec)
+{
+    $trueLongDeg = PA_Macros\degrees_minutes_seconds_to_decimal_degrees($trueEclLongDeg, $trueEclLongMin, $trueEclLongSec);
+    $trueLatDeg = PA_Macros\degrees_minutes_seconds_to_decimal_degrees($trueEclLatDeg, $trueEclLatMin, $trueEclLatSec);
+    $sunTrueLongDeg = PA_Macros\sun_long($utHour, $utMinutes, $utSeconds, 0, 0, $gwDay, $gwMonth, $gwYear);
+    $dlongArcsec = -20.5 * cos(PA_Math\degrees_to_radians($sunTrueLongDeg - $trueLongDeg)) / cos(PA_Math\degrees_to_radians($trueLatDeg));
+    $dlatArcsec = -20.5 * sin(PA_Math\degrees_to_radians($sunTrueLongDeg - $trueLongDeg)) * sin(PA_Math\degrees_to_radians($trueLatDeg));
+    $apparentLongDeg = $trueLongDeg + ($dlongArcsec / 3600);
+    $apparentLatDeg = $trueLatDeg + ($dlatArcsec / 3600);
+
+    $apparentEclLongDeg = PA_Macros\decimal_degrees_degrees($apparentLongDeg);
+    $apparentEclLongMin = PA_Macros\decimal_degrees_minutes($apparentLongDeg);
+    $apparentEclLongSec = PA_Macros\decimal_degrees_seconds($apparentLongDeg);
+    $apparentEclLatDeg = PA_Macros\decimal_degrees_degrees($apparentLatDeg);
+    $apparentEclLatMin = PA_Macros\decimal_degrees_minutes($apparentLatDeg);
+    $apparentEclLatSec = PA_Macros\decimal_degrees_seconds($apparentLatDeg);
+
+    return array($apparentEclLongDeg, $apparentEclLongMin, $apparentEclLongSec, $apparentEclLatDeg, $apparentEclLatMin, $apparentEclLatSec);
+}
