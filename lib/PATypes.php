@@ -14,3 +14,9 @@ enum RiseSetStatus: string
     case NeverRises = "never rises";
     case Circumpolar = "circumpolar";
 }
+
+enum CoordinateType: string
+{
+    case True = "True";
+    case Apparent = "Apparent";
+}

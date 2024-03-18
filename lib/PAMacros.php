@@ -3,8 +3,10 @@
 namespace PA\Macros;
 
 include_once 'PAMathExtensions.php';
+include_once 'PATypes.php';
 
 use PA\MathExtensions as PA_Math;
+use PA\Types as PA_Types;
 
 /**
  * Convert a Greenwich Date/Civil Date (day,month,year) to Julian Date
@@ -738,4 +740,68 @@ function eccentric_anomaly($am, $ec)
     }
 
     return $ae;
+}
+
+/**
+ * Calculate effects of refraction
+ *
+ * Original macro name: Refract
+ */
+function refract($y2, PA_Types\CoordinateType $sw, $pr, $tr)
+{
+    $y = PA_Math\degrees_to_radians($y2);
+
+    $d = ($sw == PA_Types\CoordinateType::True) ? -1.0 : 1.0;
+
+    if ($d == -1) {
+        $y3 = $y;
+        $y1 = $y;
+        $r1 = 0.0;
+
+        while (1 == 1) {
+            $yNew = $y1 + $r1;
+            $rfNew = refract_l3035($pr, $tr, $yNew, $d);
+
+            if ($y < -0.087)
+                return 0;
+
+            $r2 = $rfNew;
+
+            if (($r2 == 0) || (abs($r2 - $r1) < 0.000001)) {
+                $qNew = $y3;
+
+                return degrees($qNew + $rfNew);
+            }
+
+            $r1 = $r2;
+        }
+    }
+
+    $rf = refract_l3035($pr, $tr, $y, $d);
+
+    if ($y < -0.087)
+        return 0;
+
+    $q = $y;
+
+    return degrees($q + $rf);
+}
+
+/**
+ * Helper function for refract
+ */
+function refract_l3035($pr, $tr, $y, $d)
+{
+    if ($y < 0.2617994) {
+        if ($y < -0.087)
+            return 0;
+
+        $yd = degrees($y);
+        $a = ((0.00002 * $yd + 0.0196) * $yd + 0.1594) * $pr;
+        $b = (273.0 + $tr) * ((0.0845 * $yd + 0.505) * $yd + 1);
+
+        return PA_Math\degrees_to_radians(- ($a / $b) * $d);
+    }
+
+    return -$d * 0.00007888888 * $pr / ((273.0 + $tr) * tan($y));
 }

@@ -394,3 +394,27 @@ function correct_for_aberration($utHour, $utMinutes, $utSeconds, $gwDay, $gwMont
 
     return array($apparentEclLongDeg, $apparentEclLongMin, $apparentEclLongSec, $apparentEclLatDeg, $apparentEclLatMin, $apparentEclLatSec);
 }
+
+/**
+ * Calculate corrected RA/Dec, accounting for atmospheric refraction.
+ */
+function atmospheric_refraction($trueRAHour, $trueRAMin, $trueRASec, $trueDecDeg, $trueDecMin, $trueDecSec, PA_Types\CoordinateType $coordinateType, $geogLongDeg, $geogLatDeg, $daylightSavingHours, $timezoneHours, $lcdDay, $lcdMonth, $lcdYear, $lctHour, $lctMin, $lctSec, $atmosphericPressureMbar, $atmosphericTemperatureCelsius)
+{
+    $haHour = PA_Macros\right_ascension_to_hour_angle($trueRAHour, $trueRAMin, $trueRASec, $lctHour, $lctMin, $lctSec, $daylightSavingHours, $timezoneHours, $lcdDay, $lcdMonth, $lcdYear, $geogLongDeg);
+    $azimuthDeg = PA_Macros\equatorial_coordinates_to_azimuth($haHour, 0, 0, $trueDecDeg, $trueDecMin, $trueDecSec, $geogLatDeg);
+    $altitudeDeg = PA_Macros\equatorial_coordinates_to_altitude($haHour, 0, 0, $trueDecDeg, $trueDecMin, $trueDecSec, $geogLatDeg);
+    $correctedAltitudeDeg = PA_Macros\refract($altitudeDeg, $coordinateType, $atmosphericPressureMbar, $atmosphericTemperatureCelsius);
+
+    $correctedHAHour = PA_Macros\horizon_coordinates_to_hour_angle($azimuthDeg, 0, 0, $correctedAltitudeDeg, 0, 0, $geogLatDeg);
+    $correctedRAHour1 = PA_Macros\hour_angle_to_right_ascension($correctedHAHour, 0, 0, $lctHour, $lctMin, $lctSec, $daylightSavingHours, $timezoneHours, $lcdDay, $lcdMonth, $lcdYear, $geogLongDeg);
+    $correctedDecDeg1 = PA_Macros\horizon_coordinates_to_declination($azimuthDeg, 0, 0, $correctedAltitudeDeg, 0, 0, $geogLatDeg);
+
+    $correctedRAHour = PA_Macros\decimal_hours_hour($correctedRAHour1);
+    $correctedRAMin = PA_Macros\decimal_hours_minute($correctedRAHour1);
+    $correctedRASec = PA_Macros\decimal_hours_second($correctedRAHour1);
+    $correctedDecDeg = PA_Macros\decimal_degrees_degrees($correctedDecDeg1);
+    $correctedDecMin = PA_Macros\decimal_degrees_minutes($correctedDecDeg1);
+    $correctedDecSec = PA_Macros\decimal_degrees_seconds($correctedDecDeg1);
+
+    return array($correctedRAHour, $correctedRAMin, $correctedRASec, $correctedDecDeg, $correctedDecMin, $correctedDecSec);
+}

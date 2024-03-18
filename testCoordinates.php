@@ -207,6 +207,20 @@ function correct_for_aberration($utHour, $utMinutes, $utSeconds, $gwDay, $gwMont
     echo "[UT] {$utHour}:{$utMinutes}:{$utSeconds} [GW] {$gwMonth}/{$gwDay}/{$gwYear} [True Ecl Long] {$trueEclLongDeg} d {$trueEclLongMin} m {$trueEclLongSec} s [True Ecl Lat] {$trueEclLatDeg} d {$trueEclLatMin} m {$trueEclLatSec} s = [Apparent] [Ecliptic Longitude] {$apparentEclLongDeg} d {$apparentEclLongMin} m {$apparentEclLongSec} s [Ecliptic Latitude] {$apparentEclLatDeg} d {$apparentEclLatMin} m {$apparentEclLatSec} s\n";
 }
 
+function atmospheric_refraction($trueRAHour, $trueRAMin, $trueRASec, $trueDecDeg, $trueDecMin, $trueDecSec, PA_Types\CoordinateType $coordinateType, $geogLongDeg, $geogLatDeg, $daylightSavingHours, $timezoneHours, $lcdDay, $lcdMonth, $lcdYear, $lctHour, $lctMin, $lctSec, $atmosphericPressureMbar, $atmosphericTemperatureCelsius, $expectedCorrectedRAHour, $expectedCorrectedRAMin, $expectedCorrectedRASec, $expectedCorrectedDecDeg, $expectedCorrectedDecMin, $expectedCorrectedDecSec)
+{
+    list($correctedRAHour, $correctedRAMin, $correctedRASec, $correctedDecDeg, $correctedDecMin, $correctedDecSec) = PA_Coord\atmospheric_refraction($trueRAHour, $trueRAMin, $trueRASec, $trueDecDeg, $trueDecMin, $trueDecSec, $coordinateType, $geogLongDeg, $geogLatDeg, $daylightSavingHours, $timezoneHours, $lcdDay, $lcdMonth, $lcdYear, $lctHour, $lctMin, $lctSec, $atmosphericPressureMbar, $atmosphericTemperatureCelsius);
+
+    assert($correctedRAHour == $expectedCorrectedRAHour);
+    assert($correctedRAMin == $expectedCorrectedRAMin);
+    assert($correctedRASec == $expectedCorrectedRASec);
+    assert($correctedDecDeg == $expectedCorrectedDecDeg);
+    assert($correctedDecMin == $expectedCorrectedDecMin);
+    assert($correctedDecSec == $expectedCorrectedDecSec);
+
+    echo "[True RA] {$trueRAHour}:{$trueRAMin}:{$trueRASec} [True Declination] {$trueDecDeg} d {$trueDecMin} m {$trueDecSec} = [Corrected RA] {$correctedRAHour}:{$correctedRAMin}:{$correctedRASec} [Corrected Declination] {$correctedDecDeg} d {$correctedDecMin} m {$correctedDecSec} s\n";
+}
+
 angle_to_decimal_degrees(182, 31, 27, 182.524167);
 
 decimal_degrees_to_angle(182.524167, 182, 31, 27);
@@ -238,3 +252,5 @@ correct_for_precession(9, 10, 43, 14, 23, 25, 0.923, 1, 1950, 1, 6, 1979, 9, 12,
 nutation_in_ecliptic_longitude_and_obliquity(1, 9, 1988, 0.001525808, 0.0025671);
 
 correct_for_aberration(0, 0, 0, 8, 9, 1988, 352, 37, 10.1, -1, 32, 56.4, 352, 37, 30.45, -1, 32, 56.33);
+
+atmospheric_refraction(23, 14, 0, 40, 10, 0, PA_Types\CoordinateType::True, 0.17, 51.2036110, 0, 0, 23, 3, 1987, 1, 1, 24, 1012, 21.7, 23, 13, 44.74, 40, 19, 45.76);
