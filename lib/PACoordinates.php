@@ -418,3 +418,26 @@ function atmospheric_refraction($trueRAHour, $trueRAMin, $trueRASec, $trueDecDeg
 
     return array($correctedRAHour, $correctedRAMin, $correctedRASec, $correctedDecDeg, $correctedDecMin, $correctedDecSec);
 }
+
+/**
+ * Calculate corrected RA/Dec, accounting for geocentric parallax.
+ */
+function corrections_for_geocentric_parallax($raHour, $raMin, $raSec, $decDeg, $decMin, $decSec, PA_Types\CoordinateType $coordinateType, $equatorialHorParallaxDeg, $geogLongDeg, $geogLatDeg, $heightM, $daylightSaving, $timezoneHours, $lcdDay, $lcdMonth, $lcdYear, $lctHour, $lctMin, $lctSec)
+{
+    $haHours = PA_Macros\right_ascension_to_hour_angle($raHour, $raMin, $raSec, $lctHour, $lctMin, $lctSec, $daylightSaving, $timezoneHours, $lcdDay, $lcdMonth, $lcdYear, $geogLongDeg);
+
+    $correctedHAHours = PA_Macros\parallax_ha($haHours, 0, 0, $decDeg, $decMin, $decSec, $coordinateType, $geogLatDeg, $heightM, $equatorialHorParallaxDeg);
+
+    $correctedRAHours = PA_Macros\hour_angle_to_right_ascension($correctedHAHours, 0, 0, $lctHour, $lctMin, $lctSec, $daylightSaving, $timezoneHours, $lcdDay, $lcdMonth, $lcdYear, $geogLongDeg);
+
+    $correctedDecDeg1 = PA_Macros\parallax_dec($haHours, 0, 0, $decDeg, $decMin, $decSec, $coordinateType, $geogLatDeg, $heightM, $equatorialHorParallaxDeg);
+
+    $correctedRAHour = PA_Macros\decimal_hours_hour($correctedRAHours);
+    $correctedRAMin = PA_Macros\decimal_hours_minute($correctedRAHours);
+    $correctedRASec = PA_Macros\decimal_hours_second($correctedRAHours);
+    $correctedDecDeg = PA_Macros\decimal_degrees_degrees($correctedDecDeg1);
+    $correctedDecMin = PA_Macros\decimal_degrees_minutes($correctedDecDeg1);
+    $correctedDecSec = PA_Macros\decimal_degrees_seconds($correctedDecDeg1);
+
+    return array($correctedRAHour, $correctedRAMin, $correctedRASec, $correctedDecDeg, $correctedDecMin, $correctedDecSec);
+}
