@@ -805,3 +805,167 @@ function refract_l3035($pr, $tr, $y, $d)
 
     return -$d * 0.00007888888 * $pr / ((273.0 + $tr) * tan($y));
 }
+
+/**
+ * Calculate corrected hour angle in decimal hours
+ *
+ * Original macro name: ParallaxHA
+ */
+function parallax_ha($hh, $hm, $hs, $dd, $dm, $ds, PA_Types\CoordinateType $sw, $gp, $ht, $hp)
+{
+    $a = PA_Math\degrees_to_radians($gp);
+    $c1 = cos($a);
+    $s1 = sin($a);
+
+    $u = atan(0.996647 * $s1 / $c1);
+    $c2 = cos($u);
+    $s2 = sin($u);
+    $b = $ht / 6378160;
+
+    $rs = (0.996647 * $s2) + ($b * $s1);
+
+    $rc = $c2 + ($b * $c1);
+    $tp = 6.283185308;
+
+    $rp = 1.0 / sin(PA_Math\degrees_to_radians($hp));
+
+    $x = PA_Math\degrees_to_radians(degree_hours_to_decimal_degrees(hours_minutes_seconds_to_decimal_hours($hh, $hm, $hs)));
+    $x1 = $x;
+    $y = PA_Math\degrees_to_radians(degrees_minutes_seconds_to_decimal_degrees($dd, $dm, $ds));
+    $y1 = $y;
+
+    $d = ($sw == PA_Types\CoordinateType::True) ? 1.0 : -1.0;
+
+    if ($d == 1) {
+        list($p, $q) = parallax_ha_l2870($x, $y, $rc, $rp, $rs, $tp);
+
+        return decimal_degrees_to_degree_hours(degrees($p));
+    }
+
+    $p1 = 0.0;
+    $q1 = 0.0;
+    $xLoop = $x;
+    $yLoop = $y;
+
+    while (1 == 1) {
+        list($p, $q) = parallax_ha_l2870($xLoop, $yLoop, $rc, $rp, $rs, $tp);
+        $p2 = $p - $xLoop;
+        $q2 = $q - $yLoop;
+
+        $aa = abs($p2 - $p1);
+        $bb = abs($q2 - $q1);
+
+        if (($aa < 0.000001) && ($bb < 0.000001)) {
+            $p = $x1 - $p2;
+
+            return decimal_degrees_to_degree_hours(degrees($p));
+        }
+
+        $xLoop = $x1 - $p2;
+        $yLoop = $y1 - $q2;
+        $p1 = $p2;
+        $q1 = $q2;
+    }
+}
+
+/**
+ * Helper function for parallax_ha
+ */
+function parallax_ha_l2870($x, $y, $rc, $rp, $rs, $tp)
+{
+    $cx = cos($x);
+    $sy = sin($y);
+    $cy = cos($y);
+
+    $aa = ($rc * sin($x)) / (($rp * $cy) - ($rc * $cx));
+
+    $dx = atan($aa);
+    $p = $x + $dx;
+    $cp = cos($p);
+
+    $p = $p - $tp * floor($p / $tp);
+    $q = atan($cp * ($rp * $sy - $rs) / ($rp * $cy * $cx - $rc));
+
+    return array($p, $q);
+}
+
+/**
+ * Calculate corrected declination in decimal degrees
+ *
+ * Original macro name: ParallaxDec
+ */
+function parallax_dec($hh, $hm, $hs, $dd, $dm, $ds, PA_Types\CoordinateType $sw, $gp, $ht, $hp)
+{
+    $a = PA_Math\degrees_to_radians($gp);
+    $c1 = cos($a);
+    $s1 = sin($a);
+
+    $u = atan(0.996647 * $s1 / $c1);
+
+    $c2 = cos($u);
+    $s2 = sin($u);
+    $b = $ht / 6378160;
+    $rs = (0.996647 * $s2) + ($b * $s1);
+
+    $rc = $c2 + ($b * $c1);
+    $tp = 6.283185308;
+
+    $rp = 1.0 / sin(PA_Math\degrees_to_radians($hp));
+
+    $x = PA_Math\degrees_to_radians(degree_hours_to_decimal_degrees(hours_minutes_seconds_to_decimal_hours($hh, $hm, $hs)));
+    $x1 = $x;
+
+    $y = PA_Math\degrees_to_radians(degrees_minutes_seconds_to_decimal_degrees($dd, $dm, $ds));
+    $y1 = $y;
+
+    $d = ($sw == PA_Types\CoordinateType::True) ? 1.0 : -1.0;
+
+    if ($d == 1) {
+        list($p, $q) = parallax_dec_l2870($x, $y, $rc, $rp, $rs, $tp);
+
+        return degrees($q);
+    }
+
+    $p1 = 0.0;
+    $q1 = 0.0;
+
+    $xLoop = $x;
+    $yLoop = $y;
+
+    while (1 == 1) {
+        list($p, $q) = parallax_dec_l2870($xLoop, $yLoop, $rc, $rp, $rs, $tp);
+        $p2 = $p - $xLoop;
+        $q2 = $q - $yLoop;
+        $aa = abs($p2 - $p1);
+
+        if (($aa < 0.000001) && ($b < 0.000001)) {
+            $q = $y1 - $q2;
+
+            return degrees($q);
+        }
+        $xLoop = $x1 - $p2;
+        $yLoop = $y1 - $q2;
+        $p1 = $p2;
+        $q1 = $q2;
+    }
+}
+
+/**
+ * Helper function for parallax_dec
+ */
+function parallax_dec_l2870($x, $y, $rc, $rp, $rs, $tp)
+{
+    $cx = cos($x);
+    $sy = sin($y);
+    $cy = cos($y);
+
+    $aa = ($rc * sin($x)) / (($rp * $cy) - ($rc * $cx));
+    $dx = atan($aa);
+    $p = $x + $dx;
+    $cp = cos($p);
+
+    $p = $p - $tp * floor($p / $tp);
+    $q = atan($cp * ($rp * $sy - $rs) / ($rp * $cy * $cx - $rc));
+
+    return array($p, $q);
+}

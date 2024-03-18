@@ -221,6 +221,20 @@ function atmospheric_refraction($trueRAHour, $trueRAMin, $trueRASec, $trueDecDeg
     echo "[True RA] {$trueRAHour}:{$trueRAMin}:{$trueRASec} [True Declination] {$trueDecDeg} d {$trueDecMin} m {$trueDecSec} = [Corrected RA] {$correctedRAHour}:{$correctedRAMin}:{$correctedRASec} [Corrected Declination] {$correctedDecDeg} d {$correctedDecMin} m {$correctedDecSec} s\n";
 }
 
+function corrections_for_geocentric_parallax($raHour, $raMin, $raSec, $decDeg, $decMin, $decSec, PA_Types\CoordinateType $coordinateType, $equatorialHorParallaxDeg, $geogLongDeg, $geogLatDeg, $heightM, $daylightSaving, $timezoneHours, $lcdDay, $lcdMonth, $lcdYear, $lctHour, $lctMin, $lctSec, $expectedCorrectedRAHour, $expectedCorrectedRAMin, $expectedCorrectedRASec, $expectedCorrectedDecDeg, $expectedCorrectedDecMin, $expectedCorrectedDecSec)
+{
+    list($correctedRAHour, $correctedRAMin, $correctedRASec, $correctedDecDeg, $correctedDecMin, $correctedDecSec) = PA_Coord\corrections_for_geocentric_parallax($raHour, $raMin, $raSec, $decDeg, $decMin, $decSec, $coordinateType, $equatorialHorParallaxDeg, $geogLongDeg, $geogLatDeg, $heightM, $daylightSaving, $timezoneHours, $lcdDay, $lcdMonth, $lcdYear, $lctHour, $lctMin, $lctSec);
+
+    assert($correctedRAHour == $expectedCorrectedRAHour);
+    assert($correctedRAMin == $expectedCorrectedRAMin);
+    assert($correctedRASec == $expectedCorrectedRASec);
+    assert($correctedDecDeg == $expectedCorrectedDecDeg);
+    assert($correctedDecMin == $expectedCorrectedDecMin);
+    assert($correctedDecSec == $expectedCorrectedDecSec);
+
+    echo "[Right Ascension] {$raHour}:{$raMin}:{$raSec} [Declination] {$decDeg} d {$decMin} m {$decSec} s = [Corrected RA] {$correctedRAHour}:{$correctedRAMin}:{$correctedRASec} [Corrected Declination] {$correctedDecDeg} d {$correctedDecMin} m {$correctedDecSec} s\n";
+}
+
 angle_to_decimal_degrees(182, 31, 27, 182.524167);
 
 decimal_degrees_to_angle(182.524167, 182, 31, 27);
@@ -254,3 +268,5 @@ nutation_in_ecliptic_longitude_and_obliquity(1, 9, 1988, 0.001525808, 0.0025671)
 correct_for_aberration(0, 0, 0, 8, 9, 1988, 352, 37, 10.1, -1, 32, 56.4, 352, 37, 30.45, -1, 32, 56.33);
 
 atmospheric_refraction(23, 14, 0, 40, 10, 0, PA_Types\CoordinateType::True, 0.17, 51.2036110, 0, 0, 23, 3, 1987, 1, 1, 24, 1012, 21.7, 23, 13, 44.74, 40, 19, 45.76);
+
+corrections_for_geocentric_parallax(22, 35, 19, -7, 41, 13, PA_Types\CoordinateType::True, 1.019167, -100, 50, 60, 0, -6, 26, 2, 1979, 10, 45, 0, 22, 36, 43.22, -8, 32, 17.4);
