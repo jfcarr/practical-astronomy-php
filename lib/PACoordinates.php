@@ -441,3 +441,35 @@ function corrections_for_geocentric_parallax($raHour, $raMin, $raSec, $decDeg, $
 
     return array($correctedRAHour, $correctedRAMin, $correctedRASec, $correctedDecDeg, $correctedDecMin, $correctedDecSec);
 }
+
+/**
+ * Calculate heliographic coordinates for a given Greenwich date, with a given heliographic position angle and heliographic displacement in arc minutes.
+ */
+function heliographic_coordinates($helioPositionAngleDeg, $helioDisplacementArcmin, $gwdateDay, $gwdateMonth, $gwdateYear)
+{
+    $julianDateDays = PA_Macros\civil_date_to_julian_date($gwdateDay, $gwdateMonth, $gwdateYear);
+    $tCenturies = ($julianDateDays - 2415020) / 36525;
+    $longAscNodeDeg = PA_Macros\degrees_minutes_seconds_to_decimal_degrees(74, 22, 0) + (84 * $tCenturies / 60);
+    $sunLongDeg = PA_Macros\sun_long(0, 0, 0, 0, 0, $gwdateDay, $gwdateMonth, $gwdateYear);
+    $y = sin(PA_Math\degrees_to_radians($longAscNodeDeg - $sunLongDeg))  * cos(PA_Math\degrees_to_radians(PA_Macros\degrees_minutes_seconds_to_decimal_degrees(7, 15, 0)));
+    $x = -cos(PA_Math\degrees_to_radians($longAscNodeDeg - $sunLongDeg));
+    $aDeg = PA_Macros\degrees(atan2($y, $x));
+    $mDeg1 = 360 - (360 * ($julianDateDays - 2398220) / 25.38);
+    $mDeg2 = $mDeg1 - 360 * floor($mDeg1 / 360);
+    $l0Deg1 = $mDeg2 + $aDeg;
+    $b0Rad = asin(sin(PA_Math\degrees_to_radians($sunLongDeg - $longAscNodeDeg)) * sin(PA_Math\degrees_to_radians(PA_Macros\degrees_minutes_seconds_to_decimal_degrees(7, 15, 0))));
+    $theta1Rad = atan(-cos(PA_Math\degrees_to_radians($sunLongDeg)) * tan(PA_Math\degrees_to_radians(PA_Macros\obliq($gwdateDay, $gwdateMonth, $gwdateYear))));
+    $theta2Rad = atan(-cos(PA_Math\degrees_to_radians($longAscNodeDeg - $sunLongDeg)) * tan(PA_Math\degrees_to_radians(PA_Macros\degrees_minutes_seconds_to_decimal_degrees(7, 15, 0))));
+    $pDeg = PA_Macros\degrees($theta1Rad + $theta2Rad);
+    $rho1Deg = $helioDisplacementArcmin / 60;
+    $rhoRad = asin(2 * $rho1Deg / PA_Macros\sun_dia(0, 0, 0, 0, 0, $gwdateDay, $gwdateMonth, $gwdateYear)) - PA_Math\degrees_to_radians($rho1Deg);
+    $bRad = asin(sin($b0Rad) * cos($rhoRad) + cos($b0Rad) * sin($rhoRad) * cos(PA_Math\degrees_to_radians($pDeg - $helioPositionAngleDeg)));
+    $bDeg = PA_Macros\degrees($bRad);
+    $lDeg1 = PA_Macros\degrees(asin(sin($rhoRad) * sin(PA_Math\degrees_to_radians($pDeg - $helioPositionAngleDeg)) / cos($bRad))) + $l0Deg1;
+    $lDeg2 = $lDeg1 - 360 * floor($lDeg1 / 360);
+
+    $helioLongDeg = round($lDeg2, 2);
+    $helioLatDeg = round($bDeg, 2);
+
+    return array($helioLongDeg, $helioLatDeg);
+}
