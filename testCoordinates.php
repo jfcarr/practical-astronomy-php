@@ -245,6 +245,15 @@ function heliographic_coordinates($helioPositionAngleDeg, $helioDisplacementArcm
     echo "[Heliographic Position Angle] {$helioPositionAngleDeg} d [Heliographic Displacement] {$helioDisplacementArcmin} arcmin [Greenwich Date] {$gwdateMonth}/{$gwdateDay}/{$gwdateYear} = [Heliographic Longitude/Latitude] {$helioLongDeg} / {$helioLatDeg} degrees\n";
 }
 
+function carrington_rotation_number($gwdateDay, $gwdateMonth, $gwdateYear, $expectedCrn)
+{
+    $crn = PA_Coord\carrington_rotation_number($gwdateDay, $gwdateMonth, $gwdateYear);
+
+    assert($crn == $expectedCrn);
+
+    echo "[Greenwich Date] {$gwdateMonth}/{$gwdateDay}/{$gwdateYear} = [Carrington] {$crn}\n";
+}
+
 angle_to_decimal_degrees(182, 31, 27, 182.524167);
 
 decimal_degrees_to_angle(182.524167, 182, 31, 27);
@@ -282,3 +291,5 @@ atmospheric_refraction(23, 14, 0, 40, 10, 0, PA_Types\CoordinateType::True, 0.17
 corrections_for_geocentric_parallax(22, 35, 19, -7, 41, 13, PA_Types\CoordinateType::True, 1.019167, -100, 50, 60, 0, -6, 26, 2, 1979, 10, 45, 0, 22, 36, 43.22, -8, 32, 17.4);
 
 heliographic_coordinates(220, 10.5, 1, 5, 1988, 142.59, -19.94);
+
+carrington_rotation_number(27, 1, 1975, 1624);
