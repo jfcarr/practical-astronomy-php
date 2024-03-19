@@ -473,3 +473,15 @@ function heliographic_coordinates($helioPositionAngleDeg, $helioDisplacementArcm
 
     return array($helioLongDeg, $helioLatDeg);
 }
+
+/**
+ * Calculate carrington rotation number for a Greenwich date
+ */
+function carrington_rotation_number($gwdateDay, $gwdateMonth, $gwdateYear)
+{
+    $julianDateDays = PA_Macros\civil_date_to_julian_date($gwdateDay, $gwdateMonth, $gwdateYear);
+
+    $crn = 1690 + round(($julianDateDays - 2444235.34) / 27.2753, 0);
+
+    return (int)$crn;
+}
