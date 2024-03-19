@@ -693,6 +693,66 @@ function sun_long($lch, $lcm, $lcs, $ds, $zc, $ld, $lm, $ly)
 }
 
 /**
+ * Calculate Sun's angular diameter in decimal degrees
+ *
+ * Original macro name: SunDia
+ */
+function sun_dia($lch, $lcm, $lcs, $ds, $zc, $ld, $lm, $ly)
+{
+    $a = sun_dist($lch, $lcm, $lcs, $ds, $zc, $ld, $lm, $ly);
+
+    return 0.533128 / $a;
+}
+
+/**
+ * Calculate Sun's distance from the Earth in astronomical units
+ *
+ * Original macro name: SunDist
+ */
+function sun_dist($lch, $lcm, $lcs, $ds, $zc, $ld, $lm, $ly)
+{
+    $aa = local_civil_time_greenwich_day($lch, $lcm, $lcs, $ds, $zc, $ld, $lm, $ly);
+    $bb = local_civil_time_greenwich_month($lch, $lcm, $lcs, $ds, $zc, $ld, $lm, $ly);
+    $cc = local_civil_time_greenwich_year($lch, $lcm, $lcs, $ds, $zc, $ld, $lm, $ly);
+    $ut = local_civil_time_to_universal_time($lch, $lcm, $lcs, $ds, $zc, $ld, $lm, $ly);
+    $dj = civil_date_to_julian_date($aa, $bb, $cc) - 2415020;
+
+    $t = ($dj / 36525) + ($ut / 876600);
+    $t2 = $t * $t;
+
+    $a = 100.0021359 * $t;
+    $b = 360 * ($a - floor($a));
+    $a = 99.99736042 * $t;
+    $b = 360 * ($a - floor($a));
+    $m1 = 358.47583 - (0.00015 + 0.0000033 * $t) * $t2 + $b;
+    $ec = 0.01675104 - 0.0000418 * $t - 0.000000126 * $t2;
+
+    $am = PA_Math\degrees_to_radians($m1);
+    $ae = eccentric_anomaly($am, $ec);
+
+    $a = 62.55209472 * $t;
+    $b = 360 * ($a - floor($a));
+    $a1 = PA_Math\degrees_to_radians(153.23 + $b);
+    $a = 125.1041894 * $t;
+    $b = 360 * ($a - floor($a));
+    $b1 = PA_Math\degrees_to_radians(216.57 + $b);
+    $a = 91.56766028 * $t;
+    $b = 360 * ($a - floor($a));
+    $c1 = PA_Math\degrees_to_radians(312.69 + $b);
+    $a = 1236.853095 * $t;
+    $b = 360 * ($a - floor($a));
+    $d1 = PA_Math\degrees_to_radians(350.74 - 0.00144 * $t2 + $b);
+    $e1 = PA_Math\degrees_to_radians(231.19 + 20.2 * $t);
+    $a = 183.1353208 * $t;
+    $b = 360 * ($a - floor($a));
+    $h1 = PA_Math\degrees_to_radians(353.4 + $b);
+
+    $d3 = (0.00000543 * sin($a1) + 0.00001575 * sin($b1)) + (0.00001627 * sin($c1) + 0.00003076 * cos($d1)) + (0.00000927 * sin($h1));
+
+    return 1.0000002 * (1 - $ec * cos($ae)) + $d3;
+}
+
+/**
  * Solve Kepler's equation, and return value of the true anomaly in radians
  *
  * Original macro name: TrueAnomaly
