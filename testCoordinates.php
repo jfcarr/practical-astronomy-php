@@ -254,6 +254,28 @@ function carrington_rotation_number($gwdateDay, $gwdateMonth, $gwdateYear, $expe
     echo "[Greenwich Date] {$gwdateMonth}/{$gwdateDay}/{$gwdateYear} = [Carrington] {$crn}\n";
 }
 
+function selenographic_coordinates1($gwdateDay, $gwdateMonth, $gwdateYear, $expectedSubEarthLongitude, $expectedSubEarthLatitude, $expectedPositionAngleOfPole)
+{
+    list($subEarthLongitude, $subEarthLatitude, $positionAngleOfPole) = PA_Coord\selenographic_coordinates1($gwdateDay, $gwdateMonth, $gwdateYear);
+
+    assert($subEarthLongitude == $expectedSubEarthLongitude);
+    assert($subEarthLatitude == $expectedSubEarthLatitude);
+    assert($positionAngleOfPole == $expectedPositionAngleOfPole);
+
+    echo "[Greenwich Date] {$gwdateMonth}/{$gwdateDay}/{$gwdateYear} = [Sub Earth Longitude/Latitude] {$subEarthLongitude}/{$subEarthLatitude} [Angle of Pole] {$positionAngleOfPole}\n";
+}
+
+function selenographic_coordinates2($gwdateDay, $gwdateMonth, $gwdateYear, $expectedSubSolarLongitude, $expectedSubSolarColongitude, $expectedSubSolarLatitude)
+{
+    list($subSolarLongitude, $subSolarColongitude, $subSolarLatitude) = PA_Coord\selenographic_coordinates2($gwdateDay, $gwdateMonth, $gwdateYear);
+
+    assert($subSolarLongitude == $expectedSubSolarLongitude);
+    assert($subSolarColongitude == $expectedSubSolarColongitude);
+    assert($subSolarLatitude == $expectedSubSolarLatitude);
+
+    echo "[Greenwich Date] {$gwdateMonth}/{$gwdateDay}/{$gwdateYear} = [Sub Solar Longitude/Co-Longitude/Latitude] {$subSolarLongitude}/{$subSolarColongitude}/{$subSolarLatitude}\n";
+}
+
 angle_to_decimal_degrees(182, 31, 27, 182.524167);
 
 decimal_degrees_to_angle(182.524167, 182, 31, 27);
@@ -293,3 +315,7 @@ corrections_for_geocentric_parallax(22, 35, 19, -7, 41, 13, PA_Types\CoordinateT
 heliographic_coordinates(220, 10.5, 1, 5, 1988, 142.59, -19.94);
 
 carrington_rotation_number(27, 1, 1975, 1624);
+
+selenographic_coordinates1(1, 5, 1988, -4.88, 4.04, 19.78);
+
+selenographic_coordinates2(1, 5, 1988, 6.81, 83.19, 1.19);

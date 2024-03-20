@@ -485,3 +485,71 @@ function carrington_rotation_number($gwdateDay, $gwdateMonth, $gwdateYear)
 
     return (int)$crn;
 }
+
+/**
+ * Calculate selenographic (lunar) coordinates (sub-Earth)
+ */
+function selenographic_coordinates1($gwdateDay, $gwdateMonth, $gwdateYear)
+{
+    $julianDateDays = PA_Macros\civil_date_to_julian_date($gwdateDay, $gwdateMonth, $gwdateYear);
+    $tCenturies = ($julianDateDays - 2451545) / 36525;
+    $longAscNodeDeg = 125.044522 - 1934.136261 * $tCenturies;
+    $f1 = 93.27191 + 483202.0175 * $tCenturies;
+    $f2 = $f1 - 360 * floor($f1 / 360);
+    $geocentricMoonLongDeg = PA_Macros\moon_long(0, 0, 0, 0, 0, $gwdateDay, $gwdateMonth, $gwdateYear);
+    $geocentricMoonLatRad = PA_Math\degrees_to_radians(PA_Macros\moon_lat(0, 0, 0, 0, 0, $gwdateDay, $gwdateMonth, $gwdateYear));
+    $inclinationRad = PA_Math\degrees_to_radians(PA_Macros\degrees_minutes_seconds_to_decimal_degrees(1, 32, 32.7));
+    $nodeLongRad = PA_Math\degrees_to_radians($longAscNodeDeg - $geocentricMoonLongDeg);
+    $sinBe = - (cos($inclinationRad)) * sin($geocentricMoonLatRad) + sin($inclinationRad) * cos($geocentricMoonLatRad) * sin($nodeLongRad);
+    $subEarthLatDeg = PA_Macros\degrees(asin($sinBe));
+    $aRad = atan2((-sin($geocentricMoonLatRad) * sin($inclinationRad) - cos($geocentricMoonLatRad) * cos($inclinationRad) * sin($nodeLongRad)), (cos($geocentricMoonLatRad) * cos($nodeLongRad)));
+    $aDeg = PA_Macros\degrees($aRad);
+    $subEarthLongDeg1 = $aDeg - $f2;
+    $subEarthLongDeg2 = $subEarthLongDeg1 - 360 * floor($subEarthLongDeg1 / 360);
+    $subEarthLongDeg3 = ($subEarthLongDeg2 > 180) ? $subEarthLongDeg2 - 360 : $subEarthLongDeg2;
+    $c1Rad = atan(cos($nodeLongRad) * sin($inclinationRad) / (cos($geocentricMoonLatRad) * cos($inclinationRad) + sin($geocentricMoonLatRad) * sin($inclinationRad) * sin($nodeLongRad)));
+    $obliquityRad = PA_Math\degrees_to_radians(PA_Macros\obliq($gwdateDay, $gwdateMonth, $gwdateYear));
+    $c2Rad = atan(sin($obliquityRad) * cos(PA_Math\degrees_to_radians($geocentricMoonLongDeg)) / (sin($obliquityRad) * sin($geocentricMoonLatRad) * sin(PA_Math\degrees_to_radians($geocentricMoonLongDeg)) - cos($obliquityRad) * cos($geocentricMoonLatRad)));
+    $cDeg = PA_Macros\degrees($c1Rad + $c2Rad);
+
+    $subEarthLongitude = round($subEarthLongDeg3, 2);
+    $subEarthLatitude = round($subEarthLatDeg, 2);
+    $positionAngleOfPole = round($cDeg, 2);
+
+    return array($subEarthLongitude, $subEarthLatitude, $positionAngleOfPole);
+}
+
+/**
+ * Calculate selenographic (lunar) coordinates (sub-Solar)
+ */
+function selenographic_coordinates2($gwdateDay, $gwdateMonth, $gwdateYear)
+{
+    $julianDateDays = PA_Macros\civil_date_to_julian_date($gwdateDay, $gwdateMonth, $gwdateYear);
+    $tCenturies = ($julianDateDays - 2451545) / 36525;
+    $longAscNodeDeg = 125.044522 - 1934.136261 * $tCenturies;
+    $f1 = 93.27191 + 483202.0175 * $tCenturies;
+    $f2 = $f1 - 360 * floor($f1 / 360);
+    $sunGeocentricLongDeg = PA_Macros\sun_long(0, 0, 0, 0, 0, $gwdateDay, $gwdateMonth, $gwdateYear);
+    $moonEquHorParallaxArcMin = PA_Macros\moon_hp(0, 0, 0, 0, 0, $gwdateDay, $gwdateMonth, $gwdateYear) * 60;
+    $sunEarthDistAU = PA_Macros\sun_dist(0, 0, 0, 0, 0, $gwdateDay, $gwdateMonth, $gwdateYear);
+    $geocentricMoonLatRad = PA_Math\degrees_to_radians(PA_Macros\moon_lat(0, 0, 0, 0, 0, $gwdateDay, $gwdateMonth, $gwdateYear));
+    $geocentricMoonLongDeg = PA_Macros\moon_long(0, 0, 0, 0, 0, $gwdateDay, $gwdateMonth, $gwdateYear);
+    $adjustedMoonLongDeg = $sunGeocentricLongDeg + 180 + (26.4 * cos($geocentricMoonLatRad) * sin(PA_Math\degrees_to_radians($sunGeocentricLongDeg - $geocentricMoonLongDeg)) / ($moonEquHorParallaxArcMin * $sunEarthDistAU));
+    $adjustedMoonLatRad = 0.14666 * $geocentricMoonLatRad / ($moonEquHorParallaxArcMin * $sunEarthDistAU);
+    $inclinationRad = PA_Math\degrees_to_radians(PA_Macros\degrees_minutes_seconds_to_decimal_degrees(1, 32, 32.7));
+    $nodeLongRad = PA_Math\degrees_to_radians($longAscNodeDeg - $adjustedMoonLongDeg);
+    $sinBs = -cos($inclinationRad) * sin($adjustedMoonLatRad) + sin($inclinationRad) * cos($adjustedMoonLatRad) * sin($nodeLongRad);
+    $subSolarLatDeg = PA_Macros\degrees(asin($sinBs));
+    $aRad = atan2((-sin($adjustedMoonLatRad) * sin($inclinationRad) - cos($adjustedMoonLatRad) * cos($inclinationRad) * sin($nodeLongRad)), (cos($adjustedMoonLatRad) * cos($nodeLongRad)));
+    $aDeg = PA_Macros\degrees($aRad);
+    $subSolarLongDeg1 = $aDeg - $f2;
+    $subSolarLongDeg2 = $subSolarLongDeg1 - 360 * floor($subSolarLongDeg1 / 360);
+    $subSolarLongDeg3 = ($subSolarLongDeg2 > 180) ? $subSolarLongDeg2 - 360 : $subSolarLongDeg2;
+    $subSolarColongDeg = 90 - $subSolarLongDeg3;
+
+    $subSolarLongitude = round($subSolarLongDeg3, 2);
+    $subSolarColongitude = round($subSolarColongDeg, 2);
+    $subSolarLatitude = round($subSolarLatDeg, 2);
+
+    return array($subSolarLongitude, $subSolarColongitude, $subSolarLatitude);
+}
