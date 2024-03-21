@@ -1340,3 +1340,76 @@ function unwind_deg($w)
 {
     return $w - 360 * floor($w / 360);
 }
+
+/**
+ * Mean ecliptic longitude of the Sun at the epoch
+ * 
+ * Original macro name: SunElong
+ */
+function sun_e_long($gd, $gm, $gy)
+{
+    $t = (civil_date_to_julian_date($gd, $gm, $gy) - 2415020) / 36525;
+    $t2 = $t * $t;
+    $x = 279.6966778 + 36000.76892 * $t + 0.0003025 * $t2;
+
+    return $x - 360 * floor($x / 360);
+}
+
+/**
+ * Longitude of the Sun at perigee
+ * 
+ * Original macro name: SunPeri
+ */
+function sun_peri($gd, $gm, $gy)
+{
+    $t = (civil_date_to_julian_date($gd, $gm, $gy) - 2415020) / 36525;
+    $t2 = $t * $t;
+    $x = 281.2208444 + 1.719175 * $t + 0.000452778 * $t2;
+
+    return $x - 360 * floor($x / 360);
+}
+
+/**
+ * Eccentricity of the Sun-Earth orbit
+ * 
+ * Original macro name: SunEcc
+ */
+function sun_ecc($gd, $gm, $gy)
+{
+    $t = (civil_date_to_julian_date($gd, $gm, $gy) - 2415020) / 36525;
+    $t2 = $t * $t;
+
+    return 0.01675104 - 0.0000418 * $t - 0.000000126 * $t2;
+}
+
+/**
+ * Ecliptic - Declination (degrees)
+ *
+ * Original macro name: ECDec
+ */
+function ec_dec($eld, $elm, $els, $bd, $bm, $bs, $gd, $gm, $gy)
+{
+    $a =  PA_Math\degrees_to_radians(degrees_minutes_seconds_to_decimal_degrees($eld, $elm, $els));
+    $b = PA_Math\degrees_to_radians(degrees_minutes_seconds_to_decimal_degrees($bd, $bm, $bs));
+    $c = PA_Math\degrees_to_radians(obliq($gd, $gm, $gy));
+    $d = sin($b) * cos($c) + cos($b) * sin($c) * sin($a);
+
+    return degrees(asin($d));
+}
+
+/**
+ * Ecliptic - Right Ascension (degrees)
+ * 
+ * Original macro name: ECRA
+ */
+function ec_ra($eld, $elm, $els, $bd, $bm, $bs, $gd, $gm, $gy)
+{
+    $a = PA_Math\degrees_to_radians(degrees_minutes_seconds_to_decimal_degrees($eld, $elm, $els));
+    $b = PA_Math\degrees_to_radians(degrees_minutes_seconds_to_decimal_degrees($bd, $bm, $bs));
+    $c = PA_Math\degrees_to_radians(obliq($gd, $gm, $gy));
+    $d = sin($a) * cos($c) - tan($b) * sin($c);
+    $e = cos($a);
+    $f = degrees(atan2($d, $e));
+
+    return $f - 360 * floor($f / 360);
+}
