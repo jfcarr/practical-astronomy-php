@@ -68,3 +68,28 @@ function precise_position_of_sun($lctHours, $lctMinutes, $lctSeconds, $localDay,
 
     return array($sunRAHour, $sunRAMin, $sunRASec, $sunDecDeg, $sunDecMin, $sunDecSec);
 }
+
+/**
+ * Calculate distance to the Sun (in km), and angular size.
+ */
+function sun_distance_and_angular_size($lctHours, $lctMinutes, $lctSeconds, $localDay, $localMonth, $localYear, $isDaylightSaving, $zoneCorrection)
+{
+    $daylightSaving = ($isDaylightSaving) ? 1 : 0;
+
+    $gDay = PA_Macros\local_civil_time_greenwich_day($lctHours, $lctMinutes, $lctSeconds, $daylightSaving, $zoneCorrection, $localDay, $localMonth, $localYear);
+    $gMonth = PA_Macros\local_civil_time_greenwich_month($lctHours, $lctMinutes, $lctSeconds, $daylightSaving, $zoneCorrection, $localDay, $localMonth, $localYear);
+    $gYear = PA_Macros\local_civil_time_greenwich_year($lctHours, $lctMinutes, $lctSeconds, $daylightSaving, $zoneCorrection, $localDay, $localMonth, $localYear);
+    $trueAnomalyDeg = PA_Macros\sun_true_anomaly($lctHours, $lctMinutes, $lctSeconds, $daylightSaving, $zoneCorrection, $localDay, $localMonth, $localYear);
+    $trueAnomalyRad = PA_Math\degrees_to_radians($trueAnomalyDeg);
+    $eccentricity = PA_Macros\sun_ecc($gDay, $gMonth, $gYear);
+    $f = (1 + $eccentricity * cos($trueAnomalyRad)) / (1 - $eccentricity * $eccentricity);
+    $rKm = 149598500 / $f;
+    $thetaDeg = $f * 0.533128;
+
+    $sunDistKm = round($rKm, 0);
+    $sunAngSizeDeg = PA_Macros\decimal_degrees_degrees($thetaDeg);
+    $sunAngSizeMin = PA_Macros\decimal_degrees_minutes($thetaDeg);
+    $sunAngSizeSec = PA_Macros\decimal_degrees_seconds($thetaDeg);
+
+    return array($sunDistKm, $sunAngSizeDeg, $sunAngSizeMin, $sunAngSizeSec);
+}

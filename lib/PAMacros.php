@@ -1413,3 +1413,52 @@ function ec_ra($eld, $elm, $els, $bd, $bm, $bs, $gd, $gm, $gy)
 
     return $f - 360 * floor($f / 360);
 }
+
+/**
+ * Calculate Sun's true anomaly, i.e., how much its orbit deviates from a true circle to an ellipse.
+ * 
+ * Original macro name: SunTrueAnomaly
+ */
+function sun_true_anomaly($lch, $lcm, $lcs, $ds, $zc, $ld, $lm, $ly)
+{
+    $aa = local_civil_time_greenwich_day($lch, $lcm, $lcs, $ds, $zc, $ld, $lm, $ly);
+    $bb = local_civil_time_greenwich_month($lch, $lcm, $lcs, $ds, $zc, $ld, $lm, $ly);
+    $cc = local_civil_time_greenwich_year($lch, $lcm, $lcs, $ds, $zc, $ld, $lm, $ly);
+    $ut = local_civil_time_to_universal_time($lch, $lcm, $lcs, $ds, $zc, $ld, $lm, $ly);
+    $dj = civil_date_to_julian_date($aa, $bb, $cc) - 2415020;
+
+    $t = ($dj / 36525) + ($ut / 876600);
+    $t2 = $t * $t;
+
+    $a = 99.99736042 * $t;
+    $b = 360 * ($a - floor($a));
+
+    $m1 = 358.47583 - (0.00015 + 0.0000033 * $t) * $t2 + $b;
+    $ec = 0.01675104 - 0.0000418 * $t - 0.000000126 * $t2;
+
+    $am = PA_Math\degrees_to_radians($m1);
+
+    return degrees(true_anomaly($am, $ec));
+}
+
+/**
+ * Calculate the Sun's mean anomaly.
+ * 
+ * Original macro name: SunMeanAnomaly
+ */
+function sun_mean_anomaly($lch, $lcm, $lcs, $ds, $zc, $ld, $lm, $ly)
+{
+    $aa = local_civil_time_greenwich_day($lch, $lcm, $lcs, $ds, $zc, $ld, $lm, $ly);
+    $bb = local_civil_time_greenwich_month($lch, $lcm, $lcs, $ds, $zc, $ld, $lm, $ly);
+    $cc = local_civil_time_greenwich_year($lch, $lcm, $lcs, $ds, $zc, $ld, $lm, $ly);
+    $ut = local_civil_time_to_universal_time($lch, $lcm, $lcs, $ds, $zc, $ld, $lm, $ly);
+    $dj = civil_date_to_julian_date($aa, $bb, $cc) - 2415020;
+    $t = ($dj / 36525) + ($ut / 876600);
+    $t2 = $t * $t;
+    $a = 100.0021359 * $t;
+    $b = 360 * ($a - floor($a));
+    $m1 = 358.47583 - (0.00015 + 0.0000033 * $t) * $t2 + $b;
+    $am = unwind(PA_Math\degrees_to_radians($m1));
+
+    return $am;
+}
