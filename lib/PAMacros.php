@@ -7,6 +7,10 @@ include_once 'PATypes.php';
 
 use PA\MathExtensions as PA_Math;
 use PA\Types as PA_Types;
+use PA\Types\RiseSetStatus;
+use PA\Types\WarningFlag;
+
+use function PA\MathExtensions\degrees_to_radians;
 
 /**
  * Convert a Greenwich Date/Civil Date (day,month,year) to Julian Date
@@ -430,6 +434,24 @@ function local_civil_time_to_universal_time($lctHours, $lctMinutes, $lctSeconds,
 }
 
 /**
+ * Convert Universal Time to Local Civil Time
+ * 
+ * Original macro name: UTLct
+ */
+function universal_time_to_local_civil_time($uHours, $uMinutes, $uSeconds, $daylightSaving, $zoneCorrection, $greenwichDay, $greenwichMonth, $greenwichYear)
+{
+    $a = hours_minutes_seconds_to_decimal_hours($uHours, $uMinutes, $uSeconds);
+    $b = $a + $zoneCorrection;
+    $c = $b + $daylightSaving;
+    $d = civil_date_to_julian_date($greenwichDay, $greenwichMonth, $greenwichYear) + ($c / 24);
+    $e = julian_date_day($d);
+    $e1 = floor($e);
+
+    return 24 * ($e - $e1);
+}
+
+
+/**
  * Convert Right Ascension to Hour Angle
  * 
  * Original macro name: RAHA
@@ -629,6 +651,25 @@ function local_sidereal_time_to_greenwich_sidereal_time($localHours, $localMinut
     $c = $a - $b;
 
     return $c - (24 * floor($c / 24));
+}
+
+/**
+ * Status of conversion of Greenwich Sidereal Time to Universal Time.
+ * 
+ * Original macro name: eGSTUT
+ */
+function eg_st_ut($gsh, $gsm, $gss, $gd, $gm, $gy)
+{
+    $a = civil_date_to_julian_date($gd, $gm, $gy);
+    $b = $a - 2451545;
+    $c = $b / 36525;
+    $d = 6.697374558 + (2400.051336 * $c) + (0.000025862 * $c * $c);
+    $e = $d - (24 * floor($d / 24));
+    $f = hours_minutes_seconds_to_decimal_hours($gsh, $gsm, $gss);
+    $g = $f - $e;
+    $h = $g - (24 * floor($g / 24));
+
+    return (($h * 0.9972695663) < (4.0 / 60.0)) ? WarningFlag::Warning : WarningFlag::OK;
 }
 
 /**
@@ -1461,4 +1502,363 @@ function sun_mean_anomaly($lch, $lcm, $lcs, $ds, $zc, $ld, $lm, $ly)
     $am = unwind(PA_Math\degrees_to_radians($m1));
 
     return $am;
+}
+
+/**
+ * Calculate local civil time of sunrise.
+ *
+ * Original macro name: SunriseLCT
+ */
+function sunrise_lct($ld, $lm, $ly, $ds, $zc, $gl, $gp)
+{
+    $di = 0.8333333;
+    $gd = local_civil_time_greenwich_day(12, 0, 0, $ds, $zc, $ld, $lm, $ly);
+    $gm = local_civil_time_greenwich_month(12, 0, 0, $ds, $zc, $ld, $lm, $ly);
+    $gy = local_civil_time_greenwich_year(12, 0, 0, $ds, $zc, $ld, $lm, $ly);
+    $sr = sun_long(12, 0, 0, $ds, $zc, $ld, $lm, $ly);
+
+    list($a, $x, $y, $la, $s) = sunrise_lct_3710($gd, $gm, $gy, $sr, $di, $gp);
+
+    $xx = 0.0;
+    if ($s != RiseSetStatus::OK) {
+        $xx = -99.0;
+    } else {
+        $x = local_sidereal_time_to_greenwich_sidereal_time($la, 0, 0, $gl);
+        $ut = greenwich_sidereal_time_to_universal_time($x, 0, 0, $gd, $gm, $gy);
+
+
+        if (eg_st_ut($x, 0, 0, $gd, $gm, $gy) != WarningFlag::OK) {
+            $xx = -99.0;
+        } else {
+            $sr = sun_long($ut, 0, 0, 0, 0, $gd, $gm, $gy);
+            list($a, $x, $y, $la, $s) = sunrise_lct_3710($gd, $gm, $gy, $sr, $di, $gp);
+
+            if ($s != RiseSetStatus::OK) {
+                $xx = -99.0;
+            } else {
+                $x = local_sidereal_time_to_greenwich_sidereal_time($la, 0, 0, $gl);
+                $ut = greenwich_sidereal_time_to_universal_time($x, 0, 0, $gd, $gm, $gy);
+                $xx = universal_time_to_local_civil_time($ut, 0, 0, $ds, $zc, $gd, $gm, $gy);
+            }
+        }
+    }
+
+    return $xx;
+}
+
+/**
+ * Helper function for sunrise_lct()
+ */
+function sunrise_lct_3710($gd, $gm, $gy, $sr, $di, $gp)
+{
+    $a = $sr + nutat_long($gd, $gm, $gy) - 0.005694;
+    $x = ec_ra($a, 0, 0, 0, 0, 0, $gd, $gm, $gy);
+    $y = ec_dec($a, 0, 0, 0, 0, 0, $gd, $gm, $gy);
+    $la = rise_set_local_sidereal_time_rise(decimal_degrees_to_degree_hours($x), 0, 0, $y, 0, 0, $di, $gp);
+    $s = ers(decimal_degrees_to_degree_hours($x), 0.0, 0.0, $y, 0.0, 0.0, $di, $gp);
+
+    return array($a, $x, $y, $la, $s);
+}
+
+/**
+ * Calculate local civil time of sunset.
+ * 
+ * Original macro name: SunsetLCT
+ */
+function sunset_lct($ld, $lm, $ly, $ds, $zc, $gl, $gp)
+{
+    $di = 0.8333333;
+    $gd = local_civil_time_greenwich_day(12, 0, 0, $ds, $zc, $ld, $lm, $ly);
+    $gm = local_civil_time_greenwich_month(12, 0, 0, $ds, $zc, $ld, $lm, $ly);
+    $gy = local_civil_time_greenwich_year(12, 0, 0, $ds, $zc, $ld, $lm, $ly);
+    $sr = sun_long(12, 0, 0, $ds, $zc, $ld, $lm, $ly);
+
+    list($a, $x, $y, $la, $s) = sunset_lct_l3710($gd, $gm, $gy, $sr, $di, $gp);
+
+    $xx = 0.0;
+    if ($s != RiseSetStatus::OK) {
+        $xx = -99.0;
+    } else {
+        $x = local_sidereal_time_to_greenwich_sidereal_time($la, 0, 0, $gl);
+        $ut = greenwich_sidereal_time_to_universal_time($x, 0, 0, $gd, $gm, $gy);
+
+        if (eg_st_ut($x, 0, 0, $gd, $gm, $gy) != WarningFlag::OK) {
+            $xx = -99.0;
+        } else {
+            $sr = sun_long($ut, 0, 0, 0, 0, $gd, $gm, $gy);
+            list($a, $x, $y, $la, $s) = sunset_lct_l3710($gd, $gm, $gy, $sr, $di, $gp);
+
+            if ($s != RiseSetStatus::OK) {
+                $xx = -99;
+            } else {
+                $x = local_sidereal_time_to_greenwich_sidereal_time($la, 0, 0, $gl);
+                $ut = greenwich_sidereal_time_to_universal_time($x, 0, 0, $gd, $gm, $gy);
+                $xx = universal_time_to_local_civil_time($ut, 0, 0, $ds, $zc, $gd, $gm, $gy);
+            }
+        }
+    }
+    return $xx;
+}
+
+/**
+ * Helper function for sunset_lct().
+ */
+function sunset_lct_l3710($gd, $gm, $gy, $sr, $di, $gp)
+{
+    $a = $sr + nutat_long($gd, $gm, $gy) - 0.005694;
+    $x = ec_ra($a, 0.0, 0.0, 0.0, 0.0, 0.0, $gd, $gm, $gy);
+    $y = ec_dec($a, 0.0, 0.0, 0.0, 0.0, 0.0, $gd, $gm, $gy);
+    $la = rise_set_local_sidereal_time_set(decimal_degrees_to_degree_hours($x), 0, 0, $y, 0, 0, $di, $gp);
+    $s = ers(decimal_degrees_to_degree_hours($x), 0, 0, $y, 0, 0, $di, $gp);
+
+    return array($a, $x, $y, $la, $s);
+}
+
+/**
+ * Local sidereal time of rise, in hours.
+ * 
+ * Original macro name: RSLSTR
+ */
+function rise_set_local_sidereal_time_rise($rah, $ram, $ras, $dd, $dm, $ds, $vd, $g)
+{
+    $a = hours_minutes_seconds_to_decimal_hours($rah, $ram, $ras);
+    $b = deg2rad(degree_hours_to_decimal_degrees($a));
+    $c = deg2rad(degrees_minutes_seconds_to_decimal_degrees($dd, $dm, $ds));
+    $d = deg2rad($vd);
+    $e = deg2rad($g);
+    $f = - (sin($d) + sin($e) * sin($c)) / (cos($e) * cos($c));
+    $h = (abs($f) < 1) ? acos($f) : 0;
+    $i = decimal_degrees_to_degree_hours(degrees($b - $h));
+
+    return $i - 24 * floor($i / 24);
+}
+
+/**
+ * Local sidereal time of setting, in hours.
+ * 
+ * Original macro name: RSLSTS
+ */
+function  rise_set_local_sidereal_time_set($rah, $ram, $ras, $dd, $dm, $ds, $vd, $g)
+{
+    $a = hours_minutes_seconds_to_decimal_hours($rah, $ram, $ras);
+    $b = deg2rad(degree_hours_to_decimal_degrees($a));
+    $c = deg2rad(degrees_minutes_seconds_to_decimal_degrees($dd, $dm, $ds));
+    $d = deg2rad($vd);
+    $e = deg2rad($g);
+    $f = - (sin($d) + sin($e) * sin($c)) / (cos($e) * cos($c));
+    $h = (abs($f) < 1) ? acos($f) : 0;
+    $i = decimal_degrees_to_degree_hours(degrees($b + $h));
+
+    return $i - 24 * floor($i / 24);
+}
+
+/**
+ * Azimuth of rising, in degrees.
+ * 
+ * Original macro name: RSAZR
+ */
+function rise_set_azimuth_rise($rah, $ram, $ras, $dd, $dm, $ds, $vd, $g)
+{
+    $a = hours_minutes_seconds_to_decimal_hours($rah, $ram, $ras);
+    $c = deg2rad(degrees_minutes_seconds_to_decimal_degrees($dd, $dm, $ds));
+    $d = deg2rad($vd);
+    $e = deg2rad($g);
+    $f = (sin($c) + sin($d) * sin($e)) / (cos($d) * cos($e));
+    $h = ers($rah, $ram, $ras, $dd, $dm, $ds, $vd, $g) == RiseSetStatus::OK ? acos($f) : 0;
+    $i = degrees($h);
+
+    return $i - 360 * floor($i / 360);
+}
+
+/**
+ * Azimuth of setting, in degrees.
+ * 
+ * Original macro name: RSAZS
+ */
+function rise_set_azimuth_set($rah, $ram, $ras, $dd, $dm, $ds, $vd, $g)
+{
+    $a = hours_minutes_seconds_to_decimal_hours($rah, $ram, $ras);
+    $c = deg2rad(degrees_minutes_seconds_to_decimal_degrees($dd, $dm, $ds));
+    $d = deg2rad($vd);
+    $e = deg2rad($g);
+    $f = (sin($c) + sin($d) * sin($e)) / (cos($d) * cos($e));
+    $h = ers($rah, $ram, $ras, $dd, $dm, $ds, $vd, $g) == RiseSetStatus::OK ? acos($f) : 0;
+    $i = 360 - degrees($h);
+
+    return $i - 360 * floor($i / 360);
+}
+
+/**
+ * Rise/Set status
+ * 
+ * Original macro name: eRS
+ */
+function ers($rah, $ram, $ras, $dd, $dm, $ds, $vd, $g)
+{
+    $a = hours_minutes_seconds_to_decimal_hours($rah, $ram, $ras);
+    $c = deg2rad(degrees_minutes_seconds_to_decimal_degrees($dd, $dm, $ds));
+    $d = deg2rad($vd);
+    $e = deg2rad($g);
+    $f = - (sin($d) + sin($e) * sin($c)) / (cos($e)  * cos($c));
+
+    $returnValue = RiseSetStatus::OK;
+    if ($f >= 1)
+        $returnValue = RiseSetStatus::NeverRises;
+    if ($f <= -1)
+        $returnValue = RiseSetStatus::Circumpolar;
+
+    return $returnValue;
+}
+
+/**
+ * Sunrise/Sunset calculation status.
+ * 
+ * Original macro name: eSunRS
+ */
+function e_sun_rs($ld, $lm, $ly, $ds, $zc, $gl, $gp)
+{
+    $di = 0.8333333;
+    $gd = local_civil_time_greenwich_day(12, 0, 0, $ds, $zc, $ld, $lm, $ly);
+    $gm = local_civil_time_greenwich_month(12, 0, 0, $ds, $zc, $ld, $lm, $ly);
+    $gy = local_civil_time_greenwich_year(12, 0, 0, $ds, $zc, $ld, $lm, $ly);
+    $sr = sun_long(12, 0, 0, $ds, $zc, $ld, $lm, $ly);
+
+    list($a, $x, $y, $la, $s) = e_sun_rs_l3710($gd, $gm, $gy, $sr, $di, $gp);
+
+    if ($s != RiseSetStatus::OK) {
+        return $s;
+    } else {
+        $x = local_sidereal_time_to_greenwich_sidereal_time($la, 0, 0, $gl);
+        $ut = greenwich_sidereal_time_to_universal_time($x, 0, 0, $gd, $gm, $gy);
+        $sr = sun_long($ut, 0, 0, 0, 0, $gd, $gm, $gy);
+        list($a, $x, $y, $la, $s) = e_sun_rs_l3710($gd, $gm, $gy, $sr, $di, $gp);
+        if ($s != RiseSetStatus::OK) {
+            return $s;
+        } else {
+            $x = local_sidereal_time_to_greenwich_sidereal_time($la, 0, 0, $gl);
+
+            if (eg_st_ut($x, 0, 0, $gd, $gm, $gy)   != WarningFlag::OK) {
+                $s = RiseSetStatus::GstToUtConversionWarning;
+
+                return $s;
+            }
+
+            return $s;
+        }
+    }
+}
+
+/**
+ * Helper function for e_sun_rs
+ */
+function e_sun_rs_l3710($gd, $gm, $gy, $sr, $di, $gp)
+{
+    $a = $sr + nutat_long($gd, $gm, $gy) - 0.005694;
+    $x = ec_ra($a, 0, 0, 0, 0, 0, $gd, $gm, $gy);
+    $y = ec_dec($a, 0, 0, 0, 0, 0, $gd, $gm, $gy);
+    $la = rise_set_local_sidereal_time_rise(decimal_degrees_to_degree_hours($x), 0, 0, $y, 0, 0, $di, $gp);
+    $s = ers(decimal_degrees_to_degree_hours($x), 0, 0, $y, 0, 0, $di, $gp);
+
+    return array($a, $x, $y, $la, $s);
+}
+
+/**
+ * Calculate azimuth of sunrise.
+ * 
+ * Original macro name: SunriseAz
+ */
+function sunrise_az($ld, $lm, $ly, $ds, $zc, $gl, $gp)
+{
+    $di = 0.8333333;
+    $gd = local_civil_time_greenwich_day(12, 0, 0, $ds, $zc, $ld, $lm, $ly);
+    $gm = local_civil_time_greenwich_month(12, 0, 0, $ds, $zc, $ld, $lm, $ly);
+    $gy = local_civil_time_greenwich_year(12, 0, 0, $ds, $zc, $ld, $lm, $ly);
+    $sr = sun_long(12, 0, 0, $ds, $zc, $ld, $lm, $ly);
+
+    list($result1_a, $result1_x, $result1_y, $result1_la, $result1_s) = sunrise_az_l3710($gd, $gm, $gy, $sr, $di, $gp);
+
+    if ($result1_s != RiseSetStatus::OK) {
+        return -99.0;
+    }
+
+    $x = local_sidereal_time_to_greenwich_sidereal_time($result1_la, 0, 0, $gl);
+    $ut = greenwich_sidereal_time_to_universal_time($x, 0, 0, $gd, $gm, $gy);
+
+    if (eg_st_ut($x, 0, 0, $gd, $gm, $gy) != WarningFlag::OK) {
+        return -99.0;
+    }
+
+    $sr = sun_long($ut, 0, 0, 0, 0, $gd, $gm, $gy);
+    list($result2_a, $result2_x, $result2_y, $result2_la, $result2_s) = sunrise_az_l3710($gd, $gm, $gy, $sr, $di, $gp);
+
+    if ($result2_s != RiseSetStatus::OK) {
+        return -99.0;
+    }
+
+    return rise_set_azimuth_rise(decimal_degrees_to_degree_hours($x), 0, 0, $result2_y, 0.0, 0.0, $di, $gp);
+}
+
+/**
+ * Helper function for sunrise_az()
+ */
+function sunrise_az_l3710($gd, $gm, $gy, $sr, $di, $gp)
+{
+    $a = $sr + nutat_long($gd, $gm, $gy) - 0.005694;
+    $x = ec_ra($a, 0, 0, 0, 0, 0, $gd, $gm, $gy);
+    $y = ec_dec($a, 0, 0, 0, 0, 0, $gd, $gm, $gy);
+    $la = rise_set_local_sidereal_time_rise(decimal_degrees_to_degree_hours($x), 0, 0, $y, 0, 0, $di, $gp);
+    $s = ers(decimal_degrees_to_degree_hours($x), 0, 0, $y, 0, 0, $di, $gp);
+
+    return array($a, $x, $y, $la, $s);
+}
+
+/**
+ * Calculate azimuth of sunset.
+ * 
+ * Original macro name: SunsetAz
+ */
+function sunset_az($ld, $lm, $ly, $ds, $zc, $gl, $gp)
+{
+    $di = 0.8333333;
+    $gd = local_civil_time_greenwich_day(12, 0, 0, $ds, $zc, $ld, $lm, $ly);
+    $gm = local_civil_time_greenwich_month(12, 0, 0, $ds, $zc, $ld, $lm, $ly);
+    $gy = local_civil_time_greenwich_year(12, 0, 0, $ds, $zc, $ld, $lm, $ly);
+    $sr = sun_long(12, 0, 0, $ds, $zc, $ld, $lm, $ly);
+
+    list($result1_a, $result1_x, $result1_y, $result1_la, $result1_s) = sunset_az_l3710($gd, $gm, $gy, $sr, $di, $gp);
+
+    if ($result1_s != RiseSetStatus::OK) {
+        return -99.0;
+    }
+
+    $x = local_sidereal_time_to_greenwich_sidereal_time($result1_la, 0, 0, $gl);
+    $ut = greenwich_sidereal_time_to_universal_time($x, 0, 0, $gd, $gm, $gy);
+
+    if (eg_st_ut($x, 0, 0, $gd, $gm, $gy) != WarningFlag::OK) {
+        return -99.0;
+    }
+
+    $sr = sun_long($ut, 0, 0, 0, 0, $gd, $gm, $gy);
+
+    list($result2_a, $result2_x, $result2_y, $result2_la, $result2_s) = sunset_az_l3710($gd, $gm, $gy, $sr, $di, $gp);
+
+    if ($result2_s != RiseSetStatus::OK) {
+        return -99.0;
+    }
+
+    return rise_set_azimuth_set(decimal_degrees_to_degree_hours($x), 0, 0, $result2_y, 0, 0, $di, $gp);
+}
+
+/**
+ * Helper function for sunset_az()
+ */
+function sunset_az_l3710($gd, $gm, $gy, $sr, $di, $gp)
+{
+    $a = $sr + nutat_long($gd, $gm, $gy) - 0.005694;
+    $x = ec_ra($a, 0, 0, 0, 0, 0, $gd, $gm, $gy);
+    $y = ec_dec($a, 0, 0, 0, 0, 0, $gd, $gm, $gy);
+    $la = rise_set_local_sidereal_time_set(decimal_degrees_to_degree_hours($x), 0, 0, $y, 0, 0, $di, $gp);
+    $s = ers(decimal_degrees_to_degree_hours($x), 0, 0, $y, 0, 0, $di, $gp);
+
+    return array($a, $x, $y, $la, $s);
 }
