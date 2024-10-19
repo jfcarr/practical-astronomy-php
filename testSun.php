@@ -5,6 +5,7 @@ namespace PA\Test\Sun;
 include_once 'lib/PASun.php';
 
 use PA\Sun as PA_Sun;
+use PA\Types\RiseSetStatus;
 
 function approximate_position_of_sun($lctHours, $lctMinutes, $lctSeconds, $localDay, $localMonth, $localYear, $isDaylightSaving, $zoneCorrection, $expectedSunRAHour, $expectedSunRAMin, $expectedSunRASec, $expectedSunDecDeg, $expectedSunDecMin, $expectedSunDecSec)
 {
@@ -46,8 +47,25 @@ function sun_distance_and_angular_size($lctHours, $lctMinutes, $lctSeconds, $loc
     echo "[Distance and Angular Size] [Local Time] {$lctHours}:{$lctMinutes}:{$lctSeconds} [Local Date] {$localMonth}/{$localDay}/{$localYear} = [Distance] {$sunDistKm} km [Size] {$sunAngSizeDeg} d {$sunAngSizeMin} m {$sunAngSizeSec} s\n";
 }
 
+function sunrise_and_sunset($localDay, $localMonth, $localYear, $isDaylightSaving, $zoneCorrection, $geographicalLongDeg, $geographicalLatDeg, $expected_localSunriseHour, $expected_localSunriseMinute, $expected_localSunsetHour, $expected_localSunsetMinute, $expected_azimuthOfSunriseDeg, $expected_azimuthOfSunsetDeg, $expected_status)
+{
+    list($localSunriseHour, $localSunriseMinute, $localSunsetHour, $localSunsetMinute, $azimuthOfSunriseDeg, $azimuthOfSunsetDeg, $status) = PA_Sun\sunrise_and_sunset($localDay, $localMonth, $localYear, $isDaylightSaving, $zoneCorrection, $geographicalLongDeg, $geographicalLatDeg);
+
+    assert($localSunriseHour == $expected_localSunriseHour);
+    assert($localSunriseMinute == $expected_localSunriseMinute);
+    assert($localSunsetHour  == $expected_localSunsetHour);
+    assert($localSunsetMinute  == $expected_localSunsetMinute);
+    assert($azimuthOfSunriseDeg  == $expected_azimuthOfSunriseDeg);
+    assert($azimuthOfSunsetDeg  == $expected_azimuthOfSunsetDeg);
+    assert($status == $expected_status);
+
+    echo "[Sunrise and Sunset] [Local Date] {$localMonth}/{$localDay}/{$localYear} [Long/Lat] {$geographicalLongDeg}/{$geographicalLatDeg} = [Sunrise Time] {$localSunriseHour}:{$localSunriseMinute} [Sunset Time] {$localSunsetHour}:{$localSunsetMinute} [Rise/Set Azimuth] {$azimuthOfSunriseDeg}/{$azimuthOfSunsetDeg} [Status] {$status->name}\n";
+}
+
 approximate_position_of_sun(0, 0, 0, 27, 7, 2003, false, 0, 8, 23, 33.73, 19, 21, 14.32);
 
 precise_position_of_sun(0, 0, 0, 27, 7, 1988, false, 0, 8, 26, 3.83, 19, 12, 49.72);
 
 sun_distance_and_angular_size(0, 0, 0, 27, 7, 1988, false, 0, 151920130, 0, 31, 29.93);
+
+sunrise_and_sunset(10, 3, 1986, false, -5, -71.05, 42.37, 6, 5, 17, 45, 94.83, 265.43, RiseSetStatus::OK);

@@ -9,6 +9,7 @@ include_once 'PATypes.php';
 use PA\Macros as PA_Macros;
 use PA\MathExtensions as PA_Math;
 use PA\Types as PA_Types;
+use PA\Types\RiseSetStatus;
 
 /**
  * Calculate approximate position of the sun for a local date and time.
@@ -92,4 +93,36 @@ function sun_distance_and_angular_size($lctHours, $lctMinutes, $lctSeconds, $loc
     $sunAngSizeSec = PA_Macros\decimal_degrees_seconds($thetaDeg);
 
     return array($sunDistKm, $sunAngSizeDeg, $sunAngSizeMin, $sunAngSizeSec);
+}
+
+/**
+ * Calculate local sunrise and sunset.
+ */
+function sunrise_and_sunset($localDay, $localMonth, $localYear, $isDaylightSaving, $zoneCorrection, $geographicalLongDeg, $geographicalLatDeg)
+{
+    $daylightSaving = ($isDaylightSaving) ? 1 : 0;
+
+    $localSunriseHours = PA_Macros\sunrise_lct($localDay, $localMonth, $localYear, $daylightSaving, $zoneCorrection, $geographicalLongDeg, $geographicalLatDeg);
+    $localSunsetHours = PA_Macros\sunset_lct($localDay, $localMonth, $localYear, $daylightSaving, $zoneCorrection, $geographicalLongDeg, $geographicalLatDeg);
+
+    $sunRiseSetStatus = PA_Macros\e_sun_rs($localDay, $localMonth, $localYear, $daylightSaving, $zoneCorrection, $geographicalLongDeg, $geographicalLatDeg);
+
+    $adjustedSunriseHours = $localSunriseHours + 0.008333;
+    $adjustedSunsetHours = $localSunsetHours + 0.008333;
+
+    $azimuthOfSunriseDeg1 = PA_Macros\sunrise_az($localDay, $localMonth, $localYear, $daylightSaving, $zoneCorrection, $geographicalLongDeg, $geographicalLatDeg);
+    $azimuthOfSunsetDeg1 = PA_Macros\sunset_az($localDay, $localMonth, $localYear, $daylightSaving, $zoneCorrection, $geographicalLongDeg, $geographicalLatDeg);
+
+    $localSunriseHour = ($sunRiseSetStatus == RiseSetStatus::OK) ? PA_Macros\decimal_hours_hour($adjustedSunriseHours) : 0;
+    $localSunriseMinute = ($sunRiseSetStatus == RiseSetStatus::OK) ? PA_Macros\decimal_hours_minute($adjustedSunriseHours) : 0;
+
+    $localSunsetHour = ($sunRiseSetStatus == RiseSetStatus::OK) ? PA_Macros\decimal_hours_hour($adjustedSunsetHours) : 0;
+    $localSunsetMinute = ($sunRiseSetStatus == RiseSetStatus::OK) ? PA_Macros\decimal_hours_minute($adjustedSunsetHours) : 0;
+
+    $azimuthOfSunriseDeg = ($sunRiseSetStatus == RiseSetStatus::OK) ? round($azimuthOfSunriseDeg1, 2) : 0;
+    $azimuthOfSunsetDeg = ($sunRiseSetStatus == RiseSetStatus::OK) ? round($azimuthOfSunsetDeg1, 2) : 0;
+
+    $status = $sunRiseSetStatus;
+
+    return array($localSunriseHour, $localSunriseMinute, $localSunsetHour, $localSunsetMinute, $azimuthOfSunriseDeg, $azimuthOfSunsetDeg, $status);
 }
