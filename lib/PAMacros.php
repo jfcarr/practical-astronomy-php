@@ -2,15 +2,11 @@
 
 namespace PA\Macros;
 
-include_once 'PAMathExtensions.php';
 include_once 'PATypes.php';
 
-use PA\MathExtensions as PA_Math;
 use PA\Types as PA_Types;
 use PA\Types\RiseSetStatus;
 use PA\Types\WarningFlag;
-
-use function PA\MathExtensions\degrees_to_radians;
 
 /**
  * Convert a Greenwich Date/Civil Date (day,month,year) to Julian Date
@@ -166,10 +162,10 @@ function equatorial_coordinates_to_altitude($hourAngleHours, $hourAngleMinutes, 
 {
     $a = hours_minutes_seconds_to_decimal_hours($hourAngleHours, $hourAngleMinutes, $hourAngleSeconds);
     $b = $a * 15;
-    $c = PA_Math\degrees_to_radians($b);
+    $c = deg2rad($b);
     $d = degrees_minutes_seconds_to_decimal_degrees($declinationDegrees, $declinationMinutes, $declinationSeconds);
-    $e = PA_Math\degrees_to_radians($d);
-    $f = PA_Math\degrees_to_radians($geographicalLatitude);
+    $e = deg2rad($d);
+    $f = deg2rad($geographicalLatitude);
     $g = sin($e) * sin($f) + cos($e) * cos($f) * cos($c);
 
     return degrees(asin($g));
@@ -184,10 +180,10 @@ function equatorial_coordinates_to_azimuth($hourAngleHours, $hourAngleMinutes, $
 {
     $a = hours_minutes_seconds_to_decimal_hours($hourAngleHours, $hourAngleMinutes, $hourAngleSeconds);
     $b = $a * 15;
-    $c = PA_Math\degrees_to_radians($b);
+    $c = deg2rad($b);
     $d = degrees_minutes_seconds_to_decimal_degrees($declinationDegrees, $declinationMinutes, $declinationSeconds);
-    $e = PA_Math\degrees_to_radians($d);
-    $f = PA_Math\degrees_to_radians($geographicalLatitude);
+    $e = deg2rad($d);
+    $f = deg2rad($geographicalLatitude);
     $g = sin($e) * sin($f) + cos($e) * cos($f) * cos($c);
     $h = -cos($e) * cos($f) * sin($c);
     $i = sin($e) - (sin($f) * $g);
@@ -219,9 +215,9 @@ function horizon_coordinates_to_declination($azimuthDegrees, $azimuthMinutes, $a
 {
     $a = degrees_minutes_seconds_to_decimal_degrees($azimuthDegrees, $azimuthMinutes, $azimuthSeconds);
     $b = degrees_minutes_seconds_to_decimal_degrees($altitudeDegrees, $altitudeMinutes, $altitudeSeconds);
-    $c = PA_Math\degrees_to_radians($a);
-    $d = PA_Math\degrees_to_radians($b);
-    $e = PA_Math\degrees_to_radians($geographicalLatitude);
+    $c = deg2rad($a);
+    $d = deg2rad($b);
+    $e = deg2rad($geographicalLatitude);
     $f = sin($d) * sin($e) + cos($d) * cos($e) * cos($c);
 
     return degrees(asin($f));
@@ -236,9 +232,9 @@ function horizon_coordinates_to_hour_angle($azimuthDegrees, $azimuthMinutes, $az
 {
     $a = degrees_minutes_seconds_to_decimal_degrees($azimuthDegrees, $azimuthMinutes, $azimuthSeconds);
     $b = degrees_minutes_seconds_to_decimal_degrees($altitudeDegrees, $altitudeMinutes, $altitudeSeconds);
-    $c = PA_Math\degrees_to_radians($a);
-    $d = PA_Math\degrees_to_radians($b);
-    $e = PA_Math\degrees_to_radians($geographicalLatitude);
+    $c = deg2rad($a);
+    $d = deg2rad($b);
+    $e = deg2rad($geographicalLatitude);
     $f = sin($d) * sin($e) + cos($d) * cos($e) * cos($c);
     $g = -cos($d) * cos($e) * sin($c);
     $h = sin($d) - sin($e) * $f;
@@ -522,31 +518,31 @@ function nutat_long($gd, $gm, $gy)
     $b = 360 * ($a - floor($a));
 
     $l1 = 279.6967 + 0.000303 * $t2 + $b;
-    $l2 = 2 * PA_Math\degrees_to_radians($l1);
+    $l2 = 2 * deg2rad($l1);
 
     $a = 1336.855231 * $t;
     $b = 360 * ($a - floor($a));
 
     $d1 = 270.4342 - 0.001133 * $t2 + $b;
-    $d2 = 2 * PA_Math\degrees_to_radians($d1);
+    $d2 = 2 * deg2rad($d1);
 
     $a = 99.99736056 * $t;
     $b = 360 * ($a - floor($a));
 
     $m1 = 358.4758 - 0.00015 * $t2 + $b;
-    $m1 = PA_Math\degrees_to_radians($m1);
+    $m1 = deg2rad($m1);
 
     $a = 1325.552359 * $t;
     $b = 360 * ($a - floor($a));
 
     $m2 = 296.1046 + 0.009192 * $t2 + $b;
-    $m2 = PA_Math\degrees_to_radians($m2);
+    $m2 = deg2rad($m2);
 
     $a = 5.372616667 * $t;
     $b = 360 * ($a - floor($a));
 
     $n1 = 259.1833 + 0.002078 * $t2 - $b;
-    $n1 = PA_Math\degrees_to_radians($n1);
+    $n1 = deg2rad($n1);
 
     $n2 = 2.0 * $n1;
 
@@ -576,28 +572,28 @@ function nutat_obl($greenwichDay, $greenwichMonth, $greenwichYear)
     $b = 360 * ($a - floor($a));
 
     $l1 = 279.6967 + 0.000303 * $t2 + $b;
-    $l2 = 2 * PA_Math\degrees_to_radians($l1);
+    $l2 = 2 * deg2rad($l1);
 
     $a = 1336.855231 * $t;
     $b = 360 * ($a - floor($a));
 
     $d1 = 270.4342 - 0.001133 * $t2 + $b;
-    $d2 = 2 * PA_Math\degrees_to_radians($d1);
+    $d2 = 2 * deg2rad($d1);
 
     $a = 99.99736056 * $t;
     $b = 360 * ($a - floor($a));
 
-    $m1 = PA_Math\degrees_to_radians(358.4758 - 0.00015 * $t2 + $b);
+    $m1 = deg2rad(358.4758 - 0.00015 * $t2 + $b);
 
     $a = 1325.552359 * $t;
     $b = 360 * ($a - floor($a));
 
-    $m2 = PA_Math\degrees_to_radians(296.1046 + 0.009192 * $t2 + $b);
+    $m2 = deg2rad(296.1046 + 0.009192 * $t2 + $b);
 
     $a = 5.372616667 * $t;
     $b = 360 * ($a - floor($a));
 
-    $n1 = PA_Math\degrees_to_radians(259.1833 + 0.002078 * $t2 - $b);
+    $n1 = deg2rad(259.1833 + 0.002078 * $t2 - $b);
 
     $n2 = 2 * $n1;
 
@@ -696,36 +692,36 @@ function sun_long($lch, $lcm, $lcs, $ds, $zc, $ld, $lm, $ly)
     $m1 = 358.47583 - (0.00015 + 0.0000033 * $t) * $t2 + $b;
     $ec = 0.01675104 - 0.0000418 * $t - 0.000000126 * $t2;
 
-    $am = PA_Math\degrees_to_radians($m1);
+    $am = deg2rad($m1);
     $at = true_anomaly($am, $ec);
 
     $a = 62.55209472 * $t;
     $b = 360 * ($a - floor($a));
 
-    $a1 = PA_Math\degrees_to_radians(153.23 + $b);
+    $a1 = deg2rad(153.23 + $b);
     $a = 125.1041894 * $t;
     $b = 360 * ($a - floor($a));
 
-    $b1 = PA_Math\degrees_to_radians(216.57 + $b);
+    $b1 = deg2rad(216.57 + $b);
     $a = 91.56766028 * $t;
     $b = 360.0 * ($a - floor($a));
 
-    $c1 = PA_Math\degrees_to_radians(312.69 + $b);
+    $c1 = deg2rad(312.69 + $b);
     $a = 1236.853095 * $t;
     $b = 360.0 * ($a - floor($a));
 
-    $d1 = PA_Math\degrees_to_radians(350.74 - 0.00144 * $t2 + $b);
-    $e1 = PA_Math\degrees_to_radians(231.19 + 20.2 * $t);
+    $d1 = deg2rad(350.74 - 0.00144 * $t2 + $b);
+    $e1 = deg2rad(231.19 + 20.2 * $t);
     $a = 183.1353208 * $t;
     $b = 360.0 * ($a - floor($a));
-    $h1 = PA_Math\degrees_to_radians(353.4 + $b);
+    $h1 = deg2rad(353.4 + $b);
 
     $d2 = 0.00134 * cos($a1) + 0.00154 * cos($b1) + 0.002 * cos($c1);
     $d2 = $d2 + 0.00179 * sin($d1) + 0.00178 * sin($e1);
     $d3 = 0.00000543 * sin($a1) + 0.00001575 * sin($b1);
     $d3 = $d3 + 0.00001627 * sin($c1) + 0.00003076 * cos($d1);
 
-    $sr = $at + PA_Math\degrees_to_radians($l - $m1 + $d2);
+    $sr = $at + deg2rad($l - $m1 + $d2);
     $tp = 6.283185308;
 
     $sr = $sr - $tp * floor($sr / $tp);
@@ -768,25 +764,25 @@ function sun_dist($lch, $lcm, $lcs, $ds, $zc, $ld, $lm, $ly)
     $m1 = 358.47583 - (0.00015 + 0.0000033 * $t) * $t2 + $b;
     $ec = 0.01675104 - 0.0000418 * $t - 0.000000126 * $t2;
 
-    $am = PA_Math\degrees_to_radians($m1);
+    $am = deg2rad($m1);
     $ae = eccentric_anomaly($am, $ec);
 
     $a = 62.55209472 * $t;
     $b = 360 * ($a - floor($a));
-    $a1 = PA_Math\degrees_to_radians(153.23 + $b);
+    $a1 = deg2rad(153.23 + $b);
     $a = 125.1041894 * $t;
     $b = 360 * ($a - floor($a));
-    $b1 = PA_Math\degrees_to_radians(216.57 + $b);
+    $b1 = deg2rad(216.57 + $b);
     $a = 91.56766028 * $t;
     $b = 360 * ($a - floor($a));
-    $c1 = PA_Math\degrees_to_radians(312.69 + $b);
+    $c1 = deg2rad(312.69 + $b);
     $a = 1236.853095 * $t;
     $b = 360 * ($a - floor($a));
-    $d1 = PA_Math\degrees_to_radians(350.74 - 0.00144 * $t2 + $b);
-    $e1 = PA_Math\degrees_to_radians(231.19 + 20.2 * $t);
+    $d1 = deg2rad(350.74 - 0.00144 * $t2 + $b);
+    $e1 = deg2rad(231.19 + 20.2 * $t);
     $a = 183.1353208 * $t;
     $b = 360 * ($a - floor($a));
-    $h1 = PA_Math\degrees_to_radians(353.4 + $b);
+    $h1 = deg2rad(353.4 + $b);
 
     $d3 = (0.00000543 * sin($a1) + 0.00001575 * sin($b1)) + (0.00001627 * sin($c1) + 0.00003076 * cos($d1)) + (0.00000927 * sin($h1));
 
@@ -850,7 +846,7 @@ function eccentric_anomaly($am, $ec)
  */
 function refract($y2, PA_Types\CoordinateType $sw, $pr, $tr)
 {
-    $y = PA_Math\degrees_to_radians($y2);
+    $y = deg2rad($y2);
 
     $d = ($sw == PA_Types\CoordinateType::True) ? -1.0 : 1.0;
 
@@ -901,7 +897,7 @@ function refract_l3035($pr, $tr, $y, $d)
         $a = ((0.00002 * $yd + 0.0196) * $yd + 0.1594) * $pr;
         $b = (273.0 + $tr) * ((0.0845 * $yd + 0.505) * $yd + 1);
 
-        return PA_Math\degrees_to_radians(- ($a / $b) * $d);
+        return deg2rad(- ($a / $b) * $d);
     }
 
     return -$d * 0.00007888888 * $pr / ((273.0 + $tr) * tan($y));
@@ -914,7 +910,7 @@ function refract_l3035($pr, $tr, $y, $d)
  */
 function parallax_ha($hh, $hm, $hs, $dd, $dm, $ds, PA_Types\CoordinateType $sw, $gp, $ht, $hp)
 {
-    $a = PA_Math\degrees_to_radians($gp);
+    $a = deg2rad($gp);
     $c1 = cos($a);
     $s1 = sin($a);
 
@@ -928,11 +924,11 @@ function parallax_ha($hh, $hm, $hs, $dd, $dm, $ds, PA_Types\CoordinateType $sw, 
     $rc = $c2 + ($b * $c1);
     $tp = 6.283185308;
 
-    $rp = 1.0 / sin(PA_Math\degrees_to_radians($hp));
+    $rp = 1.0 / sin(deg2rad($hp));
 
-    $x = PA_Math\degrees_to_radians(degree_hours_to_decimal_degrees(hours_minutes_seconds_to_decimal_hours($hh, $hm, $hs)));
+    $x = deg2rad(degree_hours_to_decimal_degrees(hours_minutes_seconds_to_decimal_hours($hh, $hm, $hs)));
     $x1 = $x;
-    $y = PA_Math\degrees_to_radians(degrees_minutes_seconds_to_decimal_degrees($dd, $dm, $ds));
+    $y = deg2rad(degrees_minutes_seconds_to_decimal_degrees($dd, $dm, $ds));
     $y1 = $y;
 
     $d = ($sw == PA_Types\CoordinateType::True) ? 1.0 : -1.0;
@@ -997,7 +993,7 @@ function parallax_ha_l2870($x, $y, $rc, $rp, $rs, $tp)
  */
 function parallax_dec($hh, $hm, $hs, $dd, $dm, $ds, PA_Types\CoordinateType $sw, $gp, $ht, $hp)
 {
-    $a = PA_Math\degrees_to_radians($gp);
+    $a = deg2rad($gp);
     $c1 = cos($a);
     $s1 = sin($a);
 
@@ -1011,12 +1007,12 @@ function parallax_dec($hh, $hm, $hs, $dd, $dm, $ds, PA_Types\CoordinateType $sw,
     $rc = $c2 + ($b * $c1);
     $tp = 6.283185308;
 
-    $rp = 1.0 / sin(PA_Math\degrees_to_radians($hp));
+    $rp = 1.0 / sin(deg2rad($hp));
 
-    $x = PA_Math\degrees_to_radians(degree_hours_to_decimal_degrees(hours_minutes_seconds_to_decimal_hours($hh, $hm, $hs)));
+    $x = deg2rad(degree_hours_to_decimal_degrees(hours_minutes_seconds_to_decimal_hours($hh, $hm, $hs)));
     $x1 = $x;
 
-    $y = PA_Math\degrees_to_radians(degrees_minutes_seconds_to_decimal_degrees($dd, $dm, $ds));
+    $y = deg2rad(degrees_minutes_seconds_to_decimal_degrees($dd, $dm, $ds));
     $y1 = $y;
 
     $d = ($sw == PA_Types\CoordinateType::True) ? 1.0 : -1.0;
@@ -1111,12 +1107,12 @@ function moon_long($lh, $lm, $ls, $ds, $zc, $dy, $mn, $yr)
     $me1 = 350.737486 + $m4 - (0.001436 - 0.0000019 * $t) * $t2;
     $mf = 11.250889 + $m5 - (0.003211 + 0.0000003 * $t) * $t2;
     $na = 259.183275 - $m6 + (0.002078 + 0.0000022 * $t) * $t2;
-    $a = PA_Math\degrees_to_radians(51.2 + 20.2 * $t);
+    $a = deg2rad(51.2 + 20.2 * $t);
     $s1 = sin($a);
-    $s2 = sin(PA_Math\degrees_to_radians($na));
+    $s2 = sin(deg2rad($na));
     $b = 346.56 + (132.87 - 0.0091731 * $t) * $t;
-    $s3 = 0.003964 * sin(PA_Math\degrees_to_radians($b));
-    $c = PA_Math\degrees_to_radians($na + 275.05 - 2.3 * $t);
+    $s3 = 0.003964 * sin(deg2rad($b));
+    $c = deg2rad($na + 275.05 - 2.3 * $t);
     $s4 = sin($c);
     $ml = $ml + 0.000233 * $s1 + $s3 + 0.001964 * $s2;
     $ms = $ms - 0.001778 * $s1;
@@ -1125,11 +1121,11 @@ function moon_long($lh, $lm, $ls, $ds, $zc, $dy, $mn, $yr)
     $me1 = $me1 + 0.002011 * $s1 + $s3 + 0.001964 * $s2;
     $e = 1.0 - (0.002495 + 0.00000752 * $t) * $t;
     $e2 = $e * $e;
-    $ml = PA_Math\degrees_to_radians($ml);
-    $ms = PA_Math\degrees_to_radians($ms);
-    $me1 = PA_Math\degrees_to_radians($me1);
-    $mf = PA_Math\degrees_to_radians($mf);
-    $md = PA_Math\degrees_to_radians($md);
+    $ml = deg2rad($ml);
+    $ms = deg2rad($ms);
+    $me1 = deg2rad($me1);
+    $mf = deg2rad($mf);
+    $md = deg2rad($md);
 
     $l = 6.28875 * sin($md) + 1.274018 * sin(2.0 * $me1 - $md);
     $l = $l + 0.658309 * sin(2.0 * $me1) + 0.213616 * sin(2.0 * $md);
@@ -1159,7 +1155,7 @@ function moon_long($lh, $lm, $ls, $ds, $zc, $dy, $mn, $yr)
     $l = $l + 0.00055 * sin($md + 4.0 * $me1) + 0.000538 * sin(4.0 * $md);
     $l = $l + $e * 0.000521 * sin(4.0 * $me1 - $ms) + 0.000486 * sin(2.0 * $md - $me1);
     $l = $l + $e2 * 0.000717 * sin($md - 2.0 * $ms);
-    $mm = unwind($ml + PA_Math\degrees_to_radians($l));
+    $mm = unwind($ml + deg2rad($l));
 
     return degrees($mm);
 }
@@ -1204,12 +1200,12 @@ function moon_lat($lh, $lm, $ls, $ds, $zc, $dy, $mn, $yr)
     $me1 = 350.737486 + $m4 - (0.001436 - 0.0000019 * $t) * $t2;
     $mf = 11.250889 + $m5 - (0.003211 + 0.0000003 * $t) * $t2;
     $na = 259.183275 - $m6 + (0.002078 + 0.0000022 * $t) * $t2;
-    $a = PA_Math\degrees_to_radians(51.2 + 20.2 * $t);
+    $a = deg2rad(51.2 + 20.2 * $t);
     $s1 = sin($a);
-    $s2 = sin(PA_Math\degrees_to_radians($na));
+    $s2 = sin(deg2rad($na));
     $b = 346.56 + (132.87 - 0.0091731 * $t) * $t;
-    $s3 = 0.003964 * sin(PA_Math\degrees_to_radians($b));
-    $c = PA_Math\degrees_to_radians($na + 275.05 - 2.3 * $t);
+    $s3 = 0.003964 * sin(deg2rad($b));
+    $c = deg2rad($na + 275.05 - 2.3 * $t);
     $s4 = sin($c);
     $ml = $ml + 0.000233 * $s1 + $s3 + 0.001964 * $s2;
     $ms = $ms - 0.001778 * $s1;
@@ -1218,11 +1214,11 @@ function moon_lat($lh, $lm, $ls, $ds, $zc, $dy, $mn, $yr)
     $me1 = $me1 + 0.002011 * $s1 + $s3 + 0.001964 * $s2;
     $e = 1.0 - (0.002495 + 0.00000752 * $t) * $t;
     $e2 = $e * $e;
-    $ms = PA_Math\degrees_to_radians($ms);
-    $na = PA_Math\degrees_to_radians($na);
-    $me1 = PA_Math\degrees_to_radians($me1);
-    $mf = PA_Math\degrees_to_radians($mf);
-    $md = PA_Math\degrees_to_radians($md);
+    $ms = deg2rad($ms);
+    $na = deg2rad($na);
+    $me1 = deg2rad($me1);
+    $mf = deg2rad($mf);
+    $md = deg2rad($md);
 
     $g = 5.128189 * sin($mf) + 0.280606 * sin($md + $mf);
     $g = $g + 0.277693 * sin($md - $mf) + 0.173238 * sin(2.0 * $me1 - $mf);
@@ -1251,7 +1247,7 @@ function moon_lat($lh, $lm, $ls, $ds, $zc, $dy, $mn, $yr)
     $g = $g + $e2 * 0.000306 * sin(2.0 * ($me1 - $ms) - $mf) - 0.000283 * sin($md + 3.0 * $mf);
     $w1 = 0.0004664 * cos($na);
     $w2 = 0.0000754 * cos($c);
-    $bm = PA_Math\degrees_to_radians($g) * (1.0 - $w1 - $w2);
+    $bm = deg2rad($g) * (1.0 - $w1 - $w2);
 
     return degrees($bm);
 }
@@ -1296,12 +1292,12 @@ function moon_hp($lh, $lm, $ls, $ds, $zc, $dy, $mn, $yr)
     $me1 = 350.737486 + $m4 - (0.001436 - 0.0000019 * $t) * $t2;
     $mf = 11.250889 + $m5 - (0.003211 + 0.0000003 * $t) * $t2;
     $na = 259.183275 - $m6 + (0.002078 + 0.0000022 * $t) * $t2;
-    $a = PA_Math\degrees_to_radians(51.2 + 20.2 * $t);
+    $a = deg2rad(51.2 + 20.2 * $t);
     $s1 = sin($a);
-    $s2 = sin(PA_Math\degrees_to_radians($na));
+    $s2 = sin(deg2rad($na));
     $b = 346.56 + (132.87 - 0.0091731 * $t) * $t;
-    $s3 = 0.003964 * sin(PA_Math\degrees_to_radians($b));
-    $c = PA_Math\degrees_to_radians($na + 275.05 - 2.3 * $t);
+    $s3 = 0.003964 * sin(deg2rad($b));
+    $c = deg2rad($na + 275.05 - 2.3 * $t);
     $s4 = sin($c);
     $ml = $ml + 0.000233 * $s1 + $s3 + 0.001964 * $s2;
     $ms = $ms - 0.001778 * $s1;
@@ -1310,10 +1306,10 @@ function moon_hp($lh, $lm, $ls, $ds, $zc, $dy, $mn, $yr)
     $me1 = $me1 + 0.002011 * $s1 + $s3 + 0.001964 * $s2;
     $e = 1.0 - (0.002495 + 0.00000752 * $t) * $t;
     $e2 = $e * $e;
-    $ms = PA_Math\degrees_to_radians($ms);
-    $me1 = PA_Math\degrees_to_radians($me1);
-    $mf = PA_Math\degrees_to_radians($mf);
-    $md = PA_Math\degrees_to_radians($md);
+    $ms = deg2rad($ms);
+    $me1 = deg2rad($me1);
+    $mf = deg2rad($mf);
+    $md = deg2rad($md);
 
     $pm = 0.950724 + 0.051818 * cos($md) + 0.009531 * cos(2.0 * $me1 - $md);
     $pm = $pm + 0.007843 * cos(2.0 * $me1) + 0.002824 * cos(2.0 * $md);
@@ -1342,7 +1338,7 @@ function moon_hp($lh, $lm, $ls, $ds, $zc, $dy, $mn, $yr)
  */
 function moon_dist($lh, $lm, $ls, $ds, $zc, $dy, $mn, $yr)
 {
-    $hp = PA_Math\degrees_to_radians(moon_hp($lh, $lm, $ls, $ds, $zc, $dy, $mn, $yr));
+    $hp = deg2rad(moon_hp($lh, $lm, $ls, $ds, $zc, $dy, $mn, $yr));
     $r = 6378.14 / sin($hp);
 
     return $r;
@@ -1355,7 +1351,7 @@ function moon_dist($lh, $lm, $ls, $ds, $zc, $dy, $mn, $yr)
  */
 function moon_size($lh, $lm, $ls, $ds, $zc, $dy, $mn, $yr)
 {
-    $hp = PA_Math\degrees_to_radians(moon_hp($lh, $lm, $ls, $ds, $zc, $dy, $mn, $yr));
+    $hp = deg2rad(moon_hp($lh, $lm, $ls, $ds, $zc, $dy, $mn, $yr));
     $r = 6378.14 / sin($hp);
     $th = 384401.0 * 0.5181 / $r;
 
@@ -1430,9 +1426,9 @@ function sun_ecc($gd, $gm, $gy)
  */
 function ec_dec($eld, $elm, $els, $bd, $bm, $bs, $gd, $gm, $gy)
 {
-    $a =  PA_Math\degrees_to_radians(degrees_minutes_seconds_to_decimal_degrees($eld, $elm, $els));
-    $b = PA_Math\degrees_to_radians(degrees_minutes_seconds_to_decimal_degrees($bd, $bm, $bs));
-    $c = PA_Math\degrees_to_radians(obliq($gd, $gm, $gy));
+    $a =  deg2rad(degrees_minutes_seconds_to_decimal_degrees($eld, $elm, $els));
+    $b = deg2rad(degrees_minutes_seconds_to_decimal_degrees($bd, $bm, $bs));
+    $c = deg2rad(obliq($gd, $gm, $gy));
     $d = sin($b) * cos($c) + cos($b) * sin($c) * sin($a);
 
     return degrees(asin($d));
@@ -1445,9 +1441,9 @@ function ec_dec($eld, $elm, $els, $bd, $bm, $bs, $gd, $gm, $gy)
  */
 function ec_ra($eld, $elm, $els, $bd, $bm, $bs, $gd, $gm, $gy)
 {
-    $a = PA_Math\degrees_to_radians(degrees_minutes_seconds_to_decimal_degrees($eld, $elm, $els));
-    $b = PA_Math\degrees_to_radians(degrees_minutes_seconds_to_decimal_degrees($bd, $bm, $bs));
-    $c = PA_Math\degrees_to_radians(obliq($gd, $gm, $gy));
+    $a = deg2rad(degrees_minutes_seconds_to_decimal_degrees($eld, $elm, $els));
+    $b = deg2rad(degrees_minutes_seconds_to_decimal_degrees($bd, $bm, $bs));
+    $c = deg2rad(obliq($gd, $gm, $gy));
     $d = sin($a) * cos($c) - tan($b) * sin($c);
     $e = cos($a);
     $f = degrees(atan2($d, $e));
@@ -1477,7 +1473,7 @@ function sun_true_anomaly($lch, $lcm, $lcs, $ds, $zc, $ld, $lm, $ly)
     $m1 = 358.47583 - (0.00015 + 0.0000033 * $t) * $t2 + $b;
     $ec = 0.01675104 - 0.0000418 * $t - 0.000000126 * $t2;
 
-    $am = PA_Math\degrees_to_radians($m1);
+    $am = deg2rad($m1);
 
     return degrees(true_anomaly($am, $ec));
 }
@@ -1499,7 +1495,7 @@ function sun_mean_anomaly($lch, $lcm, $lcs, $ds, $zc, $ld, $lm, $ly)
     $a = 100.0021359 * $t;
     $b = 360 * ($a - floor($a));
     $m1 = 358.47583 - (0.00015 + 0.0000033 * $t) * $t2 + $b;
-    $am = unwind(PA_Math\degrees_to_radians($m1));
+    $am = unwind(deg2rad($m1));
 
     return $am;
 }

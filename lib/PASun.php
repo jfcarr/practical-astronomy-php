@@ -3,11 +3,9 @@
 namespace PA\Sun;
 
 include_once 'PAMacros.php';
-include_once 'PAMathExtensions.php';
 include_once 'PATypes.php';
 
 use PA\Macros as PA_Macros;
-use PA\MathExtensions as PA_Math;
 use PA\Types as PA_Types;
 use PA\Types\RiseSetStatus;
 
@@ -28,7 +26,7 @@ function approximate_position_of_sun($lctHours, $lctMinutes, $lctSeconds, $local
     $nDeg = 360 * $dDays / 365.242191;
     $mDeg1 = $nDeg + PA_Macros\sun_e_long(0, 1, 2010) - PA_Macros\sun_peri(0, 1, 2010);
     $mDeg2 = $mDeg1 - 360 * floor($mDeg1 / 360);
-    $eCDeg = 360 * PA_Macros\sun_ecc(0, 1, 2010) * sin(PA_Math\degrees_to_radians($mDeg2)) / pi();
+    $eCDeg = 360 * PA_Macros\sun_ecc(0, 1, 2010) * sin(deg2rad($mDeg2)) / pi();
     $lSDeg1 = $nDeg + $eCDeg + PA_Macros\sun_e_long(0, 1, 2010);
     $lSDeg2 = $lSDeg1 - 360 * floor($lSDeg1 / 360);
     $raDeg = PA_Macros\ec_ra($lSDeg2, 0, 0, 0, 0, 0, $greenwichDateDay, $greenwichDateMonth, $greenwichDateYear);
@@ -81,7 +79,7 @@ function sun_distance_and_angular_size($lctHours, $lctMinutes, $lctSeconds, $loc
     $gMonth = PA_Macros\local_civil_time_greenwich_month($lctHours, $lctMinutes, $lctSeconds, $daylightSaving, $zoneCorrection, $localDay, $localMonth, $localYear);
     $gYear = PA_Macros\local_civil_time_greenwich_year($lctHours, $lctMinutes, $lctSeconds, $daylightSaving, $zoneCorrection, $localDay, $localMonth, $localYear);
     $trueAnomalyDeg = PA_Macros\sun_true_anomaly($lctHours, $lctMinutes, $lctSeconds, $daylightSaving, $zoneCorrection, $localDay, $localMonth, $localYear);
-    $trueAnomalyRad = PA_Math\degrees_to_radians($trueAnomalyDeg);
+    $trueAnomalyRad = deg2rad($trueAnomalyDeg);
     $eccentricity = PA_Macros\sun_ecc($gDay, $gMonth, $gYear);
     $f = (1 + $eccentricity * cos($trueAnomalyRad)) / (1 - $eccentricity * $eccentricity);
     $rKm = 149598500 / $f;

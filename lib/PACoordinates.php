@@ -3,11 +3,9 @@
 namespace PA\Coordinates;
 
 include_once 'PAMacros.php';
-include_once 'PAMathExtensions.php';
 include_once 'PATypes.php';
 
 use PA\Macros as PA_Macros;
-use PA\MathExtensions as PA_Math;
 use PA\Types as PA_Types;
 
 /**
@@ -134,10 +132,10 @@ function ecliptic_coordinate_to_equatorial_coordinate($eclipticLongitudeDegrees,
 {
     $eclonDeg = PA_Macros\degrees_minutes_seconds_to_decimal_degrees($eclipticLongitudeDegrees, $eclipticLongitudeMinutes, $eclipticLongitudeSeconds);
     $eclatDeg = PA_Macros\degrees_minutes_seconds_to_decimal_degrees($eclipticLatitudeDegrees, $eclipticLatitudeMinutes, $eclipticLatitudeSeconds);
-    $eclonRad = PA_Math\degrees_to_radians($eclonDeg);
-    $eclatRad = PA_Math\degrees_to_radians($eclatDeg);
+    $eclonRad = deg2rad($eclonDeg);
+    $eclatRad = deg2rad($eclatDeg);
     $obliqDeg = PA_Macros\obliq($greenwichDay, $greenwichMonth, $greenwichYear);
-    $obliqRad = PA_Math\degrees_to_radians($obliqDeg);
+    $obliqRad = deg2rad($obliqDeg);
     $sinDec = sin($eclatRad) * cos($obliqRad) + cos($eclatRad) * sin($obliqRad) * sin($eclonRad);
     $decRad = asin($sinDec);
     $decDeg = PA_Macros\degrees($decRad);
@@ -165,10 +163,10 @@ function equatorial_coordinate_to_ecliptic_coordinate($raHours, $raMinutes, $raS
 {
     $raDeg = PA_Macros\degree_hours_to_decimal_degrees(PA_Macros\hours_minutes_seconds_to_decimal_hours($raHours, $raMinutes, $raSeconds));
     $decDeg = PA_Macros\degrees_minutes_seconds_to_decimal_degrees($decDegrees, $decMinutes, $decSeconds);
-    $raRad = PA_Math\degrees_to_radians($raDeg);
-    $decRad = PA_Math\degrees_to_radians($decDeg);
+    $raRad = deg2rad($raDeg);
+    $decRad = deg2rad($decDeg);
     $obliqDeg = PA_Macros\obliq($gwDay, $gwMonth, $gwYear);
-    $obliqRad = PA_Math\degrees_to_radians($obliqDeg);
+    $obliqRad = deg2rad($obliqDeg);
     $sinEclLat = sin($decRad) * cos($obliqRad) - cos($decRad) * sin($obliqRad) * sin($raRad);
     $eclLatRad = asin($sinEclLat);
     $eclLatDeg = PA_Macros\degrees($eclLatRad);
@@ -195,13 +193,13 @@ function equatorial_coordinate_to_galactic_coordinate($raHours, $raMinutes, $raS
 {
     $raDeg = PA_Macros\degree_hours_to_decimal_degrees(PA_Macros\hours_minutes_seconds_to_decimal_hours($raHours, $raMinutes, $raSeconds));
     $decDeg = PA_Macros\degrees_minutes_seconds_to_decimal_degrees($decDegrees, $decMinutes, $decSeconds);
-    $raRad = PA_Math\degrees_to_radians($raDeg);
-    $decRad = PA_Math\degrees_to_radians($decDeg);
-    $sinB = cos($decRad) * cos(PA_Math\degrees_to_radians(27.4))  * cos($raRad - PA_Math\degrees_to_radians(192.25)) + sin($decRad) * sin(PA_Math\degrees_to_radians(27.4));
+    $raRad = deg2rad($raDeg);
+    $decRad = deg2rad($decDeg);
+    $sinB = cos($decRad) * cos(deg2rad(27.4))  * cos($raRad - deg2rad(192.25)) + sin($decRad) * sin(deg2rad(27.4));
     $bRadians = asin($sinB);
     $bDeg = PA_Macros\degrees($bRadians);
-    $y = sin($decRad) - $sinB * sin(PA_Math\degrees_to_radians(27.4));
-    $x = cos($decRad) * sin($raRad - PA_Math\degrees_to_radians(192.25)) * cos(PA_Math\degrees_to_radians(27.4));
+    $y = sin($decRad) - $sinB * sin(deg2rad(27.4));
+    $x = cos($decRad) * sin($raRad - deg2rad(192.25)) * cos(deg2rad(27.4));
     $longDeg1 = PA_Macros\degrees(atan2($y, $x)) + 33;
     $longDeg2 = $longDeg1 - 360 * floor($longDeg1 / 360);
 
@@ -222,13 +220,13 @@ function galactic_coordinate_to_equatorial_coordinate($galLongDeg, $galLongMin, 
 {
     $glongDeg = PA_Macros\degrees_minutes_seconds_to_decimal_degrees($galLongDeg, $galLongMin, $galLongSec);
     $glatDeg = PA_Macros\degrees_minutes_seconds_to_decimal_degrees($galLatDeg, $galLatMin, $galLatSec);
-    $glongRad = PA_Math\degrees_to_radians($glongDeg);
-    $glatRad = PA_Math\degrees_to_radians($glatDeg);
-    $sinDec = cos($glatRad) * cos(PA_Math\degrees_to_radians(27.4)) * sin($glongRad - PA_Math\degrees_to_radians(33.0)) + sin($glatRad) * sin(PA_Math\degrees_to_radians(27.4));
+    $glongRad = deg2rad($glongDeg);
+    $glatRad = deg2rad($glatDeg);
+    $sinDec = cos($glatRad) * cos(deg2rad(27.4)) * sin($glongRad - deg2rad(33.0)) + sin($glatRad) * sin(deg2rad(27.4));
     $decRadians = asin($sinDec);
     $decDeg = PA_Macros\degrees($decRadians);
-    $y = cos($glatRad) * cos($glongRad - PA_Math\degrees_to_radians(33.0));
-    $x = sin($glatRad) * cos(PA_Math\degrees_to_radians(27.4)) - cos($glatRad) * sin(PA_Math\degrees_to_radians(27.4)) * sin($glongRad - PA_Math\degrees_to_radians(33.0));
+    $y = cos($glatRad) * cos($glongRad - deg2rad(33.0));
+    $x = sin($glatRad) * cos(deg2rad(27.4)) - cos($glatRad) * sin(deg2rad(27.4)) * sin($glongRad - deg2rad(33.0));
 
     $raDeg1 = PA_Macros\degrees(atan2($y, $x)) + 192.25;
     $raDeg2 = $raDeg1 - 360 * floor($raDeg1 / 360);
@@ -258,9 +256,9 @@ function angle_between_two_objects($raLong1HourDeg, $raLong1Min, $raLong1Sec, $d
         ? PA_Macros\degree_hours_to_decimal_degrees($raLong1Decimal)
         : $raLong1Decimal;
 
-    $raLong1Rad = PA_Math\degrees_to_radians($raLong1Deg);
+    $raLong1Rad = deg2rad($raLong1Deg);
     $decLat1Deg1 = PA_Macros\degrees_minutes_seconds_to_decimal_degrees($decLat1Deg, $decLat1Min, $decLat1Sec);
-    $decLat1Rad = PA_Math\degrees_to_radians($decLat1Deg1);
+    $decLat1Rad = deg2rad($decLat1Deg1);
 
     $raLong2Decimal =
         ($hourOrDegree == PA_Types\AngleMeasure::Hours)
@@ -269,9 +267,9 @@ function angle_between_two_objects($raLong1HourDeg, $raLong1Min, $raLong1Sec, $d
     $raLong2Deg = ($hourOrDegree == PA_Types\AngleMeasure::Hours)
         ? PA_Macros\degree_hours_to_decimal_degrees($raLong2Decimal)
         : $raLong2Decimal;
-    $raLong2Rad = PA_Math\degrees_to_radians($raLong2Deg);
+    $raLong2Rad = deg2rad($raLong2Deg);
     $decLat2Deg1 = PA_Macros\degrees_minutes_seconds_to_decimal_degrees($decLat2Deg, $decLat2Min, $decLat2Sec);
-    $decLat2Rad = PA_Math\degrees_to_radians($decLat2Deg1);
+    $decLat2Rad = deg2rad($decLat2Deg1);
 
     $cosD = sin($decLat1Rad) * sin($decLat2Rad) + cos($decLat1Rad) * cos($decLat2Rad) * cos($raLong1Rad - $raLong2Rad);
     $dRad = acos($cosD);
@@ -290,9 +288,9 @@ function angle_between_two_objects($raLong1HourDeg, $raLong1Min, $raLong1Sec, $d
 function rising_and_setting($raHours, $raMinutes, $raSeconds, $decDeg, $decMin, $decSec, $gwDateDay, $gwDateMonth, $gwDateYear, $geogLongDeg, $geogLatDeg, $vertShiftDeg)
 {
     $raHours1 = PA_Macros\hours_minutes_seconds_to_decimal_hours($raHours, $raMinutes, $raSeconds);
-    $decRad = PA_Math\degrees_to_radians(PA_Macros\degrees_minutes_seconds_to_decimal_degrees($decDeg, $decMin, $decSec));
-    $verticalDisplRadians = PA_Math\degrees_to_radians($vertShiftDeg);
-    $geoLatRadians = PA_Math\degrees_to_radians($geogLatDeg);
+    $decRad = deg2rad(PA_Macros\degrees_minutes_seconds_to_decimal_degrees($decDeg, $decMin, $decSec));
+    $verticalDisplRadians = deg2rad($vertShiftDeg);
+    $geoLatRadians = deg2rad($geogLatDeg);
     $cosH = - (sin($verticalDisplRadians) + sin($geoLatRadians) * sin($decRad)) / (cos($geoLatRadians) * cos($decRad));
     $hHours = PA_Macros\decimal_degrees_to_degree_hours(PA_Macros\degrees(acos($cosH)));
     $lstRiseHours = ($raHours1 - $hHours) - 24 * floor(($raHours1 - $hHours) / 24);
@@ -326,8 +324,8 @@ function rising_and_setting($raHours, $raMinutes, $raSeconds, $decDeg, $decMin, 
  */
 function correct_for_precession($raHour, $raMinutes, $raSeconds, $decDeg, $decMinutes, $decSeconds, $epoch1Day, $epoch1Month, $epoch1Year, $epoch2Day, $epoch2Month, $epoch2Year)
 {
-    $ra1Rad = PA_Math\degrees_to_radians(PA_Macros\degree_hours_to_decimal_degrees(PA_Macros\hours_minutes_seconds_to_decimal_hours($raHour, $raMinutes, $raSeconds)));
-    $dec1Rad = PA_Math\degrees_to_radians(PA_Macros\degrees_minutes_seconds_to_decimal_degrees($decDeg, $decMinutes, $decSeconds));
+    $ra1Rad = deg2rad(PA_Macros\degree_hours_to_decimal_degrees(PA_Macros\hours_minutes_seconds_to_decimal_hours($raHour, $raMinutes, $raSeconds)));
+    $dec1Rad = deg2rad(PA_Macros\degrees_minutes_seconds_to_decimal_degrees($decDeg, $decMinutes, $decSeconds));
     $tCenturies = (PA_Macros\civil_date_to_julian_date($epoch1Day, $epoch1Month, $epoch1Year) - 2415020) / 36525;
     $mSec = 3.07234 + (0.00186 * $tCenturies);
     $nArcsec = 20.0468 - (0.0085 * $tCenturies);
@@ -358,11 +356,11 @@ function nutation_in_ecliptic_longitude_and_obliquity($greenwichDay, $greenwichM
     $l1Deg = 279.6967 + (0.000303 * $tCenturies * $tCenturies);
     $lDeg1 = $l1Deg + 360 * ($aDeg - floor($aDeg));
     $lDeg2 = $lDeg1 - 360 * floor($lDeg1 / 360);
-    $lRad = PA_Math\degrees_to_radians($lDeg2);
+    $lRad = deg2rad($lDeg2);
     $bDeg = 5.372617 * $tCenturies;
     $nDeg1 = 259.1833 - 360 * ($bDeg - floor($bDeg));
     $nDeg2 = $nDeg1 - 360 * (floor($nDeg1 / 360));
-    $nRad = PA_Math\degrees_to_radians($nDeg2);
+    $nRad = deg2rad($nDeg2);
     $nutInLongArcsec = -17.2 * sin($nRad) - 1.3 * sin(2 * $lRad);
     $nutInOblArcsec = 9.2 * cos($nRad) + 0.5 * cos(2 * $lRad);
 
@@ -380,8 +378,8 @@ function correct_for_aberration($utHour, $utMinutes, $utSeconds, $gwDay, $gwMont
     $trueLongDeg = PA_Macros\degrees_minutes_seconds_to_decimal_degrees($trueEclLongDeg, $trueEclLongMin, $trueEclLongSec);
     $trueLatDeg = PA_Macros\degrees_minutes_seconds_to_decimal_degrees($trueEclLatDeg, $trueEclLatMin, $trueEclLatSec);
     $sunTrueLongDeg = PA_Macros\sun_long($utHour, $utMinutes, $utSeconds, 0, 0, $gwDay, $gwMonth, $gwYear);
-    $dlongArcsec = -20.5 * cos(PA_Math\degrees_to_radians($sunTrueLongDeg - $trueLongDeg)) / cos(PA_Math\degrees_to_radians($trueLatDeg));
-    $dlatArcsec = -20.5 * sin(PA_Math\degrees_to_radians($sunTrueLongDeg - $trueLongDeg)) * sin(PA_Math\degrees_to_radians($trueLatDeg));
+    $dlongArcsec = -20.5 * cos(deg2rad($sunTrueLongDeg - $trueLongDeg)) / cos(deg2rad($trueLatDeg));
+    $dlatArcsec = -20.5 * sin(deg2rad($sunTrueLongDeg - $trueLongDeg)) * sin(deg2rad($trueLatDeg));
     $apparentLongDeg = $trueLongDeg + ($dlongArcsec / 3600);
     $apparentLatDeg = $trueLatDeg + ($dlatArcsec / 3600);
 
@@ -451,21 +449,21 @@ function heliographic_coordinates($helioPositionAngleDeg, $helioDisplacementArcm
     $tCenturies = ($julianDateDays - 2415020) / 36525;
     $longAscNodeDeg = PA_Macros\degrees_minutes_seconds_to_decimal_degrees(74, 22, 0) + (84 * $tCenturies / 60);
     $sunLongDeg = PA_Macros\sun_long(0, 0, 0, 0, 0, $gwdateDay, $gwdateMonth, $gwdateYear);
-    $y = sin(PA_Math\degrees_to_radians($longAscNodeDeg - $sunLongDeg))  * cos(PA_Math\degrees_to_radians(PA_Macros\degrees_minutes_seconds_to_decimal_degrees(7, 15, 0)));
-    $x = -cos(PA_Math\degrees_to_radians($longAscNodeDeg - $sunLongDeg));
+    $y = sin(deg2rad($longAscNodeDeg - $sunLongDeg))  * cos(deg2rad(PA_Macros\degrees_minutes_seconds_to_decimal_degrees(7, 15, 0)));
+    $x = -cos(deg2rad($longAscNodeDeg - $sunLongDeg));
     $aDeg = PA_Macros\degrees(atan2($y, $x));
     $mDeg1 = 360 - (360 * ($julianDateDays - 2398220) / 25.38);
     $mDeg2 = $mDeg1 - 360 * floor($mDeg1 / 360);
     $l0Deg1 = $mDeg2 + $aDeg;
-    $b0Rad = asin(sin(PA_Math\degrees_to_radians($sunLongDeg - $longAscNodeDeg)) * sin(PA_Math\degrees_to_radians(PA_Macros\degrees_minutes_seconds_to_decimal_degrees(7, 15, 0))));
-    $theta1Rad = atan(-cos(PA_Math\degrees_to_radians($sunLongDeg)) * tan(PA_Math\degrees_to_radians(PA_Macros\obliq($gwdateDay, $gwdateMonth, $gwdateYear))));
-    $theta2Rad = atan(-cos(PA_Math\degrees_to_radians($longAscNodeDeg - $sunLongDeg)) * tan(PA_Math\degrees_to_radians(PA_Macros\degrees_minutes_seconds_to_decimal_degrees(7, 15, 0))));
+    $b0Rad = asin(sin(deg2rad($sunLongDeg - $longAscNodeDeg)) * sin(deg2rad(PA_Macros\degrees_minutes_seconds_to_decimal_degrees(7, 15, 0))));
+    $theta1Rad = atan(-cos(deg2rad($sunLongDeg)) * tan(deg2rad(PA_Macros\obliq($gwdateDay, $gwdateMonth, $gwdateYear))));
+    $theta2Rad = atan(-cos(deg2rad($longAscNodeDeg - $sunLongDeg)) * tan(deg2rad(PA_Macros\degrees_minutes_seconds_to_decimal_degrees(7, 15, 0))));
     $pDeg = PA_Macros\degrees($theta1Rad + $theta2Rad);
     $rho1Deg = $helioDisplacementArcmin / 60;
-    $rhoRad = asin(2 * $rho1Deg / PA_Macros\sun_dia(0, 0, 0, 0, 0, $gwdateDay, $gwdateMonth, $gwdateYear)) - PA_Math\degrees_to_radians($rho1Deg);
-    $bRad = asin(sin($b0Rad) * cos($rhoRad) + cos($b0Rad) * sin($rhoRad) * cos(PA_Math\degrees_to_radians($pDeg - $helioPositionAngleDeg)));
+    $rhoRad = asin(2 * $rho1Deg / PA_Macros\sun_dia(0, 0, 0, 0, 0, $gwdateDay, $gwdateMonth, $gwdateYear)) - deg2rad($rho1Deg);
+    $bRad = asin(sin($b0Rad) * cos($rhoRad) + cos($b0Rad) * sin($rhoRad) * cos(deg2rad($pDeg - $helioPositionAngleDeg)));
     $bDeg = PA_Macros\degrees($bRad);
-    $lDeg1 = PA_Macros\degrees(asin(sin($rhoRad) * sin(PA_Math\degrees_to_radians($pDeg - $helioPositionAngleDeg)) / cos($bRad))) + $l0Deg1;
+    $lDeg1 = PA_Macros\degrees(asin(sin($rhoRad) * sin(deg2rad($pDeg - $helioPositionAngleDeg)) / cos($bRad))) + $l0Deg1;
     $lDeg2 = $lDeg1 - 360 * floor($lDeg1 / 360);
 
     $helioLongDeg = round($lDeg2, 2);
@@ -497,9 +495,9 @@ function selenographic_coordinates1($gwdateDay, $gwdateMonth, $gwdateYear)
     $f1 = 93.27191 + 483202.0175 * $tCenturies;
     $f2 = $f1 - 360 * floor($f1 / 360);
     $geocentricMoonLongDeg = PA_Macros\moon_long(0, 0, 0, 0, 0, $gwdateDay, $gwdateMonth, $gwdateYear);
-    $geocentricMoonLatRad = PA_Math\degrees_to_radians(PA_Macros\moon_lat(0, 0, 0, 0, 0, $gwdateDay, $gwdateMonth, $gwdateYear));
-    $inclinationRad = PA_Math\degrees_to_radians(PA_Macros\degrees_minutes_seconds_to_decimal_degrees(1, 32, 32.7));
-    $nodeLongRad = PA_Math\degrees_to_radians($longAscNodeDeg - $geocentricMoonLongDeg);
+    $geocentricMoonLatRad = deg2rad(PA_Macros\moon_lat(0, 0, 0, 0, 0, $gwdateDay, $gwdateMonth, $gwdateYear));
+    $inclinationRad = deg2rad(PA_Macros\degrees_minutes_seconds_to_decimal_degrees(1, 32, 32.7));
+    $nodeLongRad = deg2rad($longAscNodeDeg - $geocentricMoonLongDeg);
     $sinBe = - (cos($inclinationRad)) * sin($geocentricMoonLatRad) + sin($inclinationRad) * cos($geocentricMoonLatRad) * sin($nodeLongRad);
     $subEarthLatDeg = PA_Macros\degrees(asin($sinBe));
     $aRad = atan2((-sin($geocentricMoonLatRad) * sin($inclinationRad) - cos($geocentricMoonLatRad) * cos($inclinationRad) * sin($nodeLongRad)), (cos($geocentricMoonLatRad) * cos($nodeLongRad)));
@@ -508,8 +506,8 @@ function selenographic_coordinates1($gwdateDay, $gwdateMonth, $gwdateYear)
     $subEarthLongDeg2 = $subEarthLongDeg1 - 360 * floor($subEarthLongDeg1 / 360);
     $subEarthLongDeg3 = ($subEarthLongDeg2 > 180) ? $subEarthLongDeg2 - 360 : $subEarthLongDeg2;
     $c1Rad = atan(cos($nodeLongRad) * sin($inclinationRad) / (cos($geocentricMoonLatRad) * cos($inclinationRad) + sin($geocentricMoonLatRad) * sin($inclinationRad) * sin($nodeLongRad)));
-    $obliquityRad = PA_Math\degrees_to_radians(PA_Macros\obliq($gwdateDay, $gwdateMonth, $gwdateYear));
-    $c2Rad = atan(sin($obliquityRad) * cos(PA_Math\degrees_to_radians($geocentricMoonLongDeg)) / (sin($obliquityRad) * sin($geocentricMoonLatRad) * sin(PA_Math\degrees_to_radians($geocentricMoonLongDeg)) - cos($obliquityRad) * cos($geocentricMoonLatRad)));
+    $obliquityRad = deg2rad(PA_Macros\obliq($gwdateDay, $gwdateMonth, $gwdateYear));
+    $c2Rad = atan(sin($obliquityRad) * cos(deg2rad($geocentricMoonLongDeg)) / (sin($obliquityRad) * sin($geocentricMoonLatRad) * sin(deg2rad($geocentricMoonLongDeg)) - cos($obliquityRad) * cos($geocentricMoonLatRad)));
     $cDeg = PA_Macros\degrees($c1Rad + $c2Rad);
 
     $subEarthLongitude = round($subEarthLongDeg3, 2);
@@ -532,12 +530,12 @@ function selenographic_coordinates2($gwdateDay, $gwdateMonth, $gwdateYear)
     $sunGeocentricLongDeg = PA_Macros\sun_long(0, 0, 0, 0, 0, $gwdateDay, $gwdateMonth, $gwdateYear);
     $moonEquHorParallaxArcMin = PA_Macros\moon_hp(0, 0, 0, 0, 0, $gwdateDay, $gwdateMonth, $gwdateYear) * 60;
     $sunEarthDistAU = PA_Macros\sun_dist(0, 0, 0, 0, 0, $gwdateDay, $gwdateMonth, $gwdateYear);
-    $geocentricMoonLatRad = PA_Math\degrees_to_radians(PA_Macros\moon_lat(0, 0, 0, 0, 0, $gwdateDay, $gwdateMonth, $gwdateYear));
+    $geocentricMoonLatRad = deg2rad(PA_Macros\moon_lat(0, 0, 0, 0, 0, $gwdateDay, $gwdateMonth, $gwdateYear));
     $geocentricMoonLongDeg = PA_Macros\moon_long(0, 0, 0, 0, 0, $gwdateDay, $gwdateMonth, $gwdateYear);
-    $adjustedMoonLongDeg = $sunGeocentricLongDeg + 180 + (26.4 * cos($geocentricMoonLatRad) * sin(PA_Math\degrees_to_radians($sunGeocentricLongDeg - $geocentricMoonLongDeg)) / ($moonEquHorParallaxArcMin * $sunEarthDistAU));
+    $adjustedMoonLongDeg = $sunGeocentricLongDeg + 180 + (26.4 * cos($geocentricMoonLatRad) * sin(deg2rad($sunGeocentricLongDeg - $geocentricMoonLongDeg)) / ($moonEquHorParallaxArcMin * $sunEarthDistAU));
     $adjustedMoonLatRad = 0.14666 * $geocentricMoonLatRad / ($moonEquHorParallaxArcMin * $sunEarthDistAU);
-    $inclinationRad = PA_Math\degrees_to_radians(PA_Macros\degrees_minutes_seconds_to_decimal_degrees(1, 32, 32.7));
-    $nodeLongRad = PA_Math\degrees_to_radians($longAscNodeDeg - $adjustedMoonLongDeg);
+    $inclinationRad = deg2rad(PA_Macros\degrees_minutes_seconds_to_decimal_degrees(1, 32, 32.7));
+    $nodeLongRad = deg2rad($longAscNodeDeg - $adjustedMoonLongDeg);
     $sinBs = -cos($inclinationRad) * sin($adjustedMoonLatRad) + sin($inclinationRad) * cos($adjustedMoonLatRad) * sin($nodeLongRad);
     $subSolarLatDeg = PA_Macros\degrees(asin($sinBs));
     $aRad = atan2((-sin($adjustedMoonLatRad) * sin($inclinationRad) - cos($adjustedMoonLatRad) * cos($inclinationRad) * sin($nodeLongRad)), (cos($adjustedMoonLatRad) * cos($nodeLongRad)));
