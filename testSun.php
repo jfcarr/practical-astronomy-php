@@ -17,55 +17,55 @@ function approximate_position_of_sun($lctHours, $lctMinutes, $lctSeconds, $local
 {
     list($sunRAHour, $sunRAMin, $sunRASec, $sunDecDeg, $sunDecMin, $sunDecSec) = PA_Sun\approximate_position_of_sun($lctHours, $lctMinutes, $lctSeconds, $localDay, $localMonth, $localYear, $isDaylightSaving, $zoneCorrection);
 
-    assert($sunRAHour == $expectedSunRAHour);
-    assert($sunRAMin == $expectedSunRAMin);
-    assert($sunRASec == $expectedSunRASec);
-    assert($sunDecDeg == $expectedSunDecDeg);
-    assert($sunDecMin == $expectedSunDecMin);
-    assert($sunDecSec == $expectedSunDecSec);
+    descriptive_assert("[Approximate Position of Sun] RA Hour", $sunRAHour, $expectedSunRAHour);
+    descriptive_assert("[Approximate Position of Sun] RA Minutes", $sunRAMin, $expectedSunRAMin);
+    descriptive_assert("[Approximate Position of Sun] RA Seconds", $sunRASec, $expectedSunRASec);
+    descriptive_assert("[Approximate Position of Sun] Dec Degrees", $sunDecDeg, $expectedSunDecDeg);
+    descriptive_assert("[Approximate Position of Sun] Dec Minutes", $sunDecMin, $expectedSunDecMin);
+    descriptive_assert("[Approximate Position of Sun] Dec Seconds", $sunDecSec, $expectedSunDecSec);
 
-    echo "[Approximate Position] [Local Civil Time] {$lctHours}:{$lctMinutes}:{$lctSeconds} [Local Day] {$localMonth}/{$localDay}/{$localYear} = [Sun] RA {$sunRAHour}:{$sunRAMin}:{$sunRASec} Declination {$sunDecDeg} d {$sunDecMin} m {$sunDecSec} s\n";
+    echo "[Approximate Position of Sun] PASSED\n";
 }
 
 function precise_position_of_sun($lctHours, $lctMinutes, $lctSeconds, $localDay, $localMonth, $localYear, $isDaylightSaving, $zoneCorrection, $expectedSunRAHour, $expectedSunRAMin, $expectedSunRASec, $expectedSunDecDeg, $expectedSunDecMin, $expectedSunDecSec)
 {
     list($sunRAHour, $sunRAMin, $sunRASec, $sunDecDeg, $sunDecMin, $sunDecSec) = PA_Sun\precise_position_of_sun($lctHours, $lctMinutes, $lctSeconds, $localDay, $localMonth, $localYear, $isDaylightSaving, $zoneCorrection);
 
-    assert($sunRAHour == $expectedSunRAHour);
-    assert($sunRAMin == $expectedSunRAMin);
-    assert($sunRASec == $expectedSunRASec);
-    assert($sunDecDeg == $expectedSunDecDeg);
-    assert($sunDecMin == $expectedSunDecMin);
-    assert($sunDecSec == $expectedSunDecSec);
+    descriptive_assert("[Precise Position of Sun] RA Hour", $sunRAHour, $expectedSunRAHour);
+    descriptive_assert("[Precise Position of Sun] RA Minutes", $sunRAMin, $expectedSunRAMin);
+    descriptive_assert("[Precise Position of Sun] RA Seconds", $sunRASec, $expectedSunRASec);
+    descriptive_assert("[Precise Position of Sun] Dec Degrees", $sunDecDeg, $expectedSunDecDeg);
+    descriptive_assert("[Precise Position of Sun] Dec Minutes", $sunDecMin, $expectedSunDecMin);
+    descriptive_assert("[Precise Position of Sun] Dec Seconds", $sunDecSec, $expectedSunDecSec);
 
-    echo "[Precise Position] [Local Civil Time] {$lctHours}:{$lctMinutes}:{$lctSeconds} [Local Day] {$localMonth}/{$localDay}/{$localYear} = [Sun] RA {$sunRAHour}:{$sunRAMin}:{$sunRASec} Declination {$sunDecDeg} d {$sunDecMin} m {$sunDecSec} s\n";
+    echo "[Precise Position of Sun] PASSED\n";
 }
 
 function sun_distance_and_angular_size($lctHours, $lctMinutes, $lctSeconds, $localDay, $localMonth, $localYear, $isDaylightSaving, $zoneCorrection, $expectedSunDistKm, $expectedSunAngSizeDeg, $expectedSunAngSizeMin, $expectedSunAngSizeSec)
 {
     list($sunDistKm, $sunAngSizeDeg, $sunAngSizeMin, $sunAngSizeSec) = PA_Sun\sun_distance_and_angular_size($lctHours, $lctMinutes, $lctSeconds, $localDay, $localMonth, $localYear, $isDaylightSaving, $zoneCorrection);
 
-    assert($sunDistKm == $expectedSunDistKm);
-    assert($sunAngSizeDeg == $expectedSunAngSizeDeg);
-    assert($sunAngSizeMin == $expectedSunAngSizeMin);
-    assert($sunAngSizeSec == $expectedSunAngSizeSec);
+    descriptive_assert("[Sun Distance and Angular Size] Distance km", $sunDistKm, $expectedSunDistKm);
+    descriptive_assert("[Sun Distance and Angular Size] Angular Size degrees", $sunAngSizeDeg, $expectedSunAngSizeDeg);
+    descriptive_assert("[Sun Distance and Angular Size] Angular Size minutes", $sunAngSizeMin, $expectedSunAngSizeMin);
+    descriptive_assert("[Sun Distance and Angular Size] Angular Size seconds", $sunAngSizeSec, $expectedSunAngSizeSec);
 
-    echo "[Distance and Angular Size] [Local Time] {$lctHours}:{$lctMinutes}:{$lctSeconds} [Local Date] {$localMonth}/{$localDay}/{$localYear} = [Distance] {$sunDistKm} km [Size] {$sunAngSizeDeg} d {$sunAngSizeMin} m {$sunAngSizeSec} s\n";
+    echo "[Sun Distance and Angular Size] PASSED\n";
 }
 
 function sunrise_and_sunset($localDay, $localMonth, $localYear, $isDaylightSaving, $zoneCorrection, $geographicalLongDeg, $geographicalLatDeg, $expected_localSunriseHour, $expected_localSunriseMinute, $expected_localSunsetHour, $expected_localSunsetMinute, $expected_azimuthOfSunriseDeg, $expected_azimuthOfSunsetDeg, $expected_status)
 {
     list($localSunriseHour, $localSunriseMinute, $localSunsetHour, $localSunsetMinute, $azimuthOfSunriseDeg, $azimuthOfSunsetDeg, $status) = PA_Sun\sunrise_and_sunset($localDay, $localMonth, $localYear, $isDaylightSaving, $zoneCorrection, $geographicalLongDeg, $geographicalLatDeg);
 
-    assert($localSunriseHour == $expected_localSunriseHour);
-    assert($localSunriseMinute == $expected_localSunriseMinute);
-    assert($localSunsetHour  == $expected_localSunsetHour);
-    assert($localSunsetMinute  == $expected_localSunsetMinute);
-    assert($azimuthOfSunriseDeg  == $expected_azimuthOfSunriseDeg);
-    assert($azimuthOfSunsetDeg  == $expected_azimuthOfSunsetDeg);
-    assert($status == $expected_status);
+    descriptive_assert("[Sunrise and Sunset] Sunrise Hour", $localSunriseHour, $expected_localSunriseHour);
+    descriptive_assert("[Sunrise and Sunset] Sunrise Minute", $localSunriseMinute, $expected_localSunriseMinute);
+    descriptive_assert("[Sunrise and Sunset] Sunset Hour", $localSunsetHour, $expected_localSunsetHour);
+    descriptive_assert("[Sunrise and Sunset] Sunset Minute", $localSunsetMinute, $expected_localSunsetMinute);
+    descriptive_assert("[Sunrise and Sunset] Azimuth of Sunrise", $azimuthOfSunriseDeg, $expected_azimuthOfSunriseDeg);
+    descriptive_assert("[Sunrise and Sunset] Azimuth of Sunset", $azimuthOfSunsetDeg, $expected_azimuthOfSunsetDeg);
+    descriptive_assert("[Sunrise and Sunset] Status", $status->value, $expected_status->value);
 
-    echo "[Sunrise and Sunset] [Local Date] {$localMonth}/{$localDay}/{$localYear} [Long/Lat] {$geographicalLongDeg}/{$geographicalLatDeg} = [Sunrise Time] {$localSunriseHour}:{$localSunriseMinute} [Sunset Time] {$localSunsetHour}:{$localSunsetMinute} [Rise/Set Azimuth] {$azimuthOfSunriseDeg}/{$azimuthOfSunsetDeg} [Status] {$status->name}\n";
+    echo "[Sunrise and Sunset] PASSED\n";
 }
 
 function morning_and_evening_twilight($localDay, $localMonth, $localYear, $isDaylightSaving, $zoneCorrection, $geographicalLongDeg, $geographicalLatDeg, $twilightType, $expected_amTwilightBeginsHour, $expected_amTwilightBeginsMin, $expected_pmTwilightEndsHour, $expected_pmTwilightEndsMin, $expected_status)
