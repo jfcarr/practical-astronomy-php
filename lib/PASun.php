@@ -7,7 +7,15 @@ include_once 'PATypes.php';
 
 use PA\Macros as PA_Macros;
 use PA\Types as PA_Types;
+
 use PA\Types\RiseSetStatus;
+use PA\Types\TwilightStatus;
+
+use function PA\Macros\decimal_hours_hour;
+use function PA\Macros\decimal_hours_minute;
+use function PA\Macros\e_twilight;
+use function PA\Macros\twilight_am_lct;
+use function PA\Macros\twilight_pm_lct;
 
 /**
  * Calculate approximate position of the sun for a local date and time.
@@ -123,4 +131,31 @@ function sunrise_and_sunset($localDay, $localMonth, $localYear, $isDaylightSavin
     $status = $sunRiseSetStatus;
 
     return array($localSunriseHour, $localSunriseMinute, $localSunsetHour, $localSunsetMinute, $azimuthOfSunriseDeg, $azimuthOfSunsetDeg, $status);
+}
+
+/**
+ * Calculate times of morning and evening twilight.
+ */
+function morning_and_evening_twilight($localDay, $localMonth, $localYear, $isDaylightSaving, $zoneCorrection, $geographicalLongDeg, $geographicalLatDeg, $twilightType)
+{
+    $daylightSaving = $isDaylightSaving ? 1 : 0;
+
+    $startOfAMTwilightHours = twilight_am_lct($localDay, $localMonth, $localYear, $daylightSaving, $zoneCorrection, $geographicalLongDeg, $geographicalLatDeg, $twilightType);
+
+    $endOfPMTwilightHours = twilight_pm_lct($localDay, $localMonth, $localYear, $daylightSaving, $zoneCorrection, $geographicalLongDeg, $geographicalLatDeg, $twilightType);
+
+    $twilightStatus = e_twilight($localDay, $localMonth, $localYear, $daylightSaving, $zoneCorrection, $geographicalLongDeg, $geographicalLatDeg, $twilightType);
+
+    $adjustedAMStartTime = $startOfAMTwilightHours + 0.008333;
+    $adjustedPMStartTime = $endOfPMTwilightHours + 0.008333;
+
+    $amTwilightBeginsHour = $twilightStatus == TwilightStatus::OK ? decimal_hours_hour($adjustedAMStartTime) : -99;
+    $amTwilightBeginsMin = $twilightStatus == TwilightStatus::OK ? decimal_hours_minute($adjustedAMStartTime) : -99;
+
+    $pmTwilightEndsHour =  $twilightStatus == TwilightStatus::OK ? decimal_hours_hour($adjustedPMStartTime) : -99;
+    $pmTwilightEndsMin = $twilightStatus == TwilightStatus::OK ? decimal_hours_minute($adjustedPMStartTime) : -99;
+
+    $status = $twilightStatus;
+
+    return array($amTwilightBeginsHour, $amTwilightBeginsMin, $pmTwilightEndsHour, $pmTwilightEndsMin, $status);
 }

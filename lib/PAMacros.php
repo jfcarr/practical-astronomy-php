@@ -6,6 +6,7 @@ include_once 'PATypes.php';
 
 use PA\Types as PA_Types;
 use PA\Types\RiseSetStatus;
+use PA\Types\TwilightStatus;
 use PA\Types\WarningFlag;
 
 /**
@@ -1857,4 +1858,171 @@ function sunset_az_l3710($gd, $gm, $gy, $sr, $di, $gp)
     $s = ers(decimal_degrees_to_degree_hours($x), 0, 0, $y, 0, 0, $di, $gp);
 
     return array($a, $x, $y, $la, $s);
+}
+
+/**
+ * Calculate morning twilight start, in local time.
+ * 
+ * Original macro name: TwilightAMLCT
+ */
+function twilight_am_lct($ld, $lm, $ly, $ds, $zc, $gl, $gp, $tt)
+{
+    $di = (float)$tt->value;
+
+    $gd = local_civil_time_greenwich_day(12, 0, 0, $ds, $zc, $ld, $lm, $ly);
+    $gm = local_civil_time_greenwich_month(12, 0, 0, $ds, $zc, $ld, $lm, $ly);
+    $gy = local_civil_time_greenwich_year(12, 0, 0, $ds, $zc, $ld, $lm, $ly);
+    $sr = sun_long(12, 0, 0, $ds, $zc, $ld, $lm, $ly);
+
+    list($result1_a, $result1_x, $result1_y, $result1_la, $result1_s) = twilight_am_lct_l3710($gd, $gm, $gy, $sr, $di, $gp);
+
+    if ($result1_s != RiseSetStatus::OK)
+        return -99.0;
+
+    $x = local_sidereal_time_to_greenwich_sidereal_time($result1_la, 0, 0, $gl);
+    $ut = greenwich_sidereal_time_to_universal_time($x, 0, 0, $gd, $gm, $gy);
+
+    if (eg_st_ut($x, 0, 0, $gd, $gm, $gy) != WarningFlag::OK)
+        return -99.0;
+
+    $sr = sun_long($ut, 0, 0, 0, 0, $gd, $gm, $gy);
+
+    list($result2_a, $result2_x, $result2_y, $result2_la, $result2_s) = twilight_am_lct_l3710($gd, $gm, $gy, $sr, $di, $gp);
+
+    if ($result2_s != RiseSetStatus::OK)
+        return -99.0;
+
+    $x = local_sidereal_time_to_greenwich_sidereal_time($result2_la, 0, 0, $gl);
+    $ut = greenwich_sidereal_time_to_universal_time($x, 0, 0, $gd, $gm, $gy);
+
+    $xx = universal_time_to_local_civil_time($ut, 0, 0, $ds, $zc, $gd, $gm, $gy);
+
+    return $xx;
+}
+
+/**
+ * Helper function for twilight_am_lct()
+ */
+function twilight_am_lct_l3710($gd, $gm, $gy, $sr, $di, $gp)
+{
+    $a = $sr + nutat_long($gd, $gm, $gy) - 0.005694;
+    $x = ec_ra($a, 0, 0, 0, 0, 0, $gd, $gm, $gy);
+    $y = ec_dec($a, 0, 0, 0, 0, 0, $gd, $gm, $gy);
+    $la = rise_set_local_sidereal_time_rise(decimal_degrees_to_degree_hours($x), 0, 0, $y, 0, 0, $di, $gp);
+    $s = ers(decimal_degrees_to_degree_hours($x), 0, 0, $y, 0, 0, $di, $gp);
+
+    return array($a, $x, $y, $la, $s);
+}
+
+/**
+ * Calculate evening twilight end, in local time.
+ * 
+ * Original macro name: TwilightPMLCT
+ */
+function twilight_pm_lct($ld, $lm, $ly, $ds, $zc, $gl, $gp, $tt)
+{
+    $di = (float)$tt->value;
+
+    $gd = local_civil_time_greenwich_day(12, 0, 0, $ds, $zc, $ld, $lm, $ly);
+    $gm = local_civil_time_greenwich_month(12, 0, 0, $ds, $zc, $ld, $lm, $ly);
+    $gy = local_civil_time_greenwich_year(12, 0, 0, $ds, $zc, $ld, $lm, $ly);
+    $sr = sun_long(12, 0, 0, $ds, $zc, $ld, $lm, $ly);
+
+    list($result1_a, $result1_x, $result1_y, $result1_la, $result1_s) = twilight_pm_lct_l3710($gd, $gm, $gy, $sr, $di, $gp);
+
+    if ($result1_s != RiseSetStatus::OK)
+        return 0.0;
+
+    $x = local_sidereal_time_to_greenwich_sidereal_time($result1_la, 0, 0, $gl);
+    $ut = greenwich_sidereal_time_to_universal_time($x, 0, 0, $gd, $gm, $gy);
+
+    if (eg_st_ut($x, 0, 0, $gd, $gm, $gy) != WarningFlag::OK)
+        return 0.0;
+
+    $sr = sun_long($ut, 0, 0, 0, 0, $gd, $gm, $gy);
+
+    list($result2_a, $result2_x, $result2_y, $result2_la, $result2_s) = twilight_pm_lct_l3710($gd, $gm, $gy, $sr, $di, $gp);
+
+    if ($result2_s != RiseSetStatus::OK)
+        return 0.0;
+
+    $x = local_sidereal_time_to_greenwich_sidereal_time($result2_la, 0, 0, $gl);
+    $ut = greenwich_sidereal_time_to_universal_time($x, 0, 0, $gd, $gm, $gy);
+
+    return universal_time_to_local_civil_time($ut, 0, 0, $ds, $zc, $gd, $gm, $gy);
+}
+
+/**
+ * Helper function for twilight_pm_lct()
+ */
+function twilight_pm_lct_l3710($gd, $gm, $gy, $sr, $di, $gp)
+{
+    $a = $sr + nutat_long($gd, $gm, $gy) - 0.005694;
+    $x = ec_ra($a, 0, 0, 0, 0, 0, $gd, $gm, $gy);
+    $y = ec_dec($a, 0, 0, 0, 0, 0, $gd, $gm, $gy);
+    $la = rise_set_local_sidereal_time_set(decimal_degrees_to_degree_hours($x), 0, 0, $y, 0, 0, $di, $gp);
+    $s = ers(decimal_degrees_to_degree_hours($x), 0, 0, $y, 0, 0, $di, $gp);
+
+    return array($a, $x, $y, $la, $s);
+}
+
+/**
+ * Twilight calculation status.
+ * 
+ * Original macro name: eTwilight
+ */
+function e_twilight($ld, $lm, $ly, $ds, $zc, $gl, $gp, $tt)
+{
+    $di = (float)$tt->value;
+
+    $gd = local_civil_time_greenwich_day(12, 0, 0, $ds, $zc, $ld, $lm, $ly);
+    $gm = local_civil_time_greenwich_month(12, 0, 0, $ds, $zc, $ld, $lm, $ly);
+    $gy = local_civil_time_greenwich_year(12, 0, 0, $ds, $zc, $ld, $lm, $ly);
+    $sr = sun_long(12, 0, 0, $ds, $zc, $ld, $lm, $ly);
+
+    list($result1_a, $result1_x, $result1_y, $result1_la, $result1_s) = e_twilight_l3710($gd, $gm, $gy, $sr, $di, $gp);
+
+    if ($result1_s != TwilightStatus::OK)
+        return $result1_s;
+
+    $x = local_sidereal_time_to_greenwich_sidereal_time($result1_la, 0, 0, $gl);
+    $ut = greenwich_sidereal_time_to_universal_time($x, 0, 0, $gd, $gm, $gy);
+    $sr = sun_long($ut, 0, 0, 0, 0, $gd, $gm, $gy);
+
+    list($result2_a, $result2_x, $result2_y, $result2_la, $result2_s) = e_twilight_l3710($gd, $gm, $gy, $sr, $di, $gp);
+
+    if ($result2_s != TwilightStatus::OK)
+        return $result2_s;
+
+    $x = local_sidereal_time_to_greenwich_sidereal_time($result2_la, 0, 0, $gl);
+
+    if (eg_st_ut($x, 0, 0, $gd, $gm, $gy) != WarningFlag::OK) {
+        $result2_s = TwilightStatus::GstToUtConversionWarning;
+
+        return $result2_s;
+    }
+
+    return $result2_s;
+}
+
+/**
+ * Helper function for e_twilight()
+ */
+function e_twilight_l3710($gd, $gm, $gy, $sr, $di, $gp)
+{
+    $a = $sr + nutat_long($gd, $gm, $gy) - 0.005694;
+    $x = ec_ra($a, 0, 0, 0, 0, 0, $gd, $gm, $gy);
+    $y = ec_dec($a, 0, 0, 0, 0, 0, $gd, $gm, $gy);
+    $la = rise_set_local_sidereal_time_rise(decimal_degrees_to_degree_hours($x), 0, 0, $y, 0, 0, $di, $gp);
+    $s = ers(decimal_degrees_to_degree_hours($x), 0, 0, $y, 0, 0, $di, $gp);
+
+    $ts = TwilightStatus::OK;
+
+    if ($s == RiseSetStatus::Circumpolar)
+        $ts = TwilightStatus::LastsAllNight;
+
+    if ($s == RiseSetStatus::NeverRises)
+        $ts = TwilightStatus::SunTooFarBelowHorizon;
+
+    return array($a, $x, $y, $la, $ts);
 }

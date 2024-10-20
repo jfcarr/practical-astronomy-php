@@ -27,3 +27,18 @@ enum WarningFlag: string
     case OK = "OK";
     case Warning = "Warning";
 }
+
+enum TwilightType: int
+{
+    case Civil = 6;
+    case Nautical = 12;
+    case Astronomical = 18;
+}
+
+enum TwilightStatus: string
+{
+    case OK = "OK";
+    case LastsAllNight = "Lasts all night";
+    case SunTooFarBelowHorizon = "Sun too far below horizon";
+    case GstToUtConversionWarning = "GST to UT conversion warning";
+}

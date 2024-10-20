@@ -110,7 +110,7 @@ function local_civil_time_to_universal_time($lctHours, $lctMinutes, $lctSeconds,
 /**
  * Convert Universal Time to local Civil Time
  */
-function universal_time_to_local_civil_time($utHours, $utMinutes, $utSeconds, $isDaylightSavings, $zoneCorrection, $gwDay, $gwMonth, $gwYear)
+function universal_time_to_local_civil_time_dt($utHours, $utMinutes, $utSeconds, $isDaylightSavings, $zoneCorrection, $gwDay, $gwMonth, $gwYear)
 {
     $dstValue = ($isDaylightSavings) ? 1 : 0;
     $ut = PA_Macros\hours_minutes_seconds_to_decimal_hours($utHours, $utMinutes, $utSeconds);

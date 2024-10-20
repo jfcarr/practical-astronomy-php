@@ -62,7 +62,7 @@ function local_civil_time_to_universal_time($lctHours, $lctMinutes, $lctSeconds,
 
 function universal_time_to_local_civil_time($utHours, $utMinutes, $utSeconds, $isDaylightSavings, $zoneCorrection, $gwDay, $gwMonth, $gwYear, $expectedHours, $expectedMinutes, $expectedSeconds, $expectedDay, $expectedMonth, $expectedYear)
 {
-    list($hours, $minutes, $seconds, $day, $month, $year) = PA_DateTime\universal_time_to_local_civil_time($utHours, $utMinutes, $utSeconds, $isDaylightSavings, $zoneCorrection, $gwDay, $gwMonth, $gwYear);
+    list($hours, $minutes, $seconds, $day, $month, $year) = PA_DateTime\universal_time_to_local_civil_time_dt($utHours, $utMinutes, $utSeconds, $isDaylightSavings, $zoneCorrection, $gwDay, $gwMonth, $gwYear);
 
     assert($hours == $expectedHours);
     assert($minutes == $expectedMinutes);
