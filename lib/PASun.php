@@ -11,9 +11,14 @@ use PA\Types as PA_Types;
 use PA\Types\RiseSetStatus;
 use PA\Types\TwilightStatus;
 
+use function PA\Macros\greenwich_sidereal_time_to_universal_time;
+use function PA\Macros\decimal_degrees_to_degree_hours;
 use function PA\Macros\decimal_hours_hour;
 use function PA\Macros\decimal_hours_minute;
+use function PA\Macros\decimal_hours_second;
 use function PA\Macros\e_twilight;
+use function PA\Macros\ec_ra;
+use function PA\Macros\sun_long;
 use function PA\Macros\twilight_am_lct;
 use function PA\Macros\twilight_pm_lct;
 
@@ -158,4 +163,20 @@ function morning_and_evening_twilight($localDay, $localMonth, $localYear, $isDay
     $status = $twilightStatus;
 
     return array($amTwilightBeginsHour, $amTwilightBeginsMin, $pmTwilightEndsHour, $pmTwilightEndsMin, $status);
+}
+
+/**
+ * Calculate the equation of time. (The difference between the real Sun time and the mean Sun time.)
+ */
+function equation_of_time($gwdateDay, $gwdateMonth, $gwdateYear)
+{
+    $sunLongitudeDeg = sun_long(12, 0, 0, 0, 0, $gwdateDay, $gwdateMonth, $gwdateYear);
+    $sunRAHours = decimal_degrees_to_degree_hours(ec_ra($sunLongitudeDeg, 0, 0, 0, 0, 0, $gwdateDay, $gwdateMonth, $gwdateYear));
+    $equivalentUTHours = greenwich_sidereal_time_to_universal_time($sunRAHours, 0, 0, $gwdateDay, $gwdateMonth, $gwdateYear);
+    $equationOfTimeHours = (float)$equivalentUTHours - 12;
+
+    $equationOfTimeMin = decimal_hours_minute($equationOfTimeHours);
+    $equationOfTimeSec = decimal_hours_second($equationOfTimeHours);
+
+    return array($equationOfTimeMin, $equationOfTimeSec);
 }
