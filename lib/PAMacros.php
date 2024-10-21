@@ -5,6 +5,7 @@ namespace PA\Macros;
 include_once 'PATypes.php';
 
 use PA\Types as PA_Types;
+use PA\Types\AngleMeasure;
 use PA\Types\RiseSetStatus;
 use PA\Types\TwilightStatus;
 use PA\Types\WarningFlag;
@@ -152,6 +153,16 @@ function degrees_minutes_seconds_to_decimal_degrees($degrees, $minutes, $seconds
 
     // Apply negative sign if any input was negative
     return ($degrees < 0 || $minutes < 0 || $seconds < 0) ? -$c : $c;
+}
+
+/**
+ * Convert W to Degrees
+ * 
+ * Original macro name: Degrees
+ */
+function w_to_degrees($w)
+{
+    return $w * 57.29577951;
 }
 
 /**
@@ -2025,4 +2036,26 @@ function e_twilight_l3710($gd, $gm, $gy, $sr, $di, $gp)
         $ts = TwilightStatus::SunTooFarBelowHorizon;
 
     return array($a, $x, $y, $la, $ts);
+}
+
+/**
+ * Calculate the angle between two celestial objects
+ */
+function angle($xx1, $xm1, $xs1, $dd1, $dm1, $ds1, $xx2, $xm2, $xs2, $dd2, $dm2, $ds2, $s)
+{
+    $a = ($s == AngleMeasure::Hours)
+        ? degree_hours_to_decimal_degrees(hours_minutes_seconds_to_decimal_hours($xx1, $xm1, $xs1))
+        : degrees_minutes_seconds_to_decimal_degrees($xx1, $xm1, $xs1);
+    $b = deg2rad($a);
+    $c = degrees_minutes_seconds_to_decimal_degrees($dd1, $dm1, $ds1);
+    $d = deg2rad($c);
+    $e = ($s == AngleMeasure::Hours)
+        ? degree_hours_to_decimal_degrees(hours_minutes_seconds_to_decimal_hours($xx2, $xm2, $xs2))
+        : degrees_minutes_seconds_to_decimal_degrees($xx2, $xm2, $xs2);
+    $f = deg2rad($e);
+    $g = degrees_minutes_seconds_to_decimal_degrees($dd2, $dm2, $ds2);
+    $h = deg2rad($g);
+    $i = acos(sin($d) * sin($h) + cos($d) * cos($h) * cos($b - $f));
+
+    return w_to_degrees($i);
 }

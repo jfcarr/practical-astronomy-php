@@ -104,6 +104,17 @@ function equation_of_time($gwdateDay, $gwdateMonth, $gwdateYear, $expected_equat
     echo "[{$title}] PASSED\n";
 }
 
+function solar_elongation($raHour, $raMin, $raSec, $decDeg, $decMin, $decSec, $gwdateDay, $gwdateMonth, $gwdateYear, $expected_solarElongation)
+{
+    $title = "Solar Elongation";
+
+    $solarElongation = PA_Sun\solar_elongation(10, 6, 45, 11, 57, 27, 27.8333333, 7, 2010);
+
+    descriptive_assert("[{$title}]", $solarElongation, $expected_solarElongation);
+
+    echo "[{$title}] PASSED\n";
+}
+
 approximate_position_of_sun(0, 0, 0, 27, 7, 2003, false, 0, 8, 23, 33.73, 19, 21, 14.32);
 
 precise_position_of_sun(0, 0, 0, 27, 7, 1988, false, 0, 8, 26, 3.83, 19, 12, 49.72);
@@ -115,3 +126,5 @@ sunrise_and_sunset(10, 3, 1986, false, -5, -71.05, 42.37, 6, 5, 17, 45, 94.83, 2
 morning_and_evening_twilight(7, 9, 1979, false, 0, 0, 52, TwilightType::Astronomical, 3, 17, 20, 37, TwilightStatus::OK);
 
 equation_of_time(27, 7, 2010, 6, 31.52);
+
+solar_elongation(10, 6, 45, 11, 57, 27, 27.8333333, 7, 2010, 24.78);
