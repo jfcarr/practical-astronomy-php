@@ -6,8 +6,8 @@ include_once 'PAMacros.php';
 include_once 'PATypes.php';
 
 use PA\Macros as PA_Macros;
-use PA\Types as PA_Types;
 
+use PA\Types\AngleMeasure;
 use PA\Types\RiseSetStatus;
 use PA\Types\TwilightStatus;
 
@@ -17,10 +17,12 @@ use function PA\Macros\decimal_hours_hour;
 use function PA\Macros\decimal_hours_minute;
 use function PA\Macros\decimal_hours_second;
 use function PA\Macros\e_twilight;
+use function PA\Macros\ec_dec;
 use function PA\Macros\ec_ra;
 use function PA\Macros\sun_long;
 use function PA\Macros\twilight_am_lct;
 use function PA\Macros\twilight_pm_lct;
+use function PA\Macros\angle;
 
 /**
  * Calculate approximate position of the sun for a local date and time.
@@ -179,4 +181,17 @@ function equation_of_time($gwdateDay, $gwdateMonth, $gwdateYear)
     $equationOfTimeSec = decimal_hours_second($equationOfTimeHours);
 
     return array($equationOfTimeMin, $equationOfTimeSec);
+}
+
+/**
+ * Calculate solar elongation for a celestial body.
+ */
+function solar_elongation($raHour, $raMin, $raSec, $decDeg, $decMin, $decSec, $gwdateDay, $gwdateMonth, $gwdateYear)
+{
+    $sunLongitudeDeg = sun_long(0, 0, 0, 0, 0, $gwdateDay, $gwdateMonth, $gwdateYear);
+    $sunRAHours = decimal_degrees_to_degree_hours(ec_ra($sunLongitudeDeg, 0, 0, 0, 0, 0, $gwdateDay, $gwdateMonth, $gwdateYear));
+    $sunDecDeg = ec_dec($sunLongitudeDeg, 0, 0, 0, 0, 0, $gwdateDay, $gwdateMonth, $gwdateYear);
+    $solarElongationDeg =  angle($sunRAHours, 0, 0, $sunDecDeg, 0, 0, $raHour, $raMin, $raSec, $decDeg, $decMin, $decSec, AngleMeasure::Hours);
+
+    return round($solarElongationDeg, 2);
 }
