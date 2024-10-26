@@ -4,6 +4,7 @@ namespace PA\Macros;
 
 include_once 'PATypes.php';
 
+use PA\Data\Planets\PlanetDataPrecise;
 use PA\Types as PA_Types;
 use PA\Types\AngleMeasure;
 use PA\Types\RiseSetStatus;
@@ -2058,4 +2059,960 @@ function angle($xx1, $xm1, $xs1, $dd1, $dm1, $ds1, $xx2, $xm2, $xs2, $dd2, $dm2,
     $i = acos(sin($d) * sin($h) + cos($d) * cos($h) * cos($b - $f));
 
     return w_to_degrees($i);
+}
+
+/**
+ * Calculate several planetary properties.
+ *
+ * Original macro names: PlanetLong, PlanetLat, PlanetDist, PlanetHLong1, PlanetHLong2, PlanetHLat, PlanetRVect
+ */
+function planet_coordinates($lh, $lm, $ls, $ds, $zc, $dy, $mn, $yr, $s)
+{
+    $a11 = 178.179078;
+    $a12 = 415.2057519;
+    $a13 = 0.0003011;
+    $a14 = 0.0;
+    $a21 = 75.899697;
+    $a22 = 1.5554889;
+    $a23 = 0.0002947;
+    $a24 = 0.0;
+    $a31 = 0.20561421;
+    $a32 = 0.00002046;
+    $a33 = -0.00000003;
+    $a34 = 0.0;
+    $a41 = 7.002881;
+    $a42 = 0.0018608;
+    $a43 = -0.0000183;
+    $a44 = 0.0;
+    $a51 = 47.145944;
+    $a52 = 1.1852083;
+    $a53 = 0.0001739;
+    $a54 = 0.0;
+    $a61 = 0.3870986;
+    $a62 = 6.74;
+    $a63 = -0.42;
+
+    $b11 = 342.767053;
+    $b12 = 162.5533664;
+    $b13 = 0.0003097;
+    $b14 = 0.0;
+    $b21 = 130.163833;
+    $b22 = 1.4080361;
+    $b23 = -0.0009764;
+    $b24 = 0.0;
+    $b31 = 0.00682069;
+    $b32 = -0.00004774;
+    $b33 = 0.000000091;
+    $b34 = 0.0;
+    $b41 = 3.393631;
+    $b42 = 0.0010058;
+    $b43 = -0.000001;
+    $b44 = 0.0;
+    $b51 = 75.779647;
+    $b52 = 0.89985;
+    $b53 = 0.00041;
+    $b54 = 0.0;
+    $b61 = 0.7233316;
+    $b62 = 16.92;
+    $b63 = -4.4;
+
+    $c11 = 293.737334;
+    $c12 = 53.17137642;
+    $c13 = 0.0003107;
+    $c14 = 0.0;
+    $c21 = 334.218203;
+    $c22 = 1.8407584;
+    $c23 = 0.0001299;
+    $c24 = -0.00000119;
+    $c31 = 0.0933129;
+    $c32 = 0.000092064;
+    $c33 = -0.000000077;
+    $c34 = 0.0;
+    $c41 = 1.850333;
+    $c42 = -0.000675;
+    $c43 = 0.0000126;
+    $c44 = 0.0;
+    $c51 = 48.786442;
+    $c52 = 0.7709917;
+    $c53 = -0.0000014;
+    $c54 = -0.00000533;
+    $c61 = 1.5236883;
+    $c62 = 9.36;
+    $c63 = -1.52;
+
+    $d11 = 238.049257;
+    $d12 = 8.434172183;
+    $d13 = 0.0003347;
+    $d14 = -0.00000165;
+    $d21 = 12.720972;
+    $d22 = 1.6099617;
+    $d23 = 0.00105627;
+    $d24 = -0.00000343;
+    $d31 = 0.04833475;
+    $d32 = 0.00016418;
+    $d33 = -0.0000004676;
+    $d34 = -0.0000000017;
+    $d41 = 1.308736;
+    $d42 = -0.0056961;
+    $d43 = 0.0000039;
+    $d44 = 0.0;
+    $d51 = 99.443414;
+    $d52 = 1.01053;
+    $d53 = 0.00035222;
+    $d54 = -0.00000851;
+    $d61 = 5.202561;
+    $d62 = 196.74;
+    $d63 = -9.4;
+
+    $e11 = 266.564377;
+    $e12 = 3.398638567;
+    $e13 = 0.0003245;
+    $e14 = -0.0000058;
+    $e21 = 91.098214;
+    $e22 = 1.9584158;
+    $e23 = 0.00082636;
+    $e24 = 0.00000461;
+    $e31 = 0.05589232;
+    $e32 = -0.0003455;
+    $e33 = -0.000000728;
+    $e34 = 0.00000000074;
+    $e41 = 2.492519;
+    $e42 = -0.0039189;
+    $e43 = -0.00001549;
+    $e44 = 0.00000004;
+    $e51 = 112.790414;
+    $e52 = 0.8731951;
+    $e53 = -0.00015218;
+    $e54 = -0.00000531;
+    $e61 = 9.554747;
+    $e62 = 165.6;
+    $e63 = -8.88;
+
+    $f11 = 244.19747;
+    $f12 = 1.194065406;
+    $f13 = 0.000316;
+    $f14 = -0.0000006;
+    $f21 = 171.548692;
+    $f22 = 1.4844328;
+    $f23 = 0.0002372;
+    $f24 = -0.00000061;
+    $f31 = 0.0463444;
+    $f32a = -0.00002658;
+    $f33 = 0.000000077;
+    $f34 = 0.0;
+    $f41 = 0.772464;
+    $f42 = 0.0006253;
+    $f43 = 0.0000395;
+    $f44 = 0.0;
+    $f51 = 73.477111;
+    $f52 = 0.4986678;
+    $f53 = 0.0013117;
+    $f54 = 0.0;
+    $f61 = 19.21814;
+    $f62 = 65.8;
+    $f63 = -7.19;
+
+    $g11 = 84.457994;
+    $g12 = 0.6107942056;
+    $g13 = 0.0003205;
+    $g14 = -0.0000006;
+    $g21 = 46.727364;
+    $g22 = 1.4245744;
+    $g23 = 0.00039082;
+    $g24 = -0.000000605;
+    $g31 = 0.00899704;
+    $g32 = 0.00000633;
+    $g33 = -0.000000002;
+    $g34 = 0.0;
+    $g41 = 1.779242;
+    $g42 = -0.0095436;
+    $g43 = -0.0000091;
+    $g44 = 0.0;
+    $g51 = 130.681389;
+    $g52 = 1.098935;
+    $g53 = 0.00024987;
+    $g54 = -0.000004718;
+    $g61 = 30.10957;
+    $g62 = 62.2;
+    $g63 = -6.87;
+
+    $planet_data = [];
+
+    $planet_data[] = new PlanetDataPrecise("", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+
+    $ip = 0;
+    $b = local_civil_time_to_universal_time($lh, $lm, $ls, $ds, $zc, $dy, $mn, $yr);
+    $gd = local_civil_time_greenwich_day($lh, $lm, $ls, $ds, $zc, $dy, $mn, $yr);
+    $gm = local_civil_time_greenwich_month($lh, $lm, $ls, $ds, $zc, $dy, $mn, $yr);
+    $gy = local_civil_time_greenwich_year($lh, $lm, $ls, $ds, $zc, $dy, $mn, $yr);
+    $a = civil_date_to_julian_date($gd, $gm, $gy);
+    $t = (($a - 2415020.0) / 36525.0) + ($b / 876600.0);
+
+    $a0 = $a11;
+    $a1 = $a12;
+    $a2 = $a13;
+    $a3 = $a14;
+    $b0 = $a21;
+    $b1 = $a22;
+    $b2 = $a23;
+    $b3 = $a24;
+    $c0 = $a31;
+    $c1 = $a32;
+    $c2 = $a33;
+    $c3 = $a34;
+    $d0 = $a41;
+    $d1 = $a42;
+    $d2 = $a43;
+    $d3 = $a44;
+    $e0 = $a51;
+    $e1 = $a52;
+    $e2 = $a53;
+    $e3 = $a54;
+    $f = $a61;
+    $g = $a62;
+    $h = $a63;
+    $aa = $a1 * $t;
+    $b = 360.0 * ($aa - floor($aa));
+    $c = $a0 + $b + ($a3 * $t + $a2) * $t * $t;
+
+    $planet_data[] = new PlanetDataPrecise(
+        "Mercury",
+        $c - 360.0 * floor($c / 360.0),
+        ($a1 * 0.009856263) + ($a2 + $a3) / 36525.0,
+        (($b3 * $t + $b2) * $t + $b1) * $t + $b0,
+        (($c3 * $t + $c2) * $t + $c1) * $t + $c0,
+        (($d3 * $t + $d2) * $t + $d1) * $t + $d0,
+        (($e3 * $t + $e2) * $t + $e1) * $t + $e0,
+        $f,
+        $g,
+        $h,
+        0
+    );
+
+    $a0 = $b11;
+    $a1 = $b12;
+    $a2 = $b13;
+    $a3 = $b14;
+    $b0 = $b21;
+    $b1 = $b22;
+    $b2 = $b23;
+    $b3 = $b24;
+    $c0 = $b31;
+    $c1 = $b32;
+    $c2 = $b33;
+    $c3 = $b34;
+    $d0 = $b41;
+    $d1 = $b42;
+    $d2 = $b43;
+    $d3 = $b44;
+    $e0 = $b51;
+    $e1 = $b52;
+    $e2 = $b53;
+    $e3 = $b54;
+    $f = $b61;
+    $g = $b62;
+    $h = $b63;
+    $aa = $a1 * $t;
+    $b = 360.0 * ($aa - floor($aa));
+    $c = $a0 + $b + ($a3 * $t + $a2) * $t * $t;
+
+    $planet_data[] = new PlanetDataPrecise(
+        "Venus",
+        $c - 360.0 * floor($c / 360.0),
+        ($a1 * 0.009856263) + ($a2 + $a3) / 36525.0,
+        (($b3 * $t + $b2) * $t + $b1) * $t + $b0,
+        (($c3 * $t + $c2) * $t + $c1) * $t + $c0,
+        (($d3 * $t + $d2) * $t + $d1) * $t + $d0,
+        (($e3 * $t + $e2) * $t + $e1) * $t + $e0,
+        $f,
+        $g,
+        $h,
+        0
+    );
+
+    $a0 = $c11;
+    $a1 = $c12;
+    $a2 = $c13;
+    $a3 = $c14;
+    $b0 = $c21;
+    $b1 = $c22;
+    $b2 = $c23;
+    $b3 = $c24;
+    $c0 = $c31;
+    $c1 = $c32;
+    $c2 = $c33;
+    $c3 = $c34;
+    $d0 = $c41;
+    $d1 = $c42;
+    $d2 = $c43;
+    $d3 = $c44;
+    $e0 = $c51;
+    $e1 = $c52;
+    $e2 = $c53;
+    $e3 = $c54;
+    $f = $c61;
+    $g = $c62;
+    $h = $c63;
+
+    $aa = $a1 * $t;
+    $b = 360.0 * ($aa - floor($aa));
+    $c = $a0 + $b + ($a3 * $t + $a2) * $t * $t;
+
+    $planet_data[] = new PlanetDataPrecise(
+        "Mars",
+        $c - 360.0 * floor($c / 360.0),
+        ($a1 * 0.009856263) + ($a2 + $a3) / 36525.0,
+        (($b3 * $t + $b2) * $t + $b1) * $t + $b0,
+        (($c3 * $t + $c2) * $t + $c1) * $t + $c0,
+        (($d3 * $t + $d2) * $t + $d1) * $t + $d0,
+        (($e3 * $t + $e2) * $t + $e1) * $t + $e0,
+        $f,
+        $g,
+        $h,
+        0
+    );
+
+    $a0 = $d11;
+    $a1 = $d12;
+    $a2 = $d13;
+    $a3 = $d14;
+    $b0 = $d21;
+    $b1 = $d22;
+    $b2 = $d23;
+    $b3 = $d24;
+    $c0 = $d31;
+    $c1 = $d32;
+    $c2 = $d33;
+    $c3 = $d34;
+    $d0 = $d41;
+    $d1 = $d42;
+    $d2 = $d43;
+    $d3 = $d44;
+    $e0 = $d51;
+    $e1 = $d52;
+    $e2 = $d53;
+    $e3 = $d54;
+    $f = $d61;
+    $g = $d62;
+    $h = $d63;
+
+    $aa = $a1 * $t;
+    $b = 360.0 * ($aa - floor($aa));
+    $c = $a0 + $b + ($a3 * $t + $a2) * $t * $t;
+
+    $planet_data[] = new PlanetDataPrecise(
+        "Jupiter",
+        $c - 360.0 * floor($c / 360.0),
+        ($a1 * 0.009856263) + ($a2 + $a3) / 36525.0,
+        (($b3 * $t + $b2) * $t + $b1) * $t + $b0,
+        (($c3 * $t + $c2) * $t + $c1) * $t + $c0,
+        (($d3 * $t + $d2) * $t + $d1) * $t + $d0,
+        (($e3 * $t + $e2) * $t + $e1) * $t + $e0,
+        $f,
+        $g,
+        $h,
+        0
+    );
+
+    $a0 = $e11;
+    $a1 = $e12;
+    $a2 = $e13;
+    $a3 = $e14;
+    $b0 = $e21;
+    $b1 = $e22;
+    $b2 = $e23;
+    $b3 = $e24;
+    $c0 = $e31;
+    $c1 = $e32;
+    $c2 = $e33;
+    $c3 = $e34;
+    $d0 = $e41;
+    $d1 = $e42;
+    $d2 = $e43;
+    $d3 = $e44;
+    $e0 = $e51;
+    $e1 = $e52;
+    $e2 = $e53;
+    $e3 = $e54;
+    $f = $e61;
+    $g = $e62;
+    $h = $e63;
+
+    $aa = $a1 * $t;
+    $b = 360.0 * ($aa - floor($aa));
+    $c = $a0 + $b + ($a3 * $t + $a2) * $t * $t;
+
+    $planet_data[] = new PlanetDataPrecise(
+        "Saturn",
+        $c - 360.0 * floor($c / 360.0),
+        ($a1 * 0.009856263) + ($a2 + $a3) / 36525.0,
+        (($b3 * $t + $b2) * $t + $b1) * $t + $b0,
+        (($c3 * $t + $c2) * $t + $c1) * $t + $c0,
+        (($d3 * $t + $d2) * $t + $d1) * $t + $d0,
+        (($e3 * $t + $e2) * $t + $e1) * $t + $e0,
+        $f,
+        $g,
+        $h,
+        0
+    );
+
+    $a0 = $f11;
+    $a1 = $f12;
+    $a2 = $f13;
+    $a3 = $f14;
+    $b0 = $f21;
+    $b1 = $f22;
+    $b2 = $f23;
+    $b3 = $f24;
+    $c0 = $f31;
+    $c1 = $f32a;
+    $c2 = $f33;
+    $c3 = $f34;
+    $d0 = $f41;
+    $d1 = $f42;
+    $d2 = $f43;
+    $d3 = $f44;
+    $e0 = $f51;
+    $e1 = $f52;
+    $e2 = $f53;
+    $e3 = $f54;
+    $f = $f61;
+    $g = $f62;
+    $h = $f63;
+
+    $aa = $a1 * $t;
+    $b = 360.0 * ($aa - floor($aa));
+    $c = $a0 + $b + ($a3 * $t + $a2) * $t * $t;
+
+    $planet_data[] = new PlanetDataPrecise(
+        "Uranus",
+        $c - 360.0 * floor($c / 360.0),
+        ($a1 * 0.009856263) + ($a2 + $a3) / 36525.0,
+        (($b3 * $t + $b2) * $t + $b1) * $t + $b0,
+        (($c3 * $t + $c2) * $t + $c1) * $t + $c0,
+        (($d3 * $t + $d2) * $t + $d1) * $t + $d0,
+        (($e3 * $t + $e2) * $t + $e1) * $t + $e0,
+        $f,
+        $g,
+        $h,
+        0
+    );
+
+    $a0 = $g11;
+    $a1 = $g12;
+    $a2 = $g13;
+    $a3 = $g14;
+    $b0 = $g21;
+    $b1 = $g22;
+    $b2 = $g23;
+    $b3 = $g24;
+    $c0 = $g31;
+    $c1 = $g32;
+    $c2 = $g33;
+    $c3 = $g34;
+    $d0 = $g41;
+    $d1 = $g42;
+    $d2 = $g43;
+    $d3 = $g44;
+    $e0 = $g51;
+    $e1 = $g52;
+    $e2 = $g53;
+    $e3 = $g54;
+    $f = $g61;
+    $g = $g62;
+    $h = $g63;
+
+    $aa = $a1 * $t;
+    $b = 360.0 * ($aa - floor($aa));
+    $c = $a0 + $b + ($a3 * $t + $a2) * $t * $t;
+
+    $planet_data[] = new PlanetDataPrecise(
+        "Neptune",
+        $c - 360.0 * floor($c / 360.0),
+        ($a1 * 0.009856263) + ($a2 + $a3) / 36525.0,
+        (($b3 * $t + $b2) * $t + $b1) * $t + $b0,
+        (($c3 * $t + $c2) * $t + $c1) * $t + $c0,
+        (($d3 * $t + $d2) * $t + $d1) * $t + $d0,
+        (($e3 * $t + $e2) * $t + $e1) * $t + $e0,
+        $f,
+        $g,
+        $h,
+        0
+    );
+
+    $check_planet = new PlanetDataPrecise("NotFound", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+    foreach ($planet_data as $planet_record) {
+        if ($planet_record->name == $s) {
+            $check_planet = $planet_record;
+        }
+    }
+
+    if ($check_planet->name == "NotFound")
+        return array(w_to_degrees(unwind(0)), w_to_degrees(unwind(0)), w_to_degrees(unwind(0)), w_to_degrees(unwind(0)), w_to_degrees(unwind(0)), w_to_degrees(unwind(0)), w_to_degrees(unwind(0)));
+
+    $li = 0.0;
+    $ms = sun_mean_anomaly($lh, $lm, $ls, $ds, $zc, $dy, $mn, $yr);
+    $sr = deg2rad(sun_long($lh, $lm, $ls, $ds, $zc, $dy, $mn, $yr));
+    $re = sun_dist($lh, $lm, $ls, $ds, $zc, $dy, $mn, $yr);
+    $lg = $sr + pi();
+
+    $l0 = 0.0;
+    $s0 = 0.0;
+    $p0 = 0.0;
+    $vo = 0.0;
+    $lp1 = 0.0;
+    $ll = 0.0;
+    $rd = 0.0;
+    $pd = 0.0;
+    $sp = 0.0;
+    $ci = 0.0;
+
+    for ($k = 1; $k <= 3; $k++) {
+        foreach ($planet_data as $planet_record) {
+            $planet_record->ap_value = deg2rad($planet_record->value1 - $planet_record->value3 - $li * $planet_record->value2);
+        }
+
+        $qa = 0.0;
+        $qb = 0.0;
+        $qc = 0.0;
+        $qd = 0.0;
+        $qe = 0.0;
+        $qf = 0.0;
+        $qg = 0.0;
+
+        if ($s == "Mercury") {
+            list($l4685_qa, $l4685_qb) = planet_long_l4685($planet_data);
+
+            $qa = $l4685_qa;
+            $qb = $l4685_qb;
+        }
+
+        if ($s == "Venus") {
+            list($l4735_qa, $l4735_qb, $l4735_qc, $l4735_qe) = planet_long_l4735($planet_data, $ms, $t);
+
+            $qa = $l4735_qa;
+            $qb = $l4735_qb;
+            $qc = $l4735_qc;
+            $qe = $l4735_qe;
+        }
+
+        if ($s == "Mars") {
+            list($l4810_a, $l4810_sa, $l4810_ca, $l4810_qc, $l4810_qe, $l4810_qa, $l4810_qb) = planet_long_l4810($planet_data, $ms);
+
+            $qc = $l4810_qc;
+            $qe = $l4810_qe;
+            $qa = $l4810_qa;
+            $qb = $l4810_qb;
+        }
+
+
+        $match_planet = new PlanetDataPrecise("NotFound", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+        foreach ($planet_data as $planet_record) {
+            if ($planet_record->name == $s) {
+                $match_planet = $planet_record;
+            }
+        }
+
+        if (in_array($s, ["Jupiter", "Saturn", "Uranus", "Neptune"])) {
+
+            list($l4945_qa, $l4945_qb, $l4945_qc, $l4945_qd, $l4945_qe, $l4945_qf, $l4945_qg) = planet_long_l4945($t, $match_planet);
+
+            $qa = $l4945_qa;
+            $qb = $l4945_qb;
+            $qc = $l4945_qc;
+            $qd = $l4945_qd;
+            $qe = $l4945_qe;
+            $qf = $l4945_qf;
+            $qg = $l4945_qg;
+        }
+
+        $ec = $match_planet->value4 + $qd;
+        $am = $match_planet->ap_value + $qe;
+        $at = true_anomaly($am, $ec);
+        $pvv = ($match_planet->value7 + $qf) * (1.0 - $ec * $ec) / (1.0 + $ec * cos($at));
+        $lp = w_to_degrees($at) + $match_planet->value3 + w_to_degrees($qc - $qe);
+        $lp = deg2rad($lp);
+        $om = deg2rad($match_planet->value6);
+        $lo = $lp - $om;
+        $so = sin($lo);
+        $co = cos($lo);
+        $inn = deg2rad($match_planet->value5);
+        $pvv += $qb;
+        $sp = $so * sin($inn);
+        $y = $so * cos($inn);
+        $ps = asin($sp) + $qg;
+        $sp = sin($ps);
+        $pd = atan2($y, $co) + $om + deg2rad($qa);
+        $pd = unwind($pd);
+        $ci = cos($ps);
+        $rd = $pvv * $ci;
+        $ll = $pd - $lg;
+        $rh = $re * $re + $pvv * $pvv - 2.0 * $re * $pvv * $ci * cos($ll);
+        $rh = sqrt($rh);
+        $li = $rh * 0.005775518;
+
+        if ($k == 1) {
+            $l0 = $pd;
+            $s0 = $ps;
+            $p0 = $pvv;
+            $vo = $rh;
+            $lp1 = $lp;
+        }
+    }
+
+    $l1 = sin($ll);
+    $l2 = cos($ll);
+
+    $ep = ($ip < 3)
+        ? atan(-1.0 * $rd * $l1 / ($re - $rd * $l2)) + $lg + pi()
+        : atan($re * $l1 / ($rd - $re * $l2)) + $pd;
+    $ep = unwind($ep);
+
+    $bp = atan($rd * $sp * sin($ep - $pd) / ($ci * $re * $l1));
+
+    $planet_longitude = w_to_degrees(unwind($ep));
+    $planet_latitude = w_to_degrees(unwind($bp));
+    $planet_distance_au = $vo;
+    $planet_h_long1 = w_to_degrees($lp1);
+    $planet_h_long2 = w_to_degrees($l0);
+    $planet_h_lat = w_to_degrees($s0);
+    $planet_r_vec = $p0;
+
+    return array($planet_longitude, $planet_latitude, $planet_distance_au, $planet_h_long1, $planet_h_long2, $planet_h_lat, $planet_r_vec);
+}
+
+/** Helper function for planet_coordinates() */
+function planet_long_l4685($pl)
+{
+    $qa = 0.00204 * cos(5.0 * $pl[2]->ap_value - 2.0 * $pl[1]->ap_value + 0.21328);
+    $qa += 0.00103 * cos(2.0 * $pl[2]->ap_value - $pl[1]->ap_value - 2.8046);
+    $qa += 0.00091 * cos(2.0 * $pl[4]->ap_value - $pl[1]->ap_value - 0.64582);
+    $qa += 0.00078 * cos(5.0 * $pl[2]->ap_value - 3.0 * $pl[1]->ap_value + 0.17692);
+
+    $qb = 0.000007525 * cos(2.0 * $pl[4]->ap_value - $pl[1]->ap_value + 0.925251);
+    $qb += 0.000006802 * cos(5.0 * $pl[2]->ap_value - 3.0 * $pl[1]->ap_value - 4.53642);
+    $qb += 0.000005457 * cos(2.0 * $pl[2]->ap_value - 2.0 * $pl[1]->ap_value - 1.24246);
+    $qb += 0.000003569 * cos(5.0 * $pl[2]->ap_value - $pl[1]->ap_value - 1.35699);
+
+    return array($qa, $qb);
+}
+
+/** Helper function for planet_coordinates() */
+function planet_long_l4735($pl, $ms, $t)
+{
+    $qc = 0.00077 * sin(4.1406 + $t * 2.6227);
+    $qc = deg2rad($qc);
+    $qe = $qc;
+
+    $qa = 0.00313 * cos(2.0 * $ms - 2.0 * $pl[2]->ap_value - 2.587);
+    $qa += 0.00198 * cos(3.0 * $ms - 3.0 * $pl[2]->ap_value + 0.044768);
+    $qa += 0.00136 * cos($ms - $pl[2]->ap_value - 2.0788);
+    $qa += 0.00096 * cos(3.0 * $ms - 2.0 * $pl[2]->ap_value - 2.3721);
+    $qa += 0.00082 * cos($pl[4]->ap_value - $pl[2]->ap_value - 3.6318);
+
+    $qb = 0.000022501 * cos(2.0 * $ms - 2.0 * $pl[2]->ap_value - 1.01592);
+    $qb += 0.000019045 * cos(3.0 * $ms - 3.0 * $pl[2]->ap_value + 1.61577);
+    $qb += 0.000006887 * cos($pl[4]->ap_value - $pl[2]->ap_value - 2.06106);
+    $qb += 0.000005172 * cos($ms - $pl[2]->ap_value - 0.508065);
+    $qb += 0.00000362 * cos(5.0 * $ms - 4.0 * $pl[2]->ap_value - 1.81877);
+    $qb += 0.000003283 * cos(4.0 * $ms - 4.0 * $pl[2]->ap_value + 1.10851);
+    $qb += 0.000003074 * cos(2.0 * $pl[4]->ap_value - 2.0 * $pl[2]->ap_value - 0.962846);
+
+    return array($qa, $qb, $qc, $qe);
+}
+
+/** Helper function for planet_coordinates() */
+function planet_long_l4810($pl, $ms)
+{
+    $a = 3.0 * $pl[4]->ap_value - 8.0 * $pl[3]->ap_value + 4.0 * $ms;
+    $sa = sin($a);
+    $ca = cos($a);
+    $qc = - (0.01133 * $sa + 0.00933 * $ca);
+    $qc = deg2rad($qc);
+    $qe = $qc;
+
+    $qa = 0.00705 * cos($pl[4]->ap_value - $pl[3]->ap_value - 0.85448);
+    $qa += 0.00607 * cos(2.0 * $pl[4]->ap_value - $pl[3]->ap_value - 3.2873);
+    $qa += 0.00445 * cos(2.0 * $pl[4]->ap_value - 2.0 * $pl[3]->ap_value - 3.3492);
+    $qa += 0.00388 * cos($ms - 2.0 * $pl[3]->ap_value + 0.35771);
+    $qa += 0.00238 * cos($ms - $pl[3]->ap_value + 0.61256);
+    $qa += 0.00204 * cos(2.0 * $ms - 3.0 * $pl[3]->ap_value + 2.7688);
+    $qa += 0.00177 * cos(3.0 * $pl[3]->ap_value - $pl[2]->ap_value - 1.0053);
+    $qa += 0.00136 * cos(2.0 * $ms - 4.0 * $pl[3]->ap_value + 2.6894);
+    $qa += 0.00104 * cos($pl[4]->ap_value + 0.30749);
+
+    $qb = 0.000053227 * cos($pl[4]->ap_value - $pl[3]->ap_value + 0.717864);
+    $qb += 0.000050989 * cos(2.0 * $pl[4]->ap_value - 2.0 * $pl[3]->ap_value - 1.77997);
+    $qb += 0.000038278 * cos(2.0 * $pl[4]->ap_value - $pl[3]->ap_value - 1.71617);
+    $qb += 0.000015996 * cos($ms - $pl[3]->ap_value - 0.969618);
+    $qb += 0.000014764 * cos(2.0 * $ms - 3.0 * $pl[3]->ap_value + 1.19768);
+    $qb += 0.000008966 * cos($pl[4]->ap_value - 2.0 * $pl[3]->ap_value + 0.761225);
+    $qb += 0.000007914 * cos(3.0 * $pl[4]->ap_value - 2.0 * $pl[3]->ap_value - 2.43887);
+    $qb += 0.000007004 * cos(2.0 * $pl[4]->ap_value - 3.0 * $pl[3]->ap_value - 1.79573);
+    $qb += 0.00000662 * cos($ms - 2.0 * $pl[3]->ap_value + 1.97575);
+    $qb += 0.00000493 * cos(3.0 * $pl[4]->ap_value - 3.0 * $pl[3]->ap_value - 1.33069);
+    $qb += 0.000004693 * cos(3.0 * $ms - 5.0 * $pl[3]->ap_value + 3.32665);
+    $qb += 0.000004571 * cos(2.0 * $ms - 4.0 * $pl[3]->ap_value + 4.27086);
+    $qb += 0.000004409 * cos(3.0 * $pl[4]->ap_value - $pl[3]->ap_value - 2.02158);
+
+    return array($a, $sa, $ca, $qc, $qe, $qa, $qb);
+}
+
+/** Helper function for planet_coordinates() */
+function planet_long_l4945($t, $planet)
+{
+    $qa = 0.0;
+    $qb = 0.0;
+    $qc = 0.0;
+    $qd = 0.0;
+    $qe = 0.0;
+    $qf = 0.0;
+    $qg = 0.0;
+    $vk = 0.0;
+    $ja = 0.0;
+    $jb = 0.0;
+    $jc = 0.0;
+
+    $j1 = $t / 5.0 + 0.1;
+    $j2 = unwind(4.14473 + 52.9691 * $t);
+    $j3 = unwind(4.641118 + 21.32991 * $t);
+    $j4 = unwind(4.250177 + 7.478172 * $t);
+    $j5 = 5.0 * $j3 - 2.0 * $j2;
+    $j6 = 2.0 * $j2 - 6.0 * $j3 + 3.0 * $j4;
+
+    if (in_array($planet->name, ["Mercury", "Venus", "Mars"])) {
+        return array($qa, $qb, $qc, $qd, $qe, $qf, $qg);
+    }
+
+    if (in_array($planet->name, ["Jupiter", "Saturn"])) {
+        $j7 = $j3 - $j2;
+        $u1 = sin($j3);
+        $u2 = cos($j3);
+        $u3 = sin(2.0 * $j3);
+        $u4 = cos(2.0 * $j3);
+        $u5 = sin($j5);
+        $u6 = cos($j5);
+        $u7 = sin(2.0 * $j5);
+        $u8a = sin($j6);
+        $u9 = sin($j7);
+        $ua = cos($j7);
+        $ub = sin(2.0 * $j7);
+        $uc = cos(2.0 * $j7);
+        $ud = sin(3.0 * $j7);
+        $ue = cos(3.0 * $j7);
+        $uf = sin(4.0 * $j7);
+        $ug = cos(4.0 * $j7);
+        $vh = cos(5.0 * $j7);
+
+        if ($planet->name == "Saturn") {
+            $ui = sin(3.0 * $j3);
+            $uj = cos(3.0 * $j3);
+            $uk = sin(4.0 * $j3);
+            $ul = cos(4.0 * $j3);
+            $vi = cos(2.0 * $j5);
+            $un = sin(5.0 * $j7);
+            $j8 = $j4 - $j3;
+            $uo = sin(2.0 * $j8);
+            $up = cos(2.0 * $j8);
+            $uq = sin(3.0 * $j8);
+            $ur = cos(3.0 * $j8);
+
+            $qc = 0.007581 * $u7 - 0.007986 * $u8a - 0.148811 * $u9;
+            $qc -= (0.814181 - (0.01815 - 0.016714 * $j1) * $j1) * $u5;
+            $qc -= (0.010497 - (0.160906 - 0.0041 * $j1) * $j1) * $u6;
+            $qc = $qc - 0.015208 * $ud - 0.006339 * $uf - 0.006244 * $u1;
+            $qc = $qc - 0.0165 * $ub * $u1 - 0.040786 * $ub;
+            $qc = $qc + (0.008931 + 0.002728 * $j1) * $u9 * $u1 - 0.005775 * $ud * $u1;
+            $qc = $qc + (0.081344 + 0.003206 * $j1) * $ua * $u1 + 0.015019 * $uc * $u1;
+            $qc = $qc + (0.085581 + 0.002494 * $j1) * $u9 * $u2 + 0.014394 * $uc * $u2;
+            $qc = $qc + (0.025328 - 0.003117 * $j1) * $ua * $u2 + 0.006319 * $ue * $u2;
+            $qc = $qc + 0.006369 * $u9 * $u3 + 0.009156 * $ub * $u3 + 0.007525 * $uq * $u3;
+            $qc = $qc - 0.005236 * $ua * $u4 - 0.007736 * $uc * $u4 - 0.007528 * $ur * $u4;
+            $qc = deg2rad($qc);
+
+            $qd = (-7927.0 + (2548.0 + 91.0 * $j1) * $j1) * $u5;
+            $qd = $qd + (13381.0 + (1226.0 - 253.0 * $j1) * $j1) * $u6 + (248.0 - 121.0 * $j1) * $u7;
+            $qd = $qd - (305.0 + 91.0 * $j1) * $vi + 412.0 * $ub + 12415.0 * $u1;
+            $qd = $qd + (390.0 - 617.0 * $j1) * $u9 * $u1 + (165.0 - 204.0 * $j1) * $ub * $u1;
+            $qd = $qd + 26599.0 * $ua * $u1 - 4687.0 * $uc * $u1 - 1870.0 * $ue * $u1 - 821.0 * $ug * $u1;
+            $qd = $qd - 377.0 * $vh * $u1 + 497.0 * $up * $u1 + (163.0 - 611.0 * $j1) * $u2;
+            $qd = $qd - 12696.0 * $u9 * $u2 - 4200.0 * $ub * $u2 - 1503.0 * $ud * $u2 - 619.0 * $uf * $u2;
+            $qd = $qd - 268.0 * $un * $u2 - (282.0 + 1306.0 * $j1) * $ua * $u2;
+            $qd = $qd + (-86.0 + 230.0 * $j1) * $uc * $u2 + 461.0 * $uo * $u2 - 350.0 * $u3;
+            $qd = $qd + (2211.0 - 286.0 * $j1) * $u9 * $u3 - 2208.0 * $ub * $u3 - 568.0 * $ud * $u3;
+            $qd = $qd - 346.0 * $uf * $u3 - (2780.0 + 222.0 * $j1) * $ua * $u3;
+            $qd = $qd + (2022.0 + 263.0 * $j1) * $uc * $u3 + 248.0 * $ue * $u3 + 242.0 * $uq * $u3;
+            $qd = $qd + 467.0 * $ur * $u3 - 490.0 * $u4 - (2842.0 + 279.0 * $j1) * $u9 * $u4;
+            $qd = $qd + (128.0 + 226.0 * $j1) * $ub * $u4 + 224.0 * $ud * $u4;
+            $qd = $qd + (-1594.0 + 282.0 * $j1) * $ua * $u4 + (2162.0 - 207.0 * $j1) * $uc * $u4;
+            $qd = $qd + 561.0 * $ue * $u4 + 343.0 * $ug * $u4 + 469.0 * $uq * $u4 - 242.0 * $ur * $u4;
+            $qd = $qd - 205.0 * $u9 * $ui + 262.0 * $ud * $ui + 208.0 * $ua * $uj - 271.0 * $ue * $uj;
+            $qd = $qd - 382.0 * $ue * $uk - 376.0 * $ud * $ul;
+            $qd *= 0.0000001;
+
+            $vk = (0.077108 + (0.007186 - 0.001533 * $j1) * $j1) * $u5;
+            $vk -= 0.007075 * $u9;
+            $vk += (0.045803 - (0.014766 + 0.000536 * $j1) * $j1) * $u6;
+            $vk = $vk - 0.072586 * $u2 - 0.075825 * $u9 * $u1 - 0.024839 * $ub * $u1;
+            $vk = $vk - 0.008631 * $ud * $u1 - 0.150383 * $ua * $u2;
+            $vk = $vk + 0.026897 * $uc * $u2 + 0.010053 * $ue * $u2;
+            $vk = $vk - (0.013597 + 0.001719 * $j1) * $u9 * $u3 + 0.011981 * $ub * $u4;
+            $vk -= (0.007742 - 0.001517 * $j1) * $ua * $u3;
+            $vk += (0.013586 - 0.001375 * $j1) * $uc * $u3;
+            $vk -= (0.013667 - 0.001239 * $j1) * $u9 * $u4;
+            $vk += (0.014861 + 0.001136 * $j1) * $ua * $u4;
+            $vk -= (0.013064 + 0.001628 * $j1) * $uc * $u4;
+            $qe = $qc - (deg2rad($vk) / $planet->value4);
+
+            $qf = 572.0 * $u5 - 1590.0 * $ub * $u2 + 2933.0 * $u6 - 647.0 * $ud * $u2;
+            $qf = $qf + 33629.0 * $ua - 344.0 * $uf * $u2 - 3081.0 * $uc + 2885.0 * $ua * $u2;
+            $qf = $qf - 1423.0 * $ue + (2172.0 + 102.0 * $j1) * $uc * $u2 - 671.0 * $ug;
+            $qf = $qf + 296.0 * $ue * $u2 - 320.0 * $vh - 267.0 * $ub * $u3 + 1098.0 * $u1;
+            $qf = $qf - 778.0 * $ua * $u3 - 2812.0 * $u9 * $u1 + 495.0 * $uc * $u3 + 688.0 * $ub * $u1;
+            $qf = $qf + 250.0 * $ue * $u3 - 393.0 * $ud * $u1 - 856.0 * $u9 * $u4 - 228.0 * $uf * $u1;
+            $qf = $qf + 441.0 * $ub * $u4 + 2138.0 * $ua * $u1 + 296.0 * $uc * $u4 - 999.0 * $uc * $u1;
+            $qf = $qf + 211.0 * $ue * $u4 - 642.0 * $ue * $u1 - 427.0 * $u9 * $ui - 325.0 * $ug * $u1;
+            $qf = $qf + 398.0 * $ud * $ui - 890.0 * $u2 + 344.0 * $ua * $uj + 2206.0 * $u9 * $u2;
+            $qf -= 427.0 * $ue * $uj;
+            $qf *= 0.000001;
+
+            $qg = 0.000747 * $ua * $u1 + 0.001069 * $ua * $u2 + 0.002108 * $ub * $u3;
+            $qg = $qg + 0.001261 * $uc * $u3 + 0.001236 * $ub * $u4 - 0.002075 * $uc * $u4;
+            $qg = deg2rad($qg);
+
+            return array($qa, $qb, $qc, $qd, $qe, $qf, $qg);
+        }
+
+        $qc = (0.331364 - (0.010281 + 0.004692 * $j1) * $j1) * $u5;
+        $qc += (0.003228 - (0.064436 - 0.002075 * $j1) * $j1) * $u6;
+        $qc -= (0.003083 + (0.000275 - 0.000489 * $j1) * $j1) * $u7;
+        $qc = $qc + 0.002472 * $u8a + 0.013619 * $u9 + 0.018472 * $ub;
+        $qc = $qc + 0.006717 * $ud + 0.002775 * $uf + 0.006417 * $ub * $u1;
+        $qc = $qc + (0.007275 - 0.001253 * $j1) * $u9 * $u1 + 0.002439 * $ud * $u1;
+        $qc = $qc - (0.035681 + 0.001208 * $j1) * $u9 * $u2 - 0.003767 * $uc * $u1;
+        $qc = $qc - (0.033839 + 0.001125 * $j1) * $ua * $u1 - 0.004261 * $ub * $u2;
+        $qc = $qc + (0.001161 * $j1 - 0.006333) * $ua * $u2 + 0.002178 * $u2;
+        $qc = $qc - 0.006675 * $uc * $u2 - 0.002664 * $ue * $u2 - 0.002572 * $u9 * $u3;
+        $qc = $qc - 0.003567 * $ub * $u3 + 0.002094 * $ua * $u4 + 0.003342 * $uc * $u4;
+        $qc = deg2rad($qc);
+
+        $qd = (3606.0 + (130.0 - 43.0 * $j1) * $j1) * $u5 + (1289.0 - 580.0 * $j1) * $u6;
+        $qd = $qd - 6764.0 * $u9 * $u1 - 1110.0 * $ub * $u1 - 224.0 * $ud * $u1 - 204.0 * $u1;
+        $qd = $qd + (1284.0 + 116.0 * $j1) * $ua * $u1 + 188.0 * $uc * $u1;
+        $qd = $qd + (1460.0 + 130.0 * $j1) * $u9 * $u2 + 224.0 * $ub * $u2 - 817.0 * $u2;
+        $qd = $qd + 6074.0 * $u2 * $ua + 992.0 * $uc * $u2 + 508.0 * $ue * $u2 + 230.0 * $ug * $u2;
+        $qd = $qd + 108.0 * $vh * $u2 - (956.0 + 73.0 * $j1) * $u9 * $u3 + 448.0 * $ub * $u3;
+        $qd = $qd + 137.0 * $ud * $u3 + (108.0 * $j1 - 997.0) * $ua * $u3 + 480.0 * $uc * $u3;
+        $qd = $qd + 148.0 * $ue * $u3 + (99.0 * $j1 - 956.0) * $u9 * $u4 + 490.0 * $ub * $u4;
+        $qd = $qd + 158.0 * $ud * $u4 + 179.0 * $u4 + (1024.0 + 75.0 * $j1) * $ua * $u4;
+        $qd = $qd - 437.0 * $uc * $u4 - 132.0 * $ue * $u4;
+        $qd *= 0.0000001;
+
+        $vk = (0.007192 - 0.003147 * $j1) * $u5 - 0.004344 * $u1;
+        $vk += ($j1 * (0.000197 * $j1 - 0.000675) - 0.020428) * $u6;
+        $vk = $vk + 0.034036 * $ua * $u1 + (0.007269 + 0.000672 * $j1) * $u9 * $u1;
+        $vk = $vk + 0.005614 * $uc * $u1 + 0.002964 * $ue * $u1 + 0.037761 * $u9 * $u2;
+        $vk = $vk + 0.006158 * $ub * $u2 - 0.006603 * $ua * $u2 - 0.005356 * $u9 * $u3;
+        $vk = $vk + 0.002722 * $ub * $u3 + 0.004483 * $ua * $u3;
+        $vk = $vk - 0.002642 * $uc * $u3 + 0.004403 * $u9 * $u4;
+        $vk = $vk - 0.002536 * $ub * $u4 + 0.005547 * $ua * $u4 - 0.002689 * $uc * $u4;
+        $qe = $qc - (deg2rad($vk) / $planet->value4);
+
+        $qf = 205.0 * $ua - 263.0 * $u6 + 693.0 * $uc + 312.0 * $ue + 147.0 * $ug + 299.0 * $u9 * $u1;
+        $qf = $qf + 181.0 * $uc * $u1 + 204.0 * $ub * $u2 + 111.0 * $ud * $u2 - 337.0 * $ua * $u2;
+        $qf -= 111.0 * $uc * $u2;
+        $qf *= 0.000001;
+
+        return array($qa, $qb, $qc, $qd, $qe, $qf, $qg);
+    }
+
+    if (in_array($planet->name, ["Uranus", "Neptune"])) {
+        $j8 = unwind(1.46205 + 3.81337 * $t);
+        $j9 = 2.0 * $j8 - $j4;
+        $vj = sin($j9);
+        $uu = sin($j9);
+        $uv = sin(2.0 * $j9);
+        $uw = cos(2.0 * $j9);
+
+        if ($planet->name == "Neptune") {
+            $ja = $j8 - $j2;
+            $jb = $j8 - $j3;
+            $jc = $j8 - $j4;
+            $qc = (0.001089 * $j1 - 0.589833) * $vj;
+            $qc = $qc + (0.004658 * $j1 - 0.056094) * $uu - 0.024286 * $uv;
+            $qc = deg2rad($qc);
+
+            $vk = 0.024039 * $vj - 0.025303 * $uu + 0.006206 * $uv;
+            $vk -= 0.005992 * $uw;
+            $qe = $qc - (deg2rad($vk) / $planet->value4);
+
+            $qd = 4389.0 * $vj + 1129.0 * $uv + 4262.0 * $uu + 1089.0 * $uw;
+            $qd *= 0.0000001;
+
+            $qf = 8189.0 * $uu - 817.0 * $vj + 781.0 * $uw;
+            $qf *= 0.000001;
+
+            $vd = sin(2.0 * $jc);
+            $ve = cos(2.0 * $jc);
+            $vf = sin($j8);
+            $vg = cos($j8);
+            $qa = -0.009556 * sin($ja) - 0.005178 * sin($jb);
+            $qa = $qa + 0.002572 * $vd - 0.002972 * $ve * $vf - 0.002833 * $vd * $vg;
+
+            $qg = 0.000336 * $ve * $vf + 0.000364 * $vd * $vg;
+            $qg = deg2rad($qg);
+
+            $qb = -40596.0 + 4992.0 * cos($ja) + 2744.0 * cos($jb);
+            $qb = $qb + 2044.0 * cos($jc) + 1051.0 * $ve;
+            $qb *= 0.000001;
+
+            return array($qa, $qb, $qc, $qd, $qe, $qf, $qg);
+        }
+
+        $ja = $j4 - $j2;
+        $jb = $j4 - $j3;
+        $jc = $j8 - $j4;
+        $qc = (0.864319 - 0.001583 * $j1) * $vj;
+        $qc = $qc + (0.082222 - 0.006833 * $j1) * $uu + 0.036017 * $uv;
+        $qc = $qc - 0.003019 * $uw + 0.008122 * sin($j6);
+        $qc = deg2rad($qc);
+
+        $vk = 0.120303 * $vj + 0.006197 * $uv;
+        $vk += (0.019472 - 0.000947 * $j1) * $uu;
+        $qe = $qc - (deg2rad($vk) / $planet->value4);
+
+        $qd = (163.0 * $j1 - 3349.0) * $vj + 20981.0 * $uu + 1311.0 * $uw;
+        $qd *= 0.0000001;
+
+        $qf = -0.003825 * $uu;
+
+        $qa = (-0.038581 + (0.002031 - 0.00191 * $j1) * $j1) * cos($j4 + $jb);
+        $qa += (0.010122 - 0.000988 * $j1) * sin($j4 + $jb);
+        $a = (0.034964 - (0.001038 - 0.000868 * $j1) * $j1) * cos(2.0 * $j4 + $jb);
+        $qa = $a + $qa + 0.005594 * sin($j4 + 3.0 * $jc) - 0.014808 * sin($ja);
+        $qa = $qa - 0.005794 * sin($jb) + 0.002347 * cos($jb);
+        $qa = $qa + 0.009872 * sin($jc) + 0.008803 * sin(2.0 * $jc);
+        $qa -= 0.004308 * sin(3.0 * $jc);
+
+        $ux = sin($jb);
+        $uy = cos($jb);
+        $uz = sin($j4);
+        $va = cos($j4);
+        $vb = sin(2.0 * $j4);
+        $vc = cos(2.0 * $j4);
+        $qg = (0.000458 * $ux - 0.000642 * $uy - 0.000517 * cos(4.0 * $jc)) * $uz;
+        $qg -= (0.000347 * $ux + 0.000853 * $uy + 0.000517 * sin(4.0 * $jb)) * $va;
+        $qg += 0.000403 * (cos(2.0 * $jc) * $vb + sin(2.0 * $jc) * $vc);
+        $qg = deg2rad($qg);
+
+        $qb = -25948.0 + 4985.0 * cos($ja) - 1230.0 * $va + 3354.0 * $uy;
+        $qb = $qb + 904.0 * cos(2.0 * $jc) + 894.0 * (cos($jc) - cos(3.0 * $jc));
+        $qb += (5795.0 * $va - 1165.0 * $uz + 1388.0 * $vc) * $ux;
+        $qb += (1351.0 * $va + 5702.0 * $uz + 1388.0 * $vb) * $uy;
+        $qb *= 0.000001;
+
+        return array($qa, $qb, $qc, $qd, $qe, $qf, $qg);
+    }
+
+    return array($qa, $qb, $qc, $qd, $qe, $qf, $qg);
 }

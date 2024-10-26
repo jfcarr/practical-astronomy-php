@@ -70,7 +70,7 @@ class PlanetData
      * 
      * Original element name: v0
      */
-    public  $v0_VisualMagnitude;
+    public $v0_VisualMagnitude;
 
 
     public function __construct($name, $tp_PeriodOrbit, $long_LongitudeEpoch, $peri_LongitudePerihelion, $ecc_EccentricityOrbit, $axis_AxisOrbit, $incl_OrbitalInclination, $node_LongitudeAscendingNode, $theta0_AngularDiameter, $v0_VisualMagnitude)
@@ -85,6 +85,79 @@ class PlanetData
         $this->node_LongitudeAscendingNode = $node_LongitudeAscendingNode;
         $this->theta0_AngularDiameter = $theta0_AngularDiameter;
         $this->v0_VisualMagnitude = $v0_VisualMagnitude;
+    }
+}
+
+class PlanetDataPrecise
+{
+    /**
+     * Name of planet.
+     */
+    public $name;
+
+    /**
+     * Working value 1.
+     */
+    public $value1;
+
+    /**
+     * Working value 2.
+     */
+    public $value2;
+
+    /**
+     * Working value 3.
+     */
+    public $value3;
+
+    /**
+     * Working value 4.
+     */
+    public $value4;
+
+    /**
+     * Working value 5.
+     */
+    public $value5;
+
+    /**
+     * Working value 6.
+     */
+    public $value6;
+
+    /**
+     * Working value 7.
+     */
+    public $value7;
+
+    /**
+     * Working value 8.
+     */
+    public $value8;
+
+    /**
+     * Working value 9.
+     */
+    public $value9;
+
+    /**
+     * Working AP value.
+     */
+    public $ap_value;
+
+    public function __construct($name, $value1, $value2, $value3, $value4, $value5, $value6, $value7, $value8, $value9, $ap_value)
+    {
+        $this->name = $name;
+        $this->value1 = $value1;
+        $this->value2 = $value2;
+        $this->value3 = $value3;
+        $this->value4 = $value4;
+        $this->value5 = $value5;
+        $this->value6 = $value6;
+        $this->value7 = $value7;
+        $this->value8 = $value8;
+        $this->value9 = $value9;
+        $this->ap_value = $ap_value;
     }
 }
 

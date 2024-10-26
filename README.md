@@ -47,14 +47,22 @@ If you're interested in this topic, please buy the book! It provides far more de
 ### Planets
 
 - [x] Calculate -> Approximate position of planet
-- [ ] Calculate -> Precise position of planet
+- [x] Calculate -> Precise position of planet
 - [ ] Calculate -> Visual aspects of planet (distance, angular diameter, phase, light time, position angle of bright limb, and apparent magnitude)
-- [ ] Calculate -> Position of comet (elliptical and parabolic)
+
+### Comets
+
+- [ ] Calculate -> Position of comet (elliptical)
+- [ ] Calculate -> Position of comet (parabolic)
+ 
+### Binary Stars
+
 - [ ] Calculate -> Binary star orbit data
 
 ### The Moon
 
-- [ ] Calculate -> Approximate and precise position of Moon
+- [ ] Calculate -> Approximate position of Moon
+- [ ] Calculate -> Precise position of Moon
 - [ ] Calculate -> Moon phase and position angle of bright limb
 - [ ] Calculate -> Times of new Moon and full Moon
 - [ ] Calculate -> Moon's distance, angular diameter, and horizontal parallax
