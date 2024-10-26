@@ -18,6 +18,7 @@ use function PA\Macros\local_civil_time_to_universal_time;
 use function PA\Macros\local_civil_time_greenwich_day;
 use function PA\Macros\local_civil_time_greenwich_month;
 use function PA\Macros\local_civil_time_greenwich_year;
+use function PA\Macros\planet_coordinates;
 use function PA\Macros\w_to_degrees;
 
 include_once 'PAMacros.php';
@@ -80,6 +81,29 @@ function approximate_position_of_planet($lctHour, $lctMin, $lctSec, $isDaylightS
         $planetDecDeg = decimal_degrees_degrees($decDeg);
         $planetDecMin = decimal_degrees_minutes($decDeg);
         $planetDecSec = decimal_degrees_seconds($decDeg);
+
+        return array($planetRAHour, $planetRAMin, $planetRASec, $planetDecDeg, $planetDecMin, $planetDecSec);
+}
+
+/**
+ * Calculate precise position of a planet.
+ */
+function precise_position_of_planet($lctHour, $lctMin, $lctSec, $isDaylightSaving, $zoneCorrectionHours, $localDateDay, $localDateMonth, $localDateYear, $planetName)
+{
+        $daylightSaving = $isDaylightSaving ? 1 : 0;
+
+        list($planetLongitude, $planetLatitude, $planetDistanceAU, $planetHLong1, $planetHLong2, $planetHLat, $planetRVect) =
+                planet_coordinates($lctHour, $lctMin, $lctSec, $daylightSaving, $zoneCorrectionHours, $localDateDay, $localDateMonth, $localDateYear, $planetName);
+
+        $planetRAHours = decimal_degrees_to_degree_hours(ec_ra($planetLongitude, 0, 0, $planetLatitude, 0, 0, $localDateDay, $localDateMonth, $localDateYear));
+        $planetDecDeg1 = ec_dec($planetLongitude, 0, 0, $planetLatitude, 0, 0, $localDateDay, $localDateMonth, $localDateYear);
+
+        $planetRAHour = decimal_hours_hour($planetRAHours);
+        $planetRAMin = decimal_hours_minute($planetRAHours);
+        $planetRASec = decimal_hours_second($planetRAHours);
+        $planetDecDeg = decimal_degrees_degrees($planetDecDeg1);
+        $planetDecMin = decimal_degrees_minutes($planetDecDeg1);
+        $planetDecSec = decimal_degrees_seconds($planetDecDeg1);
 
         return array($planetRAHour, $planetRAMin, $planetRASec, $planetDecDeg, $planetDecMin, $planetDecSec);
 }
