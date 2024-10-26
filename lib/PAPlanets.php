@@ -19,6 +19,7 @@ use function PA\Macros\local_civil_time_greenwich_day;
 use function PA\Macros\local_civil_time_greenwich_month;
 use function PA\Macros\local_civil_time_greenwich_year;
 use function PA\Macros\planet_coordinates;
+use function PA\Macros\sun_long;
 use function PA\Macros\w_to_degrees;
 
 include_once 'PAMacros.php';
@@ -106,4 +107,50 @@ function precise_position_of_planet($lctHour, $lctMin, $lctSec, $isDaylightSavin
         $planetDecSec = decimal_degrees_seconds($planetDecDeg1);
 
         return array($planetRAHour, $planetRAMin, $planetRASec, $planetDecDeg, $planetDecMin, $planetDecSec);
+}
+
+/**
+ * Calculate several visual aspects of a planet.
+ */
+function visual_aspects_of_a_planet($lctHour, $lctMin, $lctSec, $isDaylightSaving, $zoneCorrectionHours, $localDateDay, $localDateMonth, $localDateYear, $planetName)
+{
+        $daylightSaving = $isDaylightSaving ? 1 : 0;
+
+        $greenwichDateDay = local_civil_time_greenwich_day($lctHour, $lctMin, $lctSec, $daylightSaving, $zoneCorrectionHours, $localDateDay, $localDateMonth, $localDateYear);
+        $greenwichDateMonth = local_civil_time_greenwich_month($lctHour, $lctMin, $lctSec, $daylightSaving, $zoneCorrectionHours, $localDateDay, $localDateMonth, $localDateYear);
+        $greenwichDateYear = local_civil_time_greenwich_year($lctHour, $lctMin, $lctSec, $daylightSaving, $zoneCorrectionHours, $localDateDay, $localDateMonth, $localDateYear);
+
+        list($planet_longitude, $planet_latitude, $planet_distance_au, $planet_h_long1, $planet_h_long2, $planet_h_lat, $planet_r_vec) = planet_coordinates($lctHour, $lctMin, $lctSec, $daylightSaving, $zoneCorrectionHours, $localDateDay, $localDateMonth, $localDateYear, $planetName);
+
+        $planetRARad = deg2rad(ec_ra($planet_longitude, 0, 0, $planet_latitude, 0, 0, $localDateDay, $localDateMonth, $localDateYear));
+        $planetDecRad = deg2rad(ec_dec($planet_longitude, 0, 0, $planet_latitude, 0, 0, $localDateDay, $localDateMonth, $localDateYear));
+
+        $lightTravelTimeHours = $planet_distance_au * 0.1386;
+
+        $planetDataManager = new PlanetDataManager();
+        $planetData = $planetDataManager->GetPlanetRecord($planetName);
+
+        $angularDiameterArcsec = $planetData->theta0_AngularDiameter / $planet_distance_au;
+        $phase1 = 0.5 * (1.0 + cos(deg2rad(($planet_longitude - $planet_h_long1))));
+
+        $sunEclLongDeg = sun_long($lctHour, $lctMin, $lctSec, $daylightSaving, $zoneCorrectionHours, $localDateDay, $localDateMonth, $localDateYear);
+        $sunRARad = deg2rad(ec_ra($sunEclLongDeg, 0, 0, 0, 0, 0, $greenwichDateDay, $greenwichDateMonth, $greenwichDateYear));
+        $sunDecRad = deg2rad(ec_dec($sunEclLongDeg, 0, 0, 0, 0, 0, $greenwichDateDay, $greenwichDateMonth, $greenwichDateYear));
+
+        $y = cos($sunDecRad) * sin($sunRARad - $planetRARad);
+        $x = cos($planetDecRad) * sin($sunDecRad) - sin($planetDecRad) * cos($sunDecRad) * cos($sunRARad - $planetRARad);
+        $chiDeg = w_to_degrees(atan2($y, $x));
+        $radiusVectorAU = $planet_r_vec;
+        $approximateMagnitude1 = 5.0 * log10($radiusVectorAU * $planet_distance_au / sqrt($phase1)) + $planetData->v0_VisualMagnitude;
+
+        $distanceAU =  round($planet_distance_au, 5);
+        $angDiaArcsec = round($angularDiameterArcsec, 1);
+        $phase = round($phase1, 2);
+        $lightTimeHour = decimal_hours_hour($lightTravelTimeHours);
+        $lightTimeMinutes = decimal_hours_minute($lightTravelTimeHours);
+        $lightTimeSeconds = decimal_hours_second($lightTravelTimeHours);
+        $posAngleBrightLimbDeg = round($chiDeg, 1);
+        $approximateMagnitude = round($approximateMagnitude1, 1);
+
+        return array($distanceAU, $angDiaArcsec, $phase, $lightTimeHour, $lightTimeMinutes, $lightTimeSeconds, $posAngleBrightLimbDeg, $approximateMagnitude);
 }
