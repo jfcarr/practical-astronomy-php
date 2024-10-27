@@ -9,7 +9,6 @@ use PA\Binary as PA_Binary;
 
 use function PA\Utils\descriptive_assert;
 
-
 function binary_star_orbit($greenwichDateDay, $greenwichDateMonth, $greenwichDateYear, $binaryName, $expected_positionAngleDeg, $expected_separationArcsec)
 {
     $title = "Binary Star Orbit";

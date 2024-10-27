@@ -9,8 +9,9 @@ default:
 	@echo '  testplanets      Test planet functions'
 	@echo '  testcomet        Test comet functions'
 	@echo '  testbinary       Test binary star functions'
+	@echo '  testmoon         Test moon functions'
 
-test: testdatetime testcoordinates testsun testplanets testcomet testbinary
+test: testdatetime testcoordinates testsun testplanets testcomet testbinary testmoon
 
 testdatetime:
 	@$(PHPCMD) testDateTime.php
@@ -29,3 +30,6 @@ testcomet:
 
 testbinary:
 	@$(PHPCMD) testBinary.php
+
+testmoon:
+	@$(PHPCMD) testMoon.php
