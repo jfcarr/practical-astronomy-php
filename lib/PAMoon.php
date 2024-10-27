@@ -2,6 +2,8 @@
 
 namespace PA\Moon;
 
+use PA\Types\AccuracyLevel;
+
 use function PA\Macros\civil_date_to_julian_date;
 use function PA\Macros\decimal_degrees_degrees;
 use function PA\Macros\decimal_degrees_minutes;
@@ -17,6 +19,7 @@ use function PA\Macros\local_civil_time_greenwich_month;
 use function PA\Macros\local_civil_time_greenwich_year;
 use function PA\Macros\local_civil_time_to_universal_time;
 use function PA\Macros\moon_long_lat_hp;
+use function PA\Macros\moon_phase_ma;
 use function PA\Macros\nutat_long;
 use function PA\Macros\sun_long;
 use function PA\Macros\sun_mean_anomaly;
@@ -24,6 +27,7 @@ use function PA\Macros\unwind_deg;
 use function PA\Macros\w_to_degrees;
 
 include_once 'PAMacros.php';
+include_once 'PATypes.php';
 
 /** Calculate approximate position of the Moon. */
 function approximate_position_of_moon($lctHour, $lctMin, $lctSec, $isDaylightSaving, $zoneCorrectionHours, $localDateDay, $localDateMonth, $localDateYear)
@@ -102,4 +106,37 @@ function precise_position_of_moon($lctHour, $lctMin, $lctSec, $isDaylightSaving,
     $moonHorParallaxDeg = round($ml_moonHorPara, 6);
 
     return array($moonRAHour, $moonRAMin, $moonRASec, $moonDecDeg, $moonDecMin, $moonDecSec, $earthMoonDistKM, $moonHorParallaxDeg);
+}
+
+/** Calculate Moon phase and position angle of bright limb. */
+function moon_phase($lctHour, $lctMin, $lctSec, $isDaylightSaving, $zoneCorrectionHours, $localDateDay, $localDateMonth, $localDateYear, $accuracyLevel)
+{
+    $daylightSaving = $isDaylightSaving ? 1 : 0;
+
+    $gdateDay = local_civil_time_greenwich_day($lctHour, $lctMin, $lctSec, $daylightSaving, $zoneCorrectionHours, $localDateDay, $localDateMonth, $localDateYear);
+    $gdateMonth = local_civil_time_greenwich_month($lctHour, $lctMin, $lctSec, $daylightSaving, $zoneCorrectionHours, $localDateDay, $localDateMonth, $localDateYear);
+    $gdateYear = local_civil_time_greenwich_year($lctHour, $lctMin, $lctSec, $daylightSaving, $zoneCorrectionHours, $localDateDay, $localDateMonth, $localDateYear);
+
+    $sunLongDeg = sun_long($lctHour, $lctMin, $lctSec, $daylightSaving, $zoneCorrectionHours, $localDateDay, $localDateMonth, $localDateYear);
+    list($moonLongDeg, $moonLatDeg, $moonHorPara) = moon_long_lat_hp($lctHour, $lctMin, $lctSec, $daylightSaving, $zoneCorrectionHours, $localDateDay, $localDateMonth, $localDateYear);
+    $dRad = deg2rad($moonLongDeg - $sunLongDeg);
+
+    $moonPhase1 = ($accuracyLevel == AccuracyLevel::Precise)
+        ? moon_phase_ma($lctHour, $lctMin, $lctSec, $daylightSaving, $zoneCorrectionHours, $localDateDay, $localDateMonth, $localDateYear)
+        : (1.0 - cos($dRad)) / 2.0;
+
+    $sunRARad = deg2rad(ec_ra($sunLongDeg, 0, 0, 0, 0, 0, $gdateDay, $gdateMonth, $gdateYear));
+    $moonRARad = deg2rad(ec_ra($moonLongDeg, 0, 0, $moonLatDeg, 0, 0, $gdateDay, $gdateMonth, $gdateYear));
+    $sunDecRad = deg2rad(ec_dec($sunLongDeg, 0, 0, 0, 0, 0, $gdateDay, $gdateMonth, $gdateYear));
+    $moonDecRad = deg2rad(ec_dec($moonLongDeg, 0, 0, $moonLatDeg, 0, 0, $gdateDay, $gdateMonth, $gdateYear));
+
+    $y = cos($sunDecRad) * sin($sunRARad - $moonRARad);
+    $x = cos($moonDecRad) * sin($sunDecRad) - sin($moonDecRad) * cos($sunDecRad) * cos($sunRARad - $moonRARad);
+
+    $chiDeg = w_to_degrees(atan2($y, $x));
+
+    $moonPhase = round($moonPhase1, 2);
+    $paBrightLimbDeg = round($chiDeg, 2);
+
+    return array($moonPhase, $paBrightLimbDeg);
 }

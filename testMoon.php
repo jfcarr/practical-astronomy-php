@@ -3,9 +3,11 @@
 namespace PA\Test\Moon;
 
 include_once 'lib/PAMoon.php';
+include_once 'lib/PATypes.php';
 include_once 'lib/PAUtils.php';
 
 use PA\Moon as PA_Moon;
+use PA\Types\AccuracyLevel;
 
 use function PA\Utils\descriptive_assert;
 
@@ -45,6 +47,21 @@ function precise_position_of_moon($lctHour, $lctMin, $lctSec, $isDaylightSaving,
     echo "[{$title}] PASSED\n";
 }
 
+function moon_phase($lctHour, $lctMin, $lctSec, $isDaylightSaving, $zoneCorrectionHours, $localDateDay, $localDateMonth, $localDateYear, $accuracyLevel, $expected_moonPhase, $expected_paBrightLimbDeg)
+{
+    $title = "Moon Phase";
+
+    list($moonPhase, $paBrightLimbDeg) =
+        PA_Moon\moon_phase($lctHour, $lctMin, $lctSec, $isDaylightSaving, $zoneCorrectionHours, $localDateDay, $localDateMonth, $localDateYear, $accuracyLevel);
+
+    descriptive_assert("[{$title}] Moon Phase", $moonPhase, $expected_moonPhase);
+    descriptive_assert("[{$title}] Bright Limb degrees", $paBrightLimbDeg, $expected_paBrightLimbDeg);
+
+    echo "[{$title}] PASSED\n";
+}
+
 approximate_position_of_moon(0, 0, 0, false, 0, 1, 9, 2003, 14, 12, 42.31, -11, 31, 38.27);
 
 precise_position_of_moon(0, 0, 0, false, 0, 1, 9, 2003, 14, 12, 10.21, -11, 34, 57.83, 367964, 0.993191);
+
+moon_phase(0, 0, 0, false, 0, 1, 9, 2003, AccuracyLevel::Approximate, 0.22, -71.58);

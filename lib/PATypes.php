@@ -2,6 +2,12 @@
 
 namespace PA\Types;
 
+enum AccuracyLevel: string
+{
+    case Approximate = "Approximate";
+    case Precise = "Precise";
+}
+
 enum AngleMeasure: string
 {
     case Degrees = "Degrees";
