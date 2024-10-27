@@ -447,7 +447,7 @@ function local_civil_time_to_universal_time($lctHours, $lctMinutes, $lctSeconds,
  * 
  * Original macro name: UTLct
  */
-function universal_time_to_local_civil_time($uHours, $uMinutes, $uSeconds, $daylightSaving, $zoneCorrection, $greenwichDay, $greenwichMonth, $greenwichYear)
+function universal_time_to_local_civil_time_ma($uHours, $uMinutes, $uSeconds, $daylightSaving, $zoneCorrection, $greenwichDay, $greenwichMonth, $greenwichYear)
 {
     $a = hours_minutes_seconds_to_decimal_hours($uHours, $uMinutes, $uSeconds);
     $b = $a + $zoneCorrection;
@@ -457,6 +457,53 @@ function universal_time_to_local_civil_time($uHours, $uMinutes, $uSeconds, $dayl
     $e1 = floor($e);
 
     return 24 * ($e - $e1);
+}
+
+/**
+ * Get Local Civil Day for Universal Time
+ * 
+ * Original macro name: UTLcDay
+ */
+function universal_time_local_civil_day($uHours, $uMinutes, $uSeconds, $daylightSaving, $zoneCorrection, $greenwichDay, $greenwichMonth, $greenwichYear)
+{
+    $a = hours_minutes_seconds_to_decimal_hours($uHours, $uMinutes, $uSeconds);
+    $b = $a + $zoneCorrection;
+    $c = $b + $daylightSaving;
+    $d = civil_date_to_julian_date($greenwichDay, $greenwichMonth, $greenwichYear) + ($c / 24.0);
+    $e = julian_date_day($d);
+    $e1 = floor($e);
+
+    return $e1;
+}
+
+/**
+ * Get Local Civil Month for Universal Time
+ * 
+ * Original macro name: UTLcMonth
+ */
+function universal_time_local_civil_month($uHours, $uMinutes, $uSeconds, $daylightSaving, $zoneCorrection, $greenwichDay, $greenwichMonth, $greenwichYear)
+{
+    $a = hours_minutes_seconds_to_decimal_hours($uHours, $uMinutes, $uSeconds);
+    $b = $a + $zoneCorrection;
+    $c = $b + $daylightSaving;
+    $d = civil_date_to_julian_date($greenwichDay, $greenwichMonth, $greenwichYear) + ($c / 24.0);
+
+    return julian_date_month($d);
+}
+
+/**
+ * Get Local Civil Year for Universal Time
+ * 
+ * Original macro name: UTLcYear
+ */
+function universal_time_local_civil_year($uHours, $uMinutes, $uSeconds, $daylightSaving, $zoneCorrection, $greenwichDay, $greenwichMonth, $greenwichYear)
+{
+    $a = hours_minutes_seconds_to_decimal_hours($uHours, $uMinutes, $uSeconds);
+    $b = $a + $zoneCorrection;
+    $c = $b + $daylightSaving;
+    $d = civil_date_to_julian_date($greenwichDay, $greenwichMonth, $greenwichYear) + ($c / 24.0);
+
+    return julian_date_year($d);
 }
 
 
@@ -1547,7 +1594,7 @@ function sunrise_lct($ld, $lm, $ly, $ds, $zc, $gl, $gp)
             } else {
                 $x = local_sidereal_time_to_greenwich_sidereal_time($la, 0, 0, $gl);
                 $ut = greenwich_sidereal_time_to_universal_time($x, 0, 0, $gd, $gm, $gy);
-                $xx = universal_time_to_local_civil_time($ut, 0, 0, $ds, $zc, $gd, $gm, $gy);
+                $xx = universal_time_to_local_civil_time_ma($ut, 0, 0, $ds, $zc, $gd, $gm, $gy);
             }
         }
     }
@@ -1602,7 +1649,7 @@ function sunset_lct($ld, $lm, $ly, $ds, $zc, $gl, $gp)
             } else {
                 $x = local_sidereal_time_to_greenwich_sidereal_time($la, 0, 0, $gl);
                 $ut = greenwich_sidereal_time_to_universal_time($x, 0, 0, $gd, $gm, $gy);
-                $xx = universal_time_to_local_civil_time($ut, 0, 0, $ds, $zc, $gd, $gm, $gy);
+                $xx = universal_time_to_local_civil_time_ma($ut, 0, 0, $ds, $zc, $gd, $gm, $gy);
             }
         }
     }
@@ -1907,7 +1954,7 @@ function twilight_am_lct($ld, $lm, $ly, $ds, $zc, $gl, $gp, $tt)
     $x = local_sidereal_time_to_greenwich_sidereal_time($result2_la, 0, 0, $gl);
     $ut = greenwich_sidereal_time_to_universal_time($x, 0, 0, $gd, $gm, $gy);
 
-    $xx = universal_time_to_local_civil_time($ut, 0, 0, $ds, $zc, $gd, $gm, $gy);
+    $xx = universal_time_to_local_civil_time_ma($ut, 0, 0, $ds, $zc, $gd, $gm, $gy);
 
     return $xx;
 }
@@ -1961,7 +2008,7 @@ function twilight_pm_lct($ld, $lm, $ly, $ds, $zc, $gl, $gp, $tt)
     $x = local_sidereal_time_to_greenwich_sidereal_time($result2_la, 0, 0, $gl);
     $ut = greenwich_sidereal_time_to_universal_time($x, 0, 0, $gd, $gm, $gy);
 
-    return universal_time_to_local_civil_time($ut, 0, 0, $ds, $zc, $gd, $gm, $gy);
+    return universal_time_to_local_civil_time_ma($ut, 0, 0, $ds, $zc, $gd, $gm, $gy);
 }
 
 /**
@@ -3314,4 +3361,127 @@ function moon_mean_anomaly($lh, $lm, $ls, $ds, $zc, $dy, $mn, $yr)
     $md = $md + 0.000817 * $s1 + $s3 + 0.002541 * $s2;
 
     return deg2rad($md);
+}
+
+/**
+ * Calculate Julian date of New Moon.
+ * 
+ * Original macro name: NewMoon
+ */
+function new_moon($ds, $zc, $dy, $mn, $yr)
+{
+    $d0 = local_civil_time_greenwich_day(12.0, 0.0, 0.0, $ds, $zc, $dy, $mn, $yr);
+    $m0 = local_civil_time_greenwich_month(12.0, 0.0, 0.0, $ds, $zc, $dy, $mn, $yr);
+    $y0 = local_civil_time_greenwich_year(12.0, 0.0, 0.0, $ds, $zc, $dy, $mn, $yr);
+
+    $j0 = civil_date_to_julian_date(0.0, 1, $y0) - 2415020.0;
+    $dj = civil_date_to_julian_date($d0, $m0, $y0) - 2415020.0;
+    $k = lint((($y0 - 1900.0 + (($dj - $j0) / 365.0)) * 12.3685) + 0.5);
+    $tn = $k / 1236.85;
+    $tf = ($k + 0.5) / 1236.85;
+    $t = $tn;
+    list($nmfmResult1_a, $nmfmResult1_b, $nmfmResult1_f) = new_moon_full_moon_l6855($k, $t);
+    $ni = $nmfmResult1_a;
+    $nf = $nmfmResult1_b;
+    $t = $tf;
+    $k += 0.5;
+    list($nmfmResult2_a, $nmfmResult2_b, $nmfmResult2_f) = new_moon_full_moon_l6855($k, $t);
+
+    return $ni + 2415020.0 + $nf;
+}
+
+/**
+ * Calculate Julian date of Full Moon.
+ * 
+ * Original macro name: FullMoon
+ */
+function full_moon($ds, $zc, $dy, $mn, $yr)
+{
+    $d0 = local_civil_time_greenwich_day(12.0, 0.0, 0.0, $ds, $zc, $dy, $mn, $yr);
+    $m0 = local_civil_time_greenwich_month(12.0, 0.0, 0.0, $ds, $zc, $dy, $mn, $yr);
+    $y0 = local_civil_time_greenwich_year(12.0, 0.0, 0.0, $ds, $zc, $dy, $mn, $yr);
+
+    $j0 = civil_date_to_julian_date(0.0, 1, $y0) - 2415020.0;
+    $dj = civil_date_to_julian_date($d0, $m0, $y0) - 2415020.0;
+    $k = lint((($y0 - 1900.0 + (($dj - $j0) / 365.0)) * 12.3685) + 0.5);
+    $tn = $k / 1236.85;
+    $tf = ($k + 0.5) / 1236.85;
+    $t = $tn;
+    list($nmfmResult1_a, $nmfmResult1_b, $nmfmResult1_f) = new_moon_full_moon_l6855($k, $t);
+    $t = $tf;
+    $k += 0.5;
+    list($nmfmResult2_a, $nmfmResult2_b, $nmfmResult2_f) = new_moon_full_moon_l6855($k, $t);
+    $fi = $nmfmResult2_a;
+    $ff = $nmfmResult2_b;
+
+    return $fi + 2415020.0 + $ff;
+}
+
+/** Helper function for newMoon() and fullMoon() */
+function new_moon_full_moon_l6855($k, $t)
+{
+    $t2 = $t * $t;
+    $e = 29.53 * $k;
+    $c = 166.56 + (132.87 - 0.009173 * $t) * $t;
+    $c = deg2rad($c);
+    $b = 0.00058868 * $k + (0.0001178 - 0.000000155 * $t) * $t2;
+    $b = $b + 0.00033 * sin($c) + 0.75933;
+    $a = $k / 12.36886;
+    $a1 = 359.2242 + 360.0 * fract($a) - (0.0000333 + 0.00000347 * $t) * $t2;
+    $a2 = 306.0253 + 360.0 * fract($k / 0.9330851);
+    $a2 += (0.0107306 + 0.00001236 * $t) * $t2;
+    $a = $k / 0.9214926;
+    $f = 21.2964 + 360.0 * fract($a) - (0.0016528 + 0.00000239 * $t) * $t2;
+    $a1 = unwind_deg($a1);
+    $a2 = unwind_deg($a2);
+    $f = unwind_deg($f);
+    $a1 = deg2rad($a1);
+    $a2 = deg2rad($a2);
+    $f = deg2rad($f);
+
+    $dd = (0.1734 - 0.000393 * $t) * sin($a1) + 0.0021 * sin(2.0 * $a1);
+    $dd = $dd - 0.4068 * sin($a2) + 0.0161 * sin(2.0 * $a2) - 0.0004 * sin(3.0 * $a2);
+    $dd = $dd + 0.0104 * sin(2.0 * $f) - 0.0051 * sin($a1 + $a2);
+    $dd = $dd - 0.0074 * sin($a1 - $a2) + 0.0004 * sin(2.0 * $f + $a1);
+    $dd = $dd - 0.0004 * sin(2.0 * $f - $a1) - 0.0006 * sin(2.0 * $f + $a2) + 0.001 * sin(2.0 * $f - $a2);
+    $dd += 0.0005 * sin($a1 + 2.0 * $a2);
+    $e1 = floor($e);
+    $b = $b + $dd + ($e - $e1);
+    $b1 = floor($b);
+    $a = $e1 + $b1;
+    $b -= $b1;
+
+    return array($a, $b, $f);
+}
+
+/** Original macro name: FRACT */
+function fract($w)
+{
+    return $w - lint($w);
+}
+
+/** Original macro name: LINT */
+function lint($w)
+{
+    return i_int($w) + i_int(((1.0 * sign($w)) - 1.0) / 2.0);
+}
+
+/** Original macro name: IINT */
+function i_int($w)
+{
+    return sign($w) * floor(abs($w));
+}
+
+/** Calculate sign of number. */
+function sign($numberToCheck)
+{
+    $signValue = 0.0;
+
+    if ($numberToCheck < 0.0)
+        $signValue = -1.0;
+
+    if ($numberToCheck > 0.0)
+        $signValue = 1.0;
+
+    return $signValue;
 }
