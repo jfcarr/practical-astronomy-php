@@ -3245,3 +3245,73 @@ function moon_long_lat_hp($lh, $lm, $ls, $ds, $zc, $dy, $mn, $yr)
 
     return array($moonLongDeg, $moonLatDeg, $moonHorPara);
 }
+
+/**
+ * Calculate current phase of Moon.
+ * 
+ * Original macro name: MoonPhase
+ */
+function moon_phase_ma($lh, $lm, $ls, $ds, $zc, $dy, $mn, $yr)
+{
+    list($moonLongDeg, $moonLatDeg, $moonHorPara) = moon_long_lat_hp($lh, $lm, $ls, $ds, $zc, $dy, $mn, $yr);
+
+    $cd = cos(deg2rad(($moonLongDeg - sun_long($lh, $lm, $ls, $ds, $zc, $dy, $mn, $yr)))) * cos(deg2rad($moonLatDeg));
+
+    $d = acos($cd);
+    $sd = sin($d);
+    $i = 0.1468 * $sd * (1.0 - 0.0549 * sin(moon_mean_anomaly($lh, $lm, $ls, $ds, $zc, $dy, $mn, $yr)));
+    $i /= (1.0 - 0.0167 * sin(sun_mean_anomaly($lh, $lm, $ls, $ds, $zc, $dy, $mn, $yr)));
+    $i = 3.141592654 - $d - deg2rad($i);
+    $k = (1.0 + cos($i)) / 2.0;
+
+    return round($k, 2);
+}
+
+/**
+ * Calculate the Moon's mean anomaly.
+ * 
+ * Original macro name: MoonMeanAnomaly
+ */
+function moon_mean_anomaly($lh, $lm, $ls, $ds, $zc, $dy, $mn, $yr)
+{
+    $ut = local_civil_time_to_universal_time($lh, $lm, $ls, $ds, $zc, $dy, $mn, $yr);
+    $gd = local_civil_time_greenwich_day($lh, $lm, $ls, $ds, $zc, $dy, $mn, $yr);
+    $gm = local_civil_time_greenwich_month($lh, $lm, $ls, $ds, $zc, $dy, $mn, $yr);
+    $gy = local_civil_time_greenwich_year($lh, $lm, $ls, $ds, $zc, $dy, $mn, $yr);
+    $t = ((civil_date_to_julian_date($gd, $gm, $gy) - 2415020.0) / 36525.0) + ($ut / 876600.0);
+    $t2 = $t * $t;
+
+    $m1 = 27.32158213;
+    $m2 = 365.2596407;
+    $m3 = 27.55455094;
+    $m4 = 29.53058868;
+    $m5 = 27.21222039;
+    $m6 = 6798.363307;
+    $q = civil_date_to_julian_date($gd, $gm, $gy) - 2415020.0 + ($ut / 24.0);
+    $m1 = $q / $m1;
+    $m2 = $q / $m2;
+    $m3 = $q / $m3;
+    $m4 = $q / $m4;
+    $m5 = $q / $m5;
+    $m6 = $q / $m6;
+    $m1 = 360.0 * ($m1 - floor($m1));
+    $m2 = 360.0 * ($m2 - floor($m2));
+    $m3 = 360.0 * ($m3 - floor($m3));
+    $m4 = 360.0 * ($m4 - floor($m4));
+    $m5 = 360.0 * ($m5 - floor($m5));
+    $m6 = 360.0 * ($m6 - floor($m6));
+
+    $ml = 270.434164 + $m1 - (0.001133 - 0.0000019 * $t) * $t2;
+    $ms = 358.475833 + $m2 - (0.00015 + 0.0000033 * $t) * $t2;
+    $md = 296.104608 + $m3 + (0.009192 + 0.0000144 * $t) * $t2;
+    $na = 259.183275 - $m6 + (0.002078 + 0.0000022 * $t) * $t2;
+    $a = deg2rad(51.2 + 20.2 * $t);
+    $s1 = sin($a);
+    $s2 = sin(deg2rad($na));
+    $b = 346.56 + (132.87 - 0.0091731 * $t) * $t;
+    $s3 = 0.003964 * sin(deg2rad($b));
+    $c = deg2rad($na + 275.05 - 2.3 * $t);
+    $md = $md + 0.000817 * $s1 + $s3 + 0.002541 * $s2;
+
+    return deg2rad($md);
+}
