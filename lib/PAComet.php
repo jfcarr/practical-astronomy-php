@@ -7,14 +7,17 @@ use PA\Data\Comet\CometDataManager;
 use function PA\Macros\civil_date_to_julian_date;
 use function PA\Macros\decimal_degrees_degrees;
 use function PA\Macros\decimal_degrees_minutes;
+use function PA\Macros\decimal_degrees_seconds;
 use function PA\Macros\decimal_degrees_to_degree_hours;
 use function PA\Macros\decimal_hours_hour;
 use function PA\Macros\decimal_hours_minute;
+use function PA\Macros\decimal_hours_second;
 use function PA\Macros\ec_dec;
 use function PA\Macros\ec_ra;
 use function PA\Macros\local_civil_time_greenwich_day;
 use function PA\Macros\local_civil_time_greenwich_month;
 use function PA\Macros\local_civil_time_greenwich_year;
+use function PA\Macros\p_comet_long_lat_dist;
 use function PA\Macros\sun_dist;
 use function PA\Macros\sun_long;
 use function PA\Macros\true_anomaly;
@@ -23,6 +26,7 @@ use function PA\Macros\w_to_degrees;
 include_once 'PAMacros.php';
 include_once 'data/Comet.php';
 
+/** Calculate position of an elliptical comet.  */
 function position_of_elliptical_comet($lctHour, $lctMin, $lctSec, $isDaylightSaving, $zoneCorrectionHours, $localDateDay, $localDateMonth, $localDateYear, $cometName)
 {
     $cometDataManager = new CometDataManager();
@@ -75,4 +79,42 @@ function position_of_elliptical_comet($lctHour, $lctMin, $lctSec, $isDaylightSav
     $cometDistEarth = round($cometDistanceAU, 2);
 
     return array($cometRAHour, $cometRAMin, $cometDecDeg, $cometDecMin, $cometDistEarth);
+}
+
+/** Calculate position of a parabolic comet.  */
+function position_of_parabolic_comet($lctHour, $lctMin, $lctSec, $isDaylightSaving, $zoneCorrectionHours, $localDateDay, $localDateMonth, $localDateYear, $cometName)
+{
+    $cometDataManager = new CometDataManager();
+
+    $daylightSaving = $isDaylightSaving ? 1 : 0;
+
+    $greenwichDateDay = local_civil_time_greenwich_day($lctHour, $lctMin, $lctSec, $daylightSaving, $zoneCorrectionHours, $localDateDay, $localDateMonth, $localDateYear);
+    $greenwichDateMonth = local_civil_time_greenwich_month($lctHour, $lctMin, $lctSec, $daylightSaving, $zoneCorrectionHours, $localDateDay, $localDateMonth, $localDateYear);
+    $greenwichDateYear = local_civil_time_greenwich_year($lctHour, $lctMin, $lctSec, $daylightSaving, $zoneCorrectionHours, $localDateDay, $localDateMonth, $localDateYear);
+
+    $cometInfo = $cometDataManager->GetParabolicRecord($cometName);
+
+    $perihelionEpochDay = $cometInfo->epochPeriDay;
+    $perihelionEpochMonth = $cometInfo->epochPeriMonth;
+    $perihelionEpochYear = $cometInfo->epochPeriYear;
+    $qAU = $cometInfo->periDist;
+    $inclinationDeg = $cometInfo->incl;
+    $perihelionDeg = $cometInfo->argPeri;
+    $nodeDeg = $cometInfo->node;
+
+    list($cometLongDeg, $cometLatDeg, $cometDistAU) =
+        p_comet_long_lat_dist($lctHour, $lctMin, $lctSec, $daylightSaving, $zoneCorrectionHours, $localDateDay, $localDateMonth, $localDateYear, $perihelionEpochDay, $perihelionEpochMonth, $perihelionEpochYear, $qAU, $inclinationDeg, $perihelionDeg, $nodeDeg);
+
+    $cometRAHours = decimal_degrees_to_degree_hours(ec_ra($cometLongDeg, 0, 0, $cometLatDeg, 0, 0, $greenwichDateDay, $greenwichDateMonth, $greenwichDateYear));
+    $cometDecDeg1 = ec_dec($cometLongDeg, 0, 0, $cometLatDeg, 0, 0, $greenwichDateDay, $greenwichDateMonth, $greenwichDateYear);
+
+    $cometRAHour = decimal_hours_hour($cometRAHours);
+    $cometRAMin = decimal_hours_minute($cometRAHours);
+    $cometRASec = decimal_hours_second($cometRAHours);
+    $cometDecDeg = decimal_degrees_degrees($cometDecDeg1);
+    $cometDecMin = decimal_degrees_minutes($cometDecDeg1);
+    $cometDecSec = decimal_degrees_seconds($cometDecDeg1);
+    $cometDistEarth = round($cometDistAU, 2);
+
+    return array($cometRAHour, $cometRAMin, $cometRASec, $cometDecDeg, $cometDecMin, $cometDecSec, $cometDistEarth);
 }
