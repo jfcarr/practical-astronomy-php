@@ -3016,3 +3016,85 @@ function planet_long_l4945($t, $planet)
 
     return array($qa, $qb, $qc, $qd, $qe, $qf, $qg);
 }
+
+/**
+ * For W, in radians, return S, also in radians.
+ * 
+ * Original macro name: SolveCubic
+ */
+function solve_cubic($w)
+{
+    $s = $w / 3.0;
+
+    while (true) {
+        $s2 = $s * $s;
+        $d = ($s2 + 3.0) * $s - $w;
+
+        if (abs($d) < 0.000001) {
+            return $s;
+        }
+
+        $s = ((2.0 * $s * $s2) + $w) / (3.0 * ($s2 + 1.0));
+    }
+}
+
+/**
+ * Calculate longitude, latitude, and distance of parabolic-orbit comet.
+ *
+ * Original macro names: PcometLong, PcometLat, PcometDist
+ */
+function p_comet_long_lat_dist($lh, $lm, $ls, $ds, $zc, $dy, $mn, $yr, $td, $tm, $ty, $q, $i, $p, $n)
+{
+    $gd = local_civil_time_greenwich_day($lh, $lm, $ls, $ds, $zc, $dy, $mn, $yr);
+    $gm = local_civil_time_greenwich_month($lh, $lm, $ls, $ds, $zc, $dy, $mn, $yr);
+    $gy = local_civil_time_greenwich_year($lh, $lm, $ls, $ds, $zc, $dy, $mn, $yr);
+    $ut = local_civil_time_to_universal_time($lh, $lm, $ls, $ds, $zc, $dy, $mn, $yr);
+    $tpe = ($ut / 365.242191) + civil_date_to_julian_date($gd, $gm, $gy) - civil_date_to_julian_date($td, $tm, $ty);
+    $lg = deg2rad(sun_long($lh, $lm, $ls, $ds, $zc, $dy, $mn, $yr) + 180.0);
+    $re = sun_dist($lh, $lm, $ls, $ds, $zc, $dy, $mn, $yr);
+
+    $rh2 = 0.0;
+    $rd = 0.0;
+    $s3 = 0.0;
+    $c3 = 0.0;
+    $lc = 0.0;
+    $s2 = 0.0;
+    $c2 = 0.0;
+
+    for ($k = 1; $k < 3; $k++) {
+        $s = solve_cubic(0.0364911624 * $tpe / ($q * sqrt($q)));
+        $nu = 2.0 * atan($s);
+        $r = $q * (1.0 + $s * $s);
+        $l = $nu + deg2rad($p);
+        $s1 = sin($l);
+        $c1 = cos($l);
+        $i1 = deg2rad($i);
+        $s2 = $s1 * sin($i1);
+        $ps = asin($s2);
+        $y = $s1 * cos($i1);
+        $lc = atan2($y, $c1) + deg2rad($n);
+        $c2 = cos($ps);
+        $rd = $r * $c2;
+        $ll = $lc - $lg;
+        $c3 = cos($ll);
+        $s3 = sin($ll);
+        $rh = sqrt(($re * $re) + ($r * $r) - (2.0 * $re * $rd * $c3 * cos($ps)));
+        if ($k == 1) {
+            $rh2 = sqrt(($re * $re) + ($r * $r) - (2.0 * $re * $r * cos($ps) * cos($l + deg2rad($n) - $lg)));
+        }
+    }
+
+    $ep = ($rd < $re)
+        ? atan(-$rd * $s3 / ($re - ($rd * $c3))) + $lg + 3.141592654
+        : atan($re * $s3 / ($rd - ($re * $c3))) + $lc;
+    $ep = unwind($ep);
+
+    $tb = $rd * $s2 * sin($ep - $lc) / ($c2 * $re * $s3);
+    $bp = atan($tb);
+
+    $cometLongDeg = w_to_degrees($ep);
+    $cometLatDeg = w_to_degrees($bp);
+    $cometDistAU = $rh2;
+
+    return array($cometLongDeg, $cometLatDeg, $cometDistAU);
+}

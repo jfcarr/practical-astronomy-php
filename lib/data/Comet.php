@@ -41,13 +41,54 @@ class CometDataElliptical
     }
 }
 
+class CometDataParabolic
+{
+    /** Name of comet */
+    public $name;
+
+    /** Epoch perihelion day */
+    public $epochPeriDay;
+
+    /** Epoch perihelion month */
+    public $epochPeriMonth;
+
+    /** Epoch perihelion year */
+    public $epochPeriYear;
+
+    /** Arg perihelion */
+    public $argPeri;
+
+    /** Comet's node */
+    public $node;
+
+    /** Distance at the perihelion */
+    public $periDist;
+
+    /** Inclination */
+    public $incl;
+
+    public function __construct($name, $epochPeriDay, $epochPeriMonth, $epochPeriYear, $argPeri, $node, $periDist, $incl)
+    {
+        $this->name = $name;
+        $this->epochPeriDay = $epochPeriDay;
+        $this->epochPeriMonth = $epochPeriMonth;
+        $this->epochPeriYear = $epochPeriYear;
+        $this->argPeri = $argPeri;
+        $this->node = $node;
+        $this->periDist = $periDist;
+        $this->incl = $incl;
+    }
+}
+
 class CometDataManager
 {
     public $cometEllipticalRecords;
+    public $cometParabolicRecords;
 
     public function __construct()
     {
         $this->cometEllipticalRecords = [];
+        $this->cometParabolicRecords = [];
 
         $this->cometEllipticalRecords[] = new CometDataElliptical("Encke", 1974.32, 160.1, 334.2, 3.3, 2.21, 0.85, 12.0);
         $this->cometEllipticalRecords[] = new CometDataElliptical("Temple 2", 1972.87, 310.2, 119.3, 5.26, 3.02, 0.55, 12.5);
@@ -64,6 +105,8 @@ class CometDataManager
         $this->cometEllipticalRecords[] = new CometDataElliptical("Olbers", 1956.46, 150.0, 85.4, 69.47, 16.84, 0.93, 44.6);
         $this->cometEllipticalRecords[] = new CometDataElliptical("Pons-Brooks", 1954.39, 94.2, 255.2, 70.98, 17.2, 0.96, 74.2);
         $this->cometEllipticalRecords[] = new CometDataElliptical("Halley", 1986.112, 170.011, 58.154, 76.0081, 17.9435, 0.9673, 162.2384);
+
+        $this->cometParabolicRecords[] = new CometDataParabolic("Kohler", 10.5659, 11, 1977, 163.4799, 181.8175, 0.990662, 48.7196);
     }
 
     public function GetEllipticalRecord($name)
@@ -75,5 +118,16 @@ class CometDataManager
         }
 
         return new CometDataElliptical("NotFound", -99, -99, -99, -99, -99, -99, -99, -99, -99);
+    }
+
+    public function GetParabolicRecord($name)
+    {
+        foreach ($this->cometParabolicRecords as $parabolicRecord) {
+            if ($parabolicRecord->name == $name) {
+                return $parabolicRecord;
+            }
+        }
+
+        return new CometDataParabolic("NotFound", -99, -99, -99, -99, -99, -99, -99, -99, -99);
     }
 }
