@@ -72,7 +72,7 @@ function local_civil_time_to_universal_time($lctHours, $lctMinutes, $lctSeconds,
     echo "[{$title}] PASSED\n";
 }
 
-function universal_time_to_local_civil_time($utHours, $utMinutes, $utSeconds, $isDaylightSavings, $zoneCorrection, $gwDay, $gwMonth, $gwYear, $expectedHours, $expectedMinutes, $expectedSeconds, $expectedDay, $expectedMonth, $expectedYear)
+function universal_time_to_local_civil_time_dt($utHours, $utMinutes, $utSeconds, $isDaylightSavings, $zoneCorrection, $gwDay, $gwMonth, $gwYear, $expectedHours, $expectedMinutes, $expectedSeconds, $expectedDay, $expectedMonth, $expectedYear)
 {
     $title = "Universal Time to Local Civil Time";
 
@@ -154,7 +154,7 @@ decimal_hours_to_civil_time(18.52416667, 18, 31, 27);
 
 local_civil_time_to_universal_time(3.0, 37.0, 0.0, true, 4, 1.0, 7, 2013, 22, 37, 0, 30, 6, 2013);
 
-universal_time_to_local_civil_time(22, 37, 0, true, 4, 30, 6, 2013, 3, 37, 0, 1, 7, 2013);
+universal_time_to_local_civil_time_dt(22, 37, 0, true, 4, 30, 6, 2013, 3, 37, 0, 1, 7, 2013);
 
 universal_time_to_greenwich_sidereal_time(14, 36, 51.67, 22, 4, 1980, 4, 40, 5.23);
 

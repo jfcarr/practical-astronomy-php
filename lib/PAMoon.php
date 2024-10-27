@@ -16,6 +16,8 @@ use function PA\Macros\local_civil_time_greenwich_day;
 use function PA\Macros\local_civil_time_greenwich_month;
 use function PA\Macros\local_civil_time_greenwich_year;
 use function PA\Macros\local_civil_time_to_universal_time;
+use function PA\Macros\moon_long_lat_hp;
+use function PA\Macros\nutat_long;
 use function PA\Macros\sun_long;
 use function PA\Macros\sun_mean_anomaly;
 use function PA\Macros\unwind_deg;
@@ -70,4 +72,34 @@ function approximate_position_of_moon($lctHour, $lctMin, $lctSec, $isDaylightSav
     $moonDecSec = decimal_degrees_seconds($moonDecDeg1);
 
     return array($moonRAHour, $moonRAMin, $moonRASec, $moonDecDeg, $moonDecMin, $moonDecSec);
+}
+
+/** Calculate precise position of the Moon. */
+function precise_position_of_moon($lctHour, $lctMin, $lctSec, $isDaylightSaving, $zoneCorrectionHours, $localDateDay, $localDateMonth, $localDateYear)
+{
+    $daylightSaving = $isDaylightSaving ? 1 : 0;
+
+    $gdateDay = local_civil_time_greenwich_day($lctHour, $lctMin, $lctSec, $daylightSaving, $zoneCorrectionHours, $localDateDay, $localDateMonth, $localDateYear);
+    $gdateMonth = local_civil_time_greenwich_month($lctHour, $lctMin, $lctSec, $daylightSaving, $zoneCorrectionHours, $localDateDay, $localDateMonth, $localDateYear);
+    $gdateYear = local_civil_time_greenwich_year($lctHour, $lctMin, $lctSec, $daylightSaving, $zoneCorrectionHours, $localDateDay, $localDateMonth, $localDateYear);
+
+    list($ml_moonLongDeg, $ml_moonLatDeg, $ml_moonHorPara) =
+        moon_long_lat_hp($lctHour, $lctMin, $lctSec, $daylightSaving, $zoneCorrectionHours, $localDateDay, $localDateMonth, $localDateYear);
+
+    $nutationInLongitudeDeg = nutat_long($gdateDay, $gdateMonth, $gdateYear);
+    $correctedLongDeg = $ml_moonLongDeg + $nutationInLongitudeDeg;
+    $earthMoonDistanceKM = 6378.14 / sin(deg2rad($ml_moonHorPara));
+    $moonRAHours1 = decimal_degrees_to_degree_hours(ec_ra($correctedLongDeg, 0, 0, $ml_moonLatDeg, 0, 0, $gdateDay, $gdateMonth, $gdateYear));
+    $moonDecDeg1 = ec_dec($correctedLongDeg, 0, 0, $ml_moonLatDeg, 0, 0, $gdateDay, $gdateMonth, $gdateYear);
+
+    $moonRAHour = decimal_hours_hour($moonRAHours1);
+    $moonRAMin = decimal_hours_minute($moonRAHours1);
+    $moonRASec = decimal_hours_second($moonRAHours1);
+    $moonDecDeg = decimal_degrees_degrees($moonDecDeg1);
+    $moonDecMin = decimal_degrees_minutes($moonDecDeg1);
+    $moonDecSec = decimal_degrees_seconds($moonDecDeg1);
+    $earthMoonDistKM = round($earthMoonDistanceKM, 0);
+    $moonHorParallaxDeg = round($ml_moonHorPara, 6);
+
+    return array($moonRAHour, $moonRAMin, $moonRASec, $moonDecDeg, $moonDecMin, $moonDecSec, $earthMoonDistKM, $moonHorParallaxDeg);
 }
