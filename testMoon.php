@@ -81,6 +81,23 @@ function times_of_new_moon_and_full_moon($isDaylightSaving, $zoneCorrectionHours
     echo "[{$title}] PASSED\n";
 }
 
+function moon_dist_ang_diam_hor_parallax($lctHour, $lctMin, $lctSec, $isDaylightSaving, $zoneCorrectionHours, $localDateDay, $localDateMonth, $localDateYear, $expected_earthMoonDist, $expected_angDiameterDeg, $expected_angDiameterMin, $expected_horParallaxDeg, $expected_horParallaxMin, $expected_horParallaxSec)
+{
+    $title = "Moon Distance, Angular Diameter, and Horizontal Parallax";
+
+    list($earthMoonDist, $angDiameterDeg, $angDiameterMin, $horParallaxDeg, $horParallaxMin, $horParallaxSec) =
+        PA_Moon\moon_dist_ang_diam_hor_parallax($lctHour, $lctMin, $lctSec, $isDaylightSaving, $zoneCorrectionHours, $localDateDay, $localDateMonth, $localDateYear);
+
+    descriptive_assert("[{$title}] Distance", $earthMoonDist, $expected_earthMoonDist);
+    descriptive_assert("[{$title}] Angular Diameter degrees", $angDiameterDeg, $expected_angDiameterDeg);
+    descriptive_assert("[{$title}] Angular Diameter minutes", $angDiameterMin, $expected_angDiameterMin);
+    descriptive_assert("[{$title}] Horizontal Parallax degrees", $horParallaxDeg, $expected_horParallaxDeg);
+    descriptive_assert("[{$title}] Horizontal Parallax minutes", $horParallaxMin, $expected_horParallaxMin);
+    descriptive_assert("[{$title}] Horizontal Parallax seconds", $horParallaxSec, $expected_horParallaxSec);
+
+    echo "[{$title}] PASSED\n";
+}
+
 approximate_position_of_moon(0, 0, 0, false, 0, 1, 9, 2003, 14, 12, 42.31, -11, 31, 38.27);
 
 precise_position_of_moon(0, 0, 0, false, 0, 1, 9, 2003, 14, 12, 10.21, -11, 34, 57.83, 367964, 0.993191);
@@ -88,3 +105,5 @@ precise_position_of_moon(0, 0, 0, false, 0, 1, 9, 2003, 14, 12, 10.21, -11, 34, 
 moon_phase(0, 0, 0, false, 0, 1, 9, 2003, AccuracyLevel::Approximate, 0.22, -71.58);
 
 times_of_new_moon_and_full_moon(false, 0, 1, 9, 2003, 17, 27, 27, 8, 2003, 16, 36, 10, 9, 2003);
+
+moon_dist_ang_diam_hor_parallax(0, 0, 0, false, 0, 1, 9, 2003, 367964, 0, 32, 0, 59, 35.49);
