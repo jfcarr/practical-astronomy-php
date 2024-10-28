@@ -22,8 +22,11 @@ use function PA\Macros\local_civil_time_greenwich_day;
 use function PA\Macros\local_civil_time_greenwich_month;
 use function PA\Macros\local_civil_time_greenwich_year;
 use function PA\Macros\local_civil_time_to_universal_time;
+use function PA\Macros\moon_dist;
+use function PA\Macros\moon_hp;
 use function PA\Macros\moon_long_lat_hp;
 use function PA\Macros\moon_phase_ma;
+use function PA\Macros\moon_size;
 use function PA\Macros\new_moon;
 use function PA\Macros\nutat_long;
 use function PA\Macros\sun_long;
@@ -185,4 +188,23 @@ function times_of_new_moon_and_full_moon($isDaylightSaving, $zoneCorrectionHours
     $fmLocalDateYear = universal_time_local_civil_year($utOfFullMoonHours, 0, 0, $daylightSaving, $zoneCorrectionHours, $integerDay2, $gDateOfFullMoonMonth, $gDateOfFullMoonYear);
 
     return array($nmLocalTimeHour, $nmLocalTimeMin, $nmLocalDateDay, $nmLocalDateMonth, $nmLocalDateYear, $fmLocalTimeHour, $fmLocalTimeMin, $fmLocalDateDay, $fmLocalDateMonth, $fmLocalDateYear);
+}
+
+/** Calculate Moon's distance, angular diameter, and horizontal parallax. */
+function moon_dist_ang_diam_hor_parallax($lctHour, $lctMin, $lctSec, $isDaylightSaving, $zoneCorrectionHours, $localDateDay, $localDateMonth, $localDateYear)
+{
+    $daylightSaving = $isDaylightSaving ? 1 : 0;
+
+    $moonDistance = moon_dist($lctHour, $lctMin, $lctSec, $daylightSaving, $zoneCorrectionHours, $localDateDay, $localDateMonth, $localDateYear);
+    $moonAngularDiameter = moon_size($lctHour, $lctMin, $lctSec, $daylightSaving, $zoneCorrectionHours, $localDateDay, $localDateMonth, $localDateYear);
+    $moonHorizontalParallax = moon_hp($lctHour, $lctMin, $lctSec, $daylightSaving, $zoneCorrectionHours, $localDateDay, $localDateMonth, $localDateYear);
+
+    $earthMoonDist = round($moonDistance, 0);
+    $angDiameterDeg = decimal_degrees_degrees($moonAngularDiameter + 0.008333);
+    $angDiameterMin = decimal_degrees_minutes($moonAngularDiameter + 0.008333);
+    $horParallaxDeg = decimal_degrees_degrees($moonHorizontalParallax);
+    $horParallaxMin = decimal_degrees_minutes($moonHorizontalParallax);
+    $horParallaxSec = decimal_degrees_seconds($moonHorizontalParallax);
+
+    return array($earthMoonDist, $angDiameterDeg, $angDiameterMin, $horParallaxDeg, $horParallaxMin, $horParallaxSec);
 }
