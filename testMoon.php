@@ -98,6 +98,30 @@ function moon_dist_ang_diam_hor_parallax($lctHour, $lctMin, $lctSec, $isDaylight
     echo "[{$title}] PASSED\n";
 }
 
+function moonrise_and_moonset($localDateDay, $localDateMonth, $localDateYear, $isDaylightSaving, $zoneCorrectionHours, $geogLongDeg, $geogLatDeg, $expected_mrLTHour, $expected_mrLTMin, $expected_mrLocalDateDay, $expected_mrLocalDateMonth, $expected_mrLocalDateYear, $expected_mrAzimuthDeg, $expected_msLTHour, $expected_msLTMin, $expected_msLocalDateDay, $expected_msLocalDateMonth, $expected_msLocalDateYear, $expected_msAzimuthDeg)
+{
+    $title = "Moonrise and Moonset";
+
+    list($mrLTHour, $mrLTMin, $mrLocalDateDay, $mrLocalDateMonth, $mrLocalDateYear, $mrAzimuthDeg, $msLTHour, $msLTMin, $msLocalDateDay, $msLocalDateMonth, $msLocalDateYear, $msAzimuthDeg) =
+        PA_Moon\moonrise_and_moonset($localDateDay, $localDateMonth, $localDateYear, $isDaylightSaving, $zoneCorrectionHours, $geogLongDeg, $geogLatDeg);
+
+    descriptive_assert("[{$title}] Moonrise - Local Time - Hour", $mrLTHour, $expected_mrLTHour);
+    descriptive_assert("[{$title}] Moonrise - Local Time - Minutes", $mrLTMin, $expected_mrLTMin);
+    descriptive_assert("[{$title}] Moonrise - Local Date - Day", $mrLocalDateDay, $expected_mrLocalDateDay);
+    descriptive_assert("[{$title}] Moonrise - Local Date - Month", $mrLocalDateMonth, $expected_mrLocalDateMonth);
+    descriptive_assert("[{$title}] Moonrise - Local Date - Year", $mrLocalDateYear, $expected_mrLocalDateYear);
+    descriptive_assert("[{$title}] Moonrise - Azimuth degrees", $mrAzimuthDeg, $expected_mrAzimuthDeg);
+
+    descriptive_assert("[{$title}] Moonset - Local Time - Hour", $msLTHour, $expected_msLTHour);
+    descriptive_assert("[{$title}] Moonset - Local Time - Minutes", $msLTMin, $expected_msLTMin);
+    descriptive_assert("[{$title}] Moonset - Local Date - Day", $msLocalDateDay, $expected_msLocalDateDay);
+    descriptive_assert("[{$title}] Moonset - Local Date - Month", $msLocalDateMonth, $expected_msLocalDateMonth);
+    descriptive_assert("[{$title}] Moonset - Local Date - Year", $msLocalDateYear, $expected_msLocalDateYear);
+    descriptive_assert("[{$title}] Moonset - Azimuth degrees", $msAzimuthDeg, $expected_msAzimuthDeg);
+
+    echo "[{$title}] PASSED\n";
+}
+
 approximate_position_of_moon(0, 0, 0, false, 0, 1, 9, 2003, 14, 12, 42.31, -11, 31, 38.27);
 
 precise_position_of_moon(0, 0, 0, false, 0, 1, 9, 2003, 14, 12, 10.21, -11, 34, 57.83, 367964, 0.993191);
@@ -107,3 +131,5 @@ moon_phase(0, 0, 0, false, 0, 1, 9, 2003, AccuracyLevel::Approximate, 0.22, -71.
 times_of_new_moon_and_full_moon(false, 0, 1, 9, 2003, 17, 27, 27, 8, 2003, 16, 36, 10, 9, 2003);
 
 moon_dist_ang_diam_hor_parallax(0, 0, 0, false, 0, 1, 9, 2003, 367964, 0, 32, 0, 59, 35.49);
+
+moonrise_and_moonset(6, 3, 1986, false, -5, -71.05, 42.3667, 4, 21, 6, 3, 1986, 127.34, 13, 8, 6, 3, 1986, 234.05);

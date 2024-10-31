@@ -3485,3 +3485,685 @@ function sign($numberToCheck)
 
     return $signValue;
 }
+
+/** Original macro name: UTDayAdjust */
+function ut_day_adjust($ut, $g1)
+{
+    $returnValue = $ut;
+
+    if (($ut - $g1) < -6.0)
+        $returnValue = $ut + 24.0;
+
+    if (($ut - $g1) > 6.0)
+        $returnValue = $ut - 24.0;
+
+    return $returnValue;
+}
+
+/** Original macro name: Fpart */
+function f_part($w)
+{
+    return $w - lint($w);
+}
+
+/** Original macro name: EQElat */
+function eq_e_lat($rah, $ram, $ras, $dd, $dm, $ds, $gd, $gm, $gy)
+{
+    $a = deg2rad(degree_hours_to_decimal_degrees(hours_minutes_seconds_to_decimal_hours($rah, $ram, $ras)));
+    $b = deg2rad(degree_hours_to_decimal_degrees($dd, $dm, $ds));
+    $c = deg2rad(obliq($gd, $gm, $gy));
+    $d = sin($b) * cos($c) - cos($b) * sin($c) * sin($a);
+
+    return w_to_degrees(asin($d));
+}
+
+/** Original macro name: EQElong */
+function eq_e_long($rah, $ram, $ras, $dd, $dm, $ds, $gd, $gm, $gy)
+{
+    $a = deg2rad(degree_hours_to_decimal_degrees(hours_minutes_seconds_to_decimal_hours($rah, $ram, $ras)));
+    $b = deg2rad(degrees_minutes_seconds_to_decimal_degrees($dd, $dm, $ds));
+    $c = deg2rad(obliq($gd, $gm, $gy));
+    $d = sin($a) * cos($c) + tan($b) * sin($c);
+    $e = cos($a);
+    $f = w_to_degrees(atan2($d, $e));
+
+    return $f - 360.0 * floor($f / 360.0);
+}
+
+/**
+ * Local time of moonrise.
+ * 
+ * Original macro name: MoonRiseLCT
+ */
+function moon_rise_lct($dy, $mn, $yr, $ds, $zc, $gLong, $gLat)
+{
+    $gdy = local_civil_time_greenwich_day(12.0, 0.0, 0.0, $ds, $zc, $dy, $mn, $yr);
+    $gmn = local_civil_time_greenwich_month(12.0, 0.0, 0.0, $ds, $zc, $dy, $mn, $yr);
+    $gyr = local_civil_time_greenwich_year(12.0, 0.0, 0.0, $ds, $zc, $dy, $mn, $yr);
+    $lct = 12.0;
+    $dy1 = $dy;
+    $mn1 = $mn;
+    $yr1 = $yr;
+
+    list($lct6700result1_mm, $lct6700result1_bm, $lct6700result1_pm, $lct6700result1_dp, $lct6700result1_th, $lct6700result1_di, $lct6700result1_p, $lct6700result1_q, $lct6700result1_lu, $lct6700result1_lct) =
+        moon_rise_lct_l6700($lct, $ds, $zc, $dy1, $mn1, $yr1, $gdy, $gmn, $gyr, $gLat);
+    $lu = $lct6700result1_lu;
+    $lct = $lct6700result1_lct;
+
+    if ($lct == -99.0)
+        return $lct;
+
+    $la = $lu;
+
+    $g1 = 0.0;
+    $gu = 0.0;
+
+    for ($k = 1; $k < 9; $k++) {
+        $x = local_sidereal_time_to_greenwich_sidereal_time($la, 0.0, 0.0, $gLong);
+        $ut = greenwich_sidereal_time_to_universal_time($x, 0.0, 0.0, $gdy, $gmn, $gyr);
+
+        $g1 = ($k == 1) ? $ut : $gu;
+
+        $gu = $ut;
+        $ut = $gu;
+
+        list($lct6680result_ut, $lct6680result_lct, $lct6680result_dy1, $lct6680result_mn1, $lct6680result_yr1, $lct6680result_gdy, $lct6680result_gmn, $lct6680result_gyr) =
+            moon_rise_lct_l6680($x, $ds, $zc, $gdy, $gmn, $gyr, $g1, $ut);
+        $lct = $lct6680result_lct;
+        $dy1 = $lct6680result_dy1;
+        $mn1 = $lct6680result_mn1;
+        $yr1 = $lct6680result_yr1;
+        $gdy = $lct6680result_gdy;
+        $gmn = $lct6680result_gmn;
+        $gyr = $lct6680result_gyr;
+
+        list($lct6700result2_mm, $lct6700result2_bm, $lct6700result2_pm, $lct6700result2_dp, $lct6700result2_th, $lct6700result2_di, $lct6700result2_p, $lct6700result2_q, $lct6700result2_lu, $lct6700result2_lct) =
+            moon_rise_lct_l6700($lct, $ds, $zc, $dy1, $mn1, $yr1, $gdy, $gmn, $gyr, $gLat);
+        $lu = $lct6700result2_lu;
+        $lct = $lct6700result2_lct;
+
+        if ($lct == -99.0)
+            return $lct;
+
+        $la = $lu;
+    }
+
+    $x = local_sidereal_time_to_greenwich_sidereal_time($la, 0.0, 0.0, $gLong);
+    $ut = greenwich_sidereal_time_to_universal_time($x, 0.0, 0.0, $gdy, $gmn, $gyr);
+
+    if (eg_st_ut($x, 0.0, 0.0, $gdy, $gmn, $gyr) != WarningFlag::OK)
+        if (abs($g1 - $ut) > 0.5)
+            $ut += 23.93447;
+
+    $ut = ut_day_adjust($ut, $g1);
+    $lct = universal_time_to_local_civil_time_ma($ut, 0.0, 0.0, $ds, $zc, $gdy, $gmn, $gyr);
+
+    return $lct;
+}
+
+/** Helper function for moon_rise_lct */
+function moon_rise_lct_l6680($x, $ds, $zc, $gdy, $gmn, $gyr, $g1, $ut)
+{
+    if (eg_st_ut($x, 0.0, 0.0, $gdy, $gmn, $gyr) != WarningFlag::OK)
+        if (abs($g1 - $ut) > 0.5)
+            $ut += 23.93447;
+
+    $ut = ut_day_adjust($ut, $g1);
+    $lct = universal_time_to_local_civil_time_ma($ut, 0.0, 0.0, $ds, $zc, $gdy, $gmn, $gyr);
+    $dy1 = universal_time_local_civil_day($ut, 0.0, 0.0, $ds, $zc, $gdy, $gmn, $gyr);
+    $mn1 = universal_time_local_civil_month($ut, 0.0, 0.0, $ds, $zc, $gdy, $gmn, $gyr);
+    $yr1 = universal_time_local_civil_year($ut, 0.0, 0.0, $ds, $zc, $gdy, $gmn, $gyr);
+    $gdy = local_civil_time_greenwich_day($lct, 0.0, 0.0, $ds, $zc, $dy1, $mn1, $yr1);
+    $gmn = local_civil_time_greenwich_month($lct, 0.0, 0.0, $ds, $zc, $dy1, $mn1, $yr1);
+    $gyr = local_civil_time_greenwich_year($lct, 0.0, 0.0, $ds, $zc, $dy1, $mn1, $yr1);
+    $ut -= 24.0 * floor($ut / 24.0);
+
+    return array($ut, $lct, $dy1, $mn1, $yr1, $gdy, $gmn, $gyr);
+}
+
+/** Helper function for moon_rise_lct */
+function moon_rise_lct_l6700($lct, $ds, $zc, $dy1, $mn1, $yr1, $gdy, $gmn, $gyr, $gLat)
+{
+    $mm = moon_long($lct, 0.0, 0.0, $ds, $zc, $dy1, $mn1, $yr1);
+    $bm = moon_lat($lct, 0.0, 0.0, $ds, $zc, $dy1, $mn1, $yr1);
+    $pm = deg2rad(moon_hp($lct, 0.0, 0.0, $ds, $zc, $dy1, $mn1, $yr1));
+    $dp = nutat_long($gdy, $gmn, $gyr);
+    $th = 0.27249 * sin($pm);
+    $di = $th + 0.0098902 - $pm;
+    $p = decimal_degrees_to_degree_hours(ec_ra($mm + $dp, 0.0, 0.0, $bm, 0.0, 0.0, $gdy, $gmn, $gyr));
+    $q = ec_dec($mm + $dp, 0.0, 0.0, $bm, 0.0, 0.0, $gdy, $gmn, $gyr);
+    $lu = rise_set_local_sidereal_time_rise($p, 0.0, 0.0, $q, 0.0, 0.0, w_to_degrees($di), $gLat);
+
+    if (ers($p, 0.0, 0.0, $q, 0.0, 0.0, w_to_degrees($di), $gLat) != RiseSetStatus::OK)
+        $lct = -99.0;
+
+    return array($mm, $bm, $pm, $dp, $th, $di, $p, $q, $lu, $lct);
+}
+
+/**
+ * Local date of moonrise.
+ * 
+ * Original macro names: MoonRiseLcDay, MoonRiseLcMonth, MoonRiseLcYear
+ */
+function moon_rise_lc_dmy($dy, $mn, $yr, $ds, $zc, $gLong, $gLat)
+{
+    $gdy = local_civil_time_greenwich_day(12.0, 0.0, 0.0, $ds, $zc, $dy, $mn, $yr);
+    $gmn = local_civil_time_greenwich_month(12.0, 0.0, 0.0, $ds, $zc, $dy, $mn, $yr);
+    $gyr = local_civil_time_greenwich_year(12.0, 0.0, 0.0, $ds, $zc, $dy, $mn, $yr);
+    $lct = 12.0;
+    $dy1 = $dy;
+    $mn1 = $mn;
+    $yr1 = $yr;
+
+    list($lct6700result1_mm, $lct6700result1_bm, $lct6700result1_pm, $lct6700result1_dp, $lct6700result1_th, $lct6700result1_di, $lct6700result1_p, $lct6700result1_q, $lct6700result1_lu, $lct6700result1_lct) =
+        moon_rise_lc_dmy_l6700($lct, $ds, $zc, $dy1, $mn1, $yr1, $gdy, $gmn, $gyr, $gLat);
+    $lu = $lct6700result1_lu;
+    $lct = $lct6700result1_lct;
+
+    if ($lct == -99.0)
+        return array($lct, (int) $lct, (int) $lct);
+
+    $la = $lu;
+
+    $g1 = 0.0;
+    $gu = 0.0;
+    for ($k = 1; $k < 9; $k++) {
+        $x = local_sidereal_time_to_greenwich_sidereal_time($la, 0.0, 0.0, $gLong);
+        $ut = greenwich_sidereal_time_to_universal_time($x, 0.0, 0.0, $gdy, $gmn, $gyr);
+
+        $g1 = ($k == 1) ? $ut : $gu;
+
+        $gu = $ut;
+        $ut = $gu;
+
+        list($lct6680result1_ut, $lct6680result1_lct, $lct6680result1_dy1, $lct6680result1_mn1, $lct6680result1_yr1, $lct6680result1_gdy, $lct6680result1_gmn, $lct6680result1_gyr) =
+            moon_rise_lc_dmy_l6680($x, $ds, $zc, $gdy, $gmn, $gyr, $g1, $ut);
+        $lct = $lct6680result1_lct;
+        $dy1 = $lct6680result1_dy1;
+        $mn1 = $lct6680result1_mn1;
+        $yr1 = $lct6680result1_yr1;
+        $gdy = $lct6680result1_gdy;
+        $gmn = $lct6680result1_gmn;
+        $gyr = $lct6680result1_gyr;
+
+        list($lct6700result2_mm, $lct6700result2_bm, $lct6700result2_pm, $lct6700result2_dp, $lct6700result2_th, $lct6700result2_di, $lct6700result2_p, $lct6700result2_q, $lct6700result2_lu, $lct6700result2_lct) =
+            moon_rise_lc_dmy_l6700($lct, $ds, $zc, $dy1, $mn1, $yr1, $gdy, $gmn, $gyr, $gLat);
+
+        $lu = $lct6700result2_lu;
+        $lct = $lct6700result2_lct;
+
+        if ($lct == -99.0)
+            return array($lct, (int) $lct, (int) $lct);
+
+        $la = $lu;
+    }
+
+    $x = local_sidereal_time_to_greenwich_sidereal_time($la, 0.0, 0.0, $gLong);
+    $ut = greenwich_sidereal_time_to_universal_time($x, 0.0, 0.0, $gdy, $gmn, $gyr);
+
+    if (eg_st_ut($x, 0.0, 0.0, $gdy, $gmn, $gyr) != WarningFlag::OK)
+        if (abs($g1 - $ut) > 0.5)
+            $ut += 23.93447;
+
+    $ut = ut_day_adjust($ut, $g1);
+    $dy1 = universal_time_local_civil_day($ut, 0.0, 0.0, $ds, $zc, $gdy, $gmn, $gyr);
+    $mn1 = universal_time_local_civil_month($ut, 0.0, 0.0, $ds, $zc, $gdy, $gmn, $gyr);
+    $yr1 = universal_time_local_civil_year($ut, 0.0, 0.0, $ds, $zc, $gdy, $gmn, $gyr);
+
+    return array($dy1, $mn1, $yr1);
+}
+
+/** Helper function for moon_rise_lc_dmy */
+function moon_rise_lc_dmy_l6680($x, $ds, $zc, $gdy, $gmn, $gyr, $g1, $ut)
+{
+    if (eg_st_ut($x, 0.0, 0.0, $gdy, $gmn, $gyr) != WarningFlag::OK)
+        if (abs($g1 - $ut) > 0.5)
+            $ut += 23.93447;
+
+    $ut = ut_day_adjust($ut, $g1);
+    $lct = universal_time_to_local_civil_time_ma($ut, 0.0, 0.0, $ds, $zc, $gdy, $gmn, $gyr);
+    $dy1 = universal_time_local_civil_day($ut, 0.0, 0.0, $ds, $zc, $gdy, $gmn, $gyr);
+    $mn1 = universal_time_local_civil_month($ut, 0.0, 0.0, $ds, $zc, $gdy, $gmn, $gyr);
+    $yr1 = universal_time_local_civil_year($ut, 0.0, 0.0, $ds, $zc, $gdy, $gmn, $gyr);
+    $gdy = local_civil_time_greenwich_day($lct, 0.0, 0.0, $ds, $zc, $dy1, $mn1, $yr1);
+    $gmn = local_civil_time_greenwich_month($lct, 0.0, 0.0, $ds, $zc, $dy1, $mn1, $yr1);
+    $gyr = local_civil_time_greenwich_year($lct, 0.0, 0.0, $ds, $zc, $dy1, $mn1, $yr1);
+    $ut -= 24.0 * floor($ut / 24.0);
+
+    return array($ut, $lct, $dy1, $mn1, $yr1, $gdy, $gmn, $gyr);
+}
+
+/** Helper function for moon_rise_lc_dmy */
+function moon_rise_lc_dmy_l6700($lct, $ds, $zc, $dy1, $mn1, $yr1, $gdy, $gmn, $gyr, $gLat)
+{
+    $mm = moon_long($lct, 0.0, 0.0, $ds, $zc, $dy1, $mn1, $yr1);
+    $bm = moon_lat($lct, 0.0, 0.0, $ds, $zc, $dy1, $mn1, $yr1);
+    $pm = deg2rad(moon_hp($lct, 0.0, 0.0, $ds, $zc, $dy1, $mn1, $yr1));
+    $dp = nutat_long($gdy, $gmn, $gyr);
+    $th = 0.27249 * sin($pm);
+    $di = $th + 0.0098902 - $pm;
+    $p = decimal_degrees_to_degree_hours(ec_ra($mm + $dp, 0.0, 0.0, $bm, 0.0, 0.0, $gdy, $gmn, $gyr));
+    $q = ec_dec($mm + $dp, 0.0, 0.0, $bm, 0.0, 0.0, $gdy, $gmn, $gyr);
+    $lu = rise_set_local_sidereal_time_rise($p, 0.0, 0.0, $q, 0.0, 0.0, w_to_degrees($di), $gLat);
+
+    return array($mm, $bm, $pm, $dp, $th, $di, $p, $q, $lu, $lct);
+}
+
+/**
+ * Local azimuth of moonrise.
+ * 
+ * Original macro name: MoonRiseAz
+ */
+function moon_rise_az($dy, $mn, $yr, $ds, $zc, $gLong, $gLat)
+{
+    $gdy = local_civil_time_greenwich_day(12.0, 0.0, 0.0, $ds, $zc, $dy, $mn, $yr);
+    $gmn = local_civil_time_greenwich_month(12.0, 0.0, 0.0, $ds, $zc, $dy, $mn, $yr);
+    $gyr = local_civil_time_greenwich_year(12.0, 0.0, 0.0, $ds, $zc, $dy, $mn, $yr);
+    $lct = 12.0;
+    $dy1 = $dy;
+    $mn1 = $mn;
+    $yr1 = $yr;
+
+    list($az6700result1_mm, $az6700result1_bm, $az6700result1_pm, $az6700result1_dp, $az6700result1_th, $az6700result1_di, $az6700result1_p, $az6700result1_q, $az6700result1_lu, $az6700result1_lct, $az6700result1_au) =
+        moon_rise_az_l6700($lct, $ds, $zc, $dy1, $mn1, $yr1, $gdy, $gmn, $gyr, $gLat);
+    $lu = $az6700result1_lu;
+    $lct = $az6700result1_lct;
+
+    if ($lct == -99.0)
+        return $lct;
+
+    $la = $lu;
+
+    $gu = 0.0;
+    $aa = 0.0;
+    for ($k = 1; $k < 9; $k++) {
+        $x = local_sidereal_time_to_greenwich_sidereal_time($la, 0.0, 0.0, $gLong);
+        $ut = greenwich_sidereal_time_to_universal_time($x, 0.0, 0.0, $gdy, $gmn, $gyr);
+
+        $g1 = ($k == 1) ? $ut : $gu;
+
+        $gu = $ut;
+        $ut = $gu;
+
+        list($az6680result1_ut, $az6680result1_lct, $az6680result1_dy1, $az6680result1_mn1, $az6680result1_yr1, $az6680result1_gdy, $az6680result1_gmn, $az6680result1_gyr) =
+            moon_rise_az_l6680($x, $ds, $zc, $gdy, $gmn, $gyr, $g1, $ut);
+        $lct = $az6680result1_lct;
+        $dy1 = $az6680result1_dy1;
+        $mn1 = $az6680result1_mn1;
+        $yr1 = $az6680result1_yr1;
+        $gdy = $az6680result1_gdy;
+        $gmn = $az6680result1_gmn;
+        $gyr = $az6680result1_gyr;
+
+        list($az6700result2_mm, $az6700result2_bm, $az6700result2_pm, $az6700result2_dp, $az6700result2_th, $az6700result2_di, $az6700result2_p, $az6700result2_q, $az6700result2_lu, $az6700result2_lct, $az6700result2_au) =
+            moon_rise_az_l6700($lct, $ds, $zc, $dy1, $mn1, $yr1, $gdy, $gmn, $gyr, $gLat);
+        $lu = $az6700result2_lu;
+        $lct = $az6700result2_lct;
+        $au = $az6700result2_au;
+
+        if ($lct == -99.0)
+            return $lct;
+
+        $la = $lu;
+        $aa = $au;
+    }
+
+    $au = $aa;
+
+    return $au;
+}
+
+/** Helper function for moon_rise_az */
+function moon_rise_az_l6680($x, $ds, $zc, $gdy, $gmn, $gyr, $g1, $ut)
+{
+    if (eg_st_ut($x, 0.0, 0.0, $gdy, $gmn, $gyr) != WarningFlag::OK)
+        if (abs($g1 - $ut) > 0.5)
+            $ut += 23.93447;
+
+    $ut = ut_day_adjust($ut, $g1);
+    $lct = universal_time_to_local_civil_time_ma($ut, 0.0, 0.0, $ds, $zc, $gdy, $gmn, $gyr);
+    $dy1 = universal_time_local_civil_day($ut, 0.0, 0.0, $ds, $zc, $gdy, $gmn, $gyr);
+    $mn1 = universal_time_local_civil_month($ut, 0.0, 0.0, $ds, $zc, $gdy, $gmn, $gyr);
+    $yr1 = universal_time_local_civil_year($ut, 0.0, 0.0, $ds, $zc, $gdy, $gmn, $gyr);
+    $gdy = local_civil_time_greenwich_day($lct, 0.0, 0.0, $ds, $zc, $dy1, $mn1, $yr1);
+    $gmn = local_civil_time_greenwich_month($lct, 0.0, 0.0, $ds, $zc, $dy1, $mn1, $yr1);
+    $gyr = local_civil_time_greenwich_year($lct, 0.0, 0.0, $ds, $zc, $dy1, $mn1, $yr1);
+    $ut -= 24.0 * floor($ut / 24.0);
+
+    return array($ut, $lct, $dy1, $mn1, $yr1, $gdy, $gmn, $gyr);
+}
+
+/** Helper function for moon_rise_az */
+function moon_rise_az_l6700($lct, $ds, $zc, $dy1, $mn1, $yr1, $gdy, $gmn, $gyr, $gLat)
+{
+    $mm = moon_long($lct, 0.0, 0.0, $ds, $zc, $dy1, $mn1, $yr1);
+    $bm = moon_lat($lct, 0.0, 0.0, $ds, $zc, $dy1, $mn1, $yr1);
+    $pm = deg2rad(moon_hp($lct, 0.0, 0.0, $ds, $zc, $dy1, $mn1, $yr1));
+    $dp = nutat_long($gdy, $gmn, $gyr);
+    $th = 0.27249 * sin($pm);
+    $di = $th + 0.0098902 - $pm;
+    $p = decimal_degrees_to_degree_hours(ec_ra($mm + $dp, 0.0, 0.0, $bm, 0.0, 0.0, $gdy, $gmn, $gyr));
+    $q = ec_dec($mm + $dp, 0.0, 0.0, $bm, 0.0, 0.0, $gdy, $gmn, $gyr);
+    $lu = rise_set_local_sidereal_time_rise($p, 0.0, 0.0, $q, 0.0, 0.0, w_to_degrees($di), $gLat);
+    $au = rise_set_azimuth_rise($p, 0.0, 0.0, $q, 0.0, 0.0, w_to_degrees($di), $gLat);
+
+    return array($mm, $bm, $pm, $dp, $th, $di, $p, $q, $lu, $lct, $au);
+}
+
+/**
+ * Local time of moonset.
+ * 
+ * Original macro name: MoonSetLCT
+ */
+function moon_set_lct($dy, $mn, $yr, $ds, $zc, $gLong, $gLat)
+{
+    $gdy = local_civil_time_greenwich_day(12.0, 0.0, 0.0, $ds, $zc, $dy, $mn, $yr);
+    $gmn = local_civil_time_greenwich_month(12.0, 0.0, 0.0, $ds, $zc, $dy, $mn, $yr);
+    $gyr = local_civil_time_greenwich_year(12.0, 0.0, 0.0, $ds, $zc, $dy, $mn, $yr);
+    $lct = 12.0;
+    $dy1 = $dy;
+    $mn1 = $mn;
+    $yr1 = $yr;
+
+    list($lct6700result1_mm, $lct6700result1_bm, $lct6700result1_pm, $lct6700result1_dp, $lct6700result1_th, $lct6700result1_di, $lct6700result1_p, $lct6700result1_q, $lct6700result1_lu, $lct6700result1_lct) =
+        moon_set_lct_l6700($lct, $ds, $zc, $dy1, $mn1, $yr1, $gdy, $gmn, $gyr, $gLat);
+    $lu = $lct6700result1_lu;
+    $lct = $lct6700result1_lct;
+
+    if ($lct == -99.0)
+        return $lct;
+
+    $la = $lu;
+
+    $g1 = 0.0;
+    $gu = 0.0;
+    for ($k = 1; $k < 9; $k++) {
+        $x = local_sidereal_time_to_greenwich_sidereal_time($la, 0.0, 0.0, $gLong);
+        $ut = greenwich_sidereal_time_to_universal_time($x, 0.0, 0.0, $gdy, $gmn, $gyr);
+
+        $g1 = ($k == 1) ? $ut : $gu;
+
+        $gu = $ut;
+        $ut = $gu;
+
+        list($lct6680result1_ut, $lct6680result1_lct, $lct6680result1_dy1, $lct6680result1_mn1, $lct6680result1_yr1, $lct6680result1_gdy, $lct6680result1_gmn, $lct6680result1_gyr) =
+            moon_set_lct_l6680($x, $ds, $zc, $gdy, $gmn, $gyr, $g1, $ut);
+        $lct = $lct6680result1_lct;
+        $dy1 = $lct6680result1_dy1;
+        $mn1 = $lct6680result1_mn1;
+        $yr1 = $lct6680result1_yr1;
+        $gdy = $lct6680result1_gdy;
+        $gmn = $lct6680result1_gmn;
+        $gyr = $lct6680result1_gyr;
+
+        list($lct6700result2_mm, $lct6700result2_bm, $lct6700result2_pm, $lct6700result2_dp, $lct6700result2_th, $lct6700result2_di, $lct6700result2_p, $lct6700result2_q, $lct6700result2_lu, $lct6700result2_lct) =
+            moon_set_lct_l6700($lct, $ds, $zc, $dy1, $mn1, $yr1, $gdy, $gmn, $gyr, $gLat);
+        $lu = $lct6700result2_lu;
+        $lct = $lct6700result2_lct;
+
+        if ($lct == -99.0)
+            return $lct;
+
+        $la = $lu;
+    }
+
+    $x = local_sidereal_time_to_greenwich_sidereal_time($la, 0.0, 0.0, $gLong);
+    $ut = greenwich_sidereal_time_to_universal_time($x, 0.0, 0.0, $gdy, $gmn, $gyr);
+
+    if (eg_st_ut($x, 0.0, 0.0, $gdy, $gmn, $gyr) != WarningFlag::OK)
+        if (abs($g1 - $ut) > 0.5)
+            $ut += 23.93447;
+
+    $ut = ut_day_adjust($ut, $g1);
+    $lct = universal_time_to_local_civil_time_ma($ut, 0.0, 0.0, $ds, $zc, $gdy, $gmn, $gyr);
+
+    return $lct;
+}
+
+/** Helper function for moon_set_lct */
+function moon_set_lct_l6680($x, $ds, $zc, $gdy, $gmn, $gyr, $g1, $ut)
+{
+    if (eg_st_ut($x, 0.0, 0.0, $gdy, $gmn, $gyr) != WarningFlag::OK)
+        if (abs($g1 - $ut) > 0.5)
+            $ut += 23.93447;
+
+    $ut = ut_day_adjust($ut, $g1);
+    $lct = universal_time_to_local_civil_time_ma($ut, 0.0, 0.0, $ds, $zc, $gdy, $gmn, $gyr);
+    $dy1 = universal_time_local_civil_day($ut, 0.0, 0.0, $ds, $zc, $gdy, $gmn, $gyr);
+    $mn1 = universal_time_local_civil_month($ut, 0.0, 0.0, $ds, $zc, $gdy, $gmn, $gyr);
+    $yr1 = universal_time_local_civil_year($ut, 0.0, 0.0, $ds, $zc, $gdy, $gmn, $gyr);
+    $gdy = local_civil_time_greenwich_day($lct, 0.0, 0.0, $ds, $zc, $dy1, $mn1, $yr1);
+    $gmn = local_civil_time_greenwich_month($lct, 0.0, 0.0, $ds, $zc, $dy1, $mn1, $yr1);
+    $gyr = local_civil_time_greenwich_year($lct, 0.0, 0.0, $ds, $zc, $dy1, $mn1, $yr1);
+    $ut -= 24.0 * floor($ut / 24.0);
+
+    return array($ut, $lct, $dy1, $mn1, $yr1, $gdy, $gmn, $gyr);
+}
+
+/** Helper function for moon_set_lct */
+function moon_set_lct_l6700($lct, $ds, $zc, $dy1, $mn1, $yr1, $gdy, $gmn, $gyr, $gLat)
+{
+    $mm = moon_long($lct, 0.0, 0.0, $ds, $zc, $dy1, $mn1, $yr1);
+    $bm = moon_lat($lct, 0.0, 0.0, $ds, $zc, $dy1, $mn1, $yr1);
+    $pm = deg2rad(moon_hp($lct, 0.0, 0.0, $ds, $zc, $dy1, $mn1, $yr1));
+    $dp = nutat_long($gdy, $gmn, $gyr);
+    $th = 0.27249 * sin($pm);
+    $di = $th + 0.0098902 - $pm;
+    $p = decimal_degrees_to_degree_hours(ec_ra($mm + $dp, 0.0, 0.0, $bm, 0.0, 0.0, $gdy, $gmn, $gyr));
+    $q = ec_dec($mm + $dp, 0.0, 0.0, $bm, 0.0, 0.0, $gdy, $gmn, $gyr);
+    $lu = rise_set_local_sidereal_time_set($p, 0.0, 0.0, $q, 0.0, 0.0, w_to_degrees($di), $gLat);
+
+    if (ers($p, 0.0, 0.0, $q, 0.0, 0.0, w_to_degrees($di), $gLat) != RiseSetStatus::OK)
+        $lct = -99.0;
+
+    return array($mm, $bm, $pm, $dp, $th, $di, $p, $q, $lu, $lct);
+}
+
+/**
+ * Local date of moonset.
+ * 
+ * Original macro names: MoonSetLcDay, MoonSetLcMonth, MoonSetLcYear
+ */
+function moon_set_lc_dmy($dy, $mn, $yr, $ds, $zc, $gLong, $gLat)
+{
+    $gdy = local_civil_time_greenwich_day(12.0, 0.0, 0.0, $ds, $zc, $dy, $mn, $yr);
+    $gmn = local_civil_time_greenwich_month(12.0, 0.0, 0.0, $ds, $zc, $dy, $mn, $yr);
+    $gyr = local_civil_time_greenwich_year(12.0, 0.0, 0.0, $ds, $zc, $dy, $mn, $yr);
+    $lct = 12.0;
+    $dy1 = $dy;
+    $mn1 = $mn;
+    $yr1 = $yr;
+
+    list($dmy6700result1_mm, $dmy6700result1_bm, $dmy6700result1_pm, $dmy6700result1_dp, $dmy6700result1_th, $dmy6700result1_di, $dmy6700result1_p, $dmy6700result1_q, $dmy6700result1_lu, $dmy6700result1_lct) =
+        moon_set_lc_dmy_l6700($lct, $ds, $zc, $dy1, $mn1, $yr1, $gdy, $gmn, $gyr, $gLat);
+    $lu = $dmy6700result1_lu;
+    $lct = $dmy6700result1_lct;
+
+    if ($lct == -99.0)
+        return array($lct, (int) $lct, (int) $lct);
+
+    $la = $lu;
+
+    $g1 = 0.0;
+    $gu = 0.0;
+    for ($k = 1; $k < 9; $k++) {
+        $x = local_sidereal_time_to_greenwich_sidereal_time($la, 0.0, 0.0, $gLong);
+        $ut = greenwich_sidereal_time_to_universal_time($x, 0.0, 0.0, $gdy, $gmn, $gyr);
+
+        $g1 = ($k == 1) ? $ut : $gu;
+
+        $gu = $ut;
+        $ut = $gu;
+
+        list($dmy6680result1_ut, $dmy6680result1_lct, $dmy6680result1_dy1, $dmy6680result1_mn1, $dmy6680result1_yr1, $dmy6680result1_gdy, $dmy6680result1_gmn, $dmy6680result1_gyr) =
+            moon_set_lc_dmy_l6680($x, $ds, $zc, $gdy, $gmn, $gyr, $g1, $ut);
+        $lct = $dmy6680result1_lct;
+        $dy1 = $dmy6680result1_dy1;
+        $mn1 = $dmy6680result1_mn1;
+        $yr1 = $dmy6680result1_yr1;
+        $gdy = $dmy6680result1_gdy;
+        $gmn = $dmy6680result1_gmn;
+        $gyr = $dmy6680result1_gyr;
+
+        list($dmy6700result2_mm, $dmy6700result2_bm, $dmy6700result2_pm, $dmy6700result2_dp, $dmy6700result2_th, $dmy6700result2_di, $dmy6700result2_p, $dmy6700result2_q, $dmy6700result2_lu, $dmy6700result2_lct) =
+            moon_set_lc_dmy_l6700($lct, $ds, $zc, $dy1, $mn1, $yr1, $gdy, $gmn, $gyr, $gLat);
+        $lu = $dmy6700result2_lu;
+        $lct = $dmy6700result2_lct;
+
+        if ($lct == -99.0)
+            return array($lct, (int) $lct, (int) $lct);
+
+        $la = $lu;
+    }
+
+    $x = local_sidereal_time_to_greenwich_sidereal_time($la, 0.0, 0.0, $gLong);
+    $ut = greenwich_sidereal_time_to_universal_time($x, 0.0, 0.0, $gdy, $gmn, $gyr);
+
+    if (eg_st_ut($x, 0.0, 0.0, $gdy, $gmn, $gyr) != WarningFlag::OK)
+        if (abs($g1 - $ut) > 0.5)
+            $ut += 23.93447;
+
+    $ut = ut_day_adjust($ut, $g1);
+    $dy1 = universal_time_local_civil_day($ut, 0.0, 0.0, $ds, $zc, $gdy, $gmn, $gyr);
+    $mn1 = universal_time_local_civil_month($ut, 0.0, 0.0, $ds, $zc, $gdy, $gmn, $gyr);
+    $yr1 = universal_time_local_civil_year($ut, 0.0, 0.0, $ds, $zc, $gdy, $gmn, $gyr);
+
+    return array($dy1, $mn1, $yr1);
+}
+
+/** Helper function for moon_set_lc_dmy */
+function moon_set_lc_dmy_l6680($x, $ds, $zc, $gdy, $gmn, $gyr, $g1, $ut)
+{
+    if (eg_st_ut($x, 0.0, 0.0, $gdy, $gmn, $gyr) != WarningFlag::OK)
+        if (abs($g1 - $ut) > 0.5)
+            $ut += 23.93447;
+
+    $ut = ut_day_adjust($ut, $g1);
+    $lct = universal_time_to_local_civil_time_ma($ut, 0.0, 0.0, $ds, $zc, $gdy, $gmn, $gyr);
+    $dy1 = universal_time_local_civil_day($ut, 0.0, 0.0, $ds, $zc, $gdy, $gmn, $gyr);
+    $mn1 = universal_time_local_civil_month($ut, 0.0, 0.0, $ds, $zc, $gdy, $gmn, $gyr);
+    $yr1 = universal_time_local_civil_year($ut, 0.0, 0.0, $ds, $zc, $gdy, $gmn, $gyr);
+    $gdy = local_civil_time_greenwich_day($lct, 0.0, 0.0, $ds, $zc, $dy1, $mn1, $yr1);
+    $gmn = local_civil_time_greenwich_month($lct, 0.0, 0.0, $ds, $zc, $dy1, $mn1, $yr1);
+    $gyr = local_civil_time_greenwich_year($lct, 0.0, 0.0, $ds, $zc, $dy1, $mn1, $yr1);
+    $ut -= 24.0 * floor($ut / 24.0);
+
+    return array($ut, $lct, $dy1, $mn1, $yr1, $gdy, $gmn, $gyr);
+}
+
+/** Helper function for moon_set_lc_dmy */
+function moon_set_lc_dmy_l6700($lct, $ds, $zc, $dy1, $mn1, $yr1, $gdy, $gmn, $gyr, $gLat)
+{
+    $mm = moon_long($lct, 0.0, 0.0, $ds, $zc, $dy1, $mn1, $yr1);
+    $bm = moon_lat($lct, 0.0, 0.0, $ds, $zc, $dy1, $mn1, $yr1);
+    $pm = deg2rad(moon_hp($lct, 0.0, 0.0, $ds, $zc, $dy1, $mn1, $yr1));
+    $dp = nutat_long($gdy, $gmn, $gyr);
+    $th = 0.27249 * sin($pm);
+    $di = $th + 0.0098902 - $pm;
+    $p = decimal_degrees_to_degree_hours(ec_ra($mm + $dp, 0.0, 0.0, $bm, 0.0, 0.0, $gdy, $gmn, $gyr));
+    $q = ec_dec($mm + $dp, 0.0, 0.0, $bm, 0.0, 0.0, $gdy, $gmn, $gyr);
+    $lu = rise_set_local_sidereal_time_set($p, 0.0, 0.0, $q, 0.0, 0.0, w_to_degrees($di), $gLat);
+
+    return array($mm, $bm, $pm, $dp, $th, $di, $p, $q, $lu, $lct);
+}
+
+/**
+ * Local azimuth of moonset.
+ * 
+ * Original macro name: MoonSetAz
+ */
+function moon_set_az($dy, $mn, $yr, $ds, $zc, $gLong, $gLat)
+{
+    $gdy = local_civil_time_greenwich_day(12.0, 0.0, 0.0, $ds, $zc, $dy, $mn, $yr);
+    $gmn = local_civil_time_greenwich_month(12.0, 0.0, 0.0, $ds, $zc, $dy, $mn, $yr);
+    $gyr = local_civil_time_greenwich_year(12.0, 0.0, 0.0, $ds, $zc, $dy, $mn, $yr);
+    $lct = 12.0;
+    $dy1 = $dy;
+    $mn1 = $mn;
+    $yr1 = $yr;
+
+    list($az6700result1_mm, $az6700result1_bm, $az6700result1_pm, $az6700result1_dp, $az6700result1_th, $az6700result1_di, $az6700result1_p, $az6700result1_q, $az6700result1_lu, $az6700result1_lct, $az6700result1_au) =
+        moon_set_az_l6700($lct, $ds, $zc, $dy1, $mn1, $yr1, $gdy, $gmn, $gyr, $gLat);
+    $lu = $az6700result1_lu;
+    $lct = $az6700result1_lct;
+
+    if ($lct == -99.0)
+        return $lct;
+
+    $la = $lu;
+
+    $gu = 0.0;
+    $aa = 0.0;
+    for ($k = 1; $k < 9; $k++) {
+        $x = local_sidereal_time_to_greenwich_sidereal_time($la, 0.0, 0.0, $gLong);
+        $ut = greenwich_sidereal_time_to_universal_time($x, 0.0, 0.0, $gdy, $gmn, $gyr);
+
+        $g1 = ($k == 1) ? $ut : $gu;
+
+        $gu = $ut;
+        $ut = $gu;
+
+        list($az6680result1_ut, $az6680result1_lct, $az6680result1_dy1, $az6680result1_mn1, $az6680result1_yr1, $az6680result1_gdy, $az6680result1_gmn, $az6680result1_gyr) =
+            moon_set_az_l6680($x, $ds, $zc, $gdy, $gmn, $gyr, $g1, $ut);
+        $lct = $az6680result1_lct;
+        $dy1 = $az6680result1_dy1;
+        $mn1 = $az6680result1_mn1;
+        $yr1 = $az6680result1_yr1;
+        $gdy = $az6680result1_gdy;
+        $gmn = $az6680result1_gmn;
+        $gyr = $az6680result1_gyr;
+
+        list($az6700result2_mm, $az6700result2_bm, $az6700result2_pm, $az6700result2_dp, $az6700result2_th, $az6700result2_di, $az6700result2_p, $az6700result2_q, $az6700result2_lu, $az6700result2_lct, $az6700result2_au) =
+            moon_set_az_l6700($lct, $ds, $zc, $dy1, $mn1, $yr1, $gdy, $gmn, $gyr, $gLat);
+        $lu = $az6700result2_lu;
+        $lct = $az6700result2_lct;
+        $au = $az6700result2_au;
+
+        if ($lct == -99.0)
+            return $lct;
+
+        $la = $lu;
+        $aa = $au;
+    }
+
+    $au = $aa;
+
+    return $au;
+}
+
+/** Helper function for moon_set_az */
+function moon_set_az_l6680($x, $ds, $zc, $gdy, $gmn, $gyr, $g1, $ut)
+{
+    if (eg_st_ut($x, 0.0, 0.0, $gdy, $gmn, $gyr) != WarningFlag::OK)
+        if (abs($g1 - $ut) > 0.5)
+            $ut += 23.93447;
+
+    $ut = ut_day_adjust($ut, $g1);
+    $lct = universal_time_to_local_civil_time_ma($ut, 0.0, 0.0, $ds, $zc, $gdy, $gmn, $gyr);
+    $dy1 = universal_time_local_civil_day($ut, 0.0, 0.0, $ds, $zc, $gdy, $gmn, $gyr);
+    $mn1 = universal_time_local_civil_month($ut, 0.0, 0.0, $ds, $zc, $gdy, $gmn, $gyr);
+    $yr1 = universal_time_local_civil_year($ut, 0.0, 0.0, $ds, $zc, $gdy, $gmn, $gyr);
+    $gdy = local_civil_time_greenwich_day($lct, 0.0, 0.0, $ds, $zc, $dy1, $mn1, $yr1);
+    $gmn = local_civil_time_greenwich_month($lct, 0.0, 0.0, $ds, $zc, $dy1, $mn1, $yr1);
+    $gyr = local_civil_time_greenwich_year($lct, 0.0, 0.0, $ds, $zc, $dy1, $mn1, $yr1);
+    $ut -= 24.0 * floor($ut / 24.0);
+
+    return array($ut, $lct, $dy1, $mn1, $yr1, $gdy, $gmn, $gyr);
+}
+
+/** Helper function for moon_set_az */
+function moon_set_az_l6700($lct, $ds, $zc, $dy1, $mn1, $yr1, $gdy, $gmn, $gyr, $gLat)
+{
+    $mm = moon_long($lct, 0.0, 0.0, $ds, $zc, $dy1, $mn1, $yr1);
+    $bm = moon_lat($lct, 0.0, 0.0, $ds, $zc, $dy1, $mn1, $yr1);
+    $pm = deg2rad(moon_hp($lct, 0.0, 0.0, $ds, $zc, $dy1, $mn1, $yr1));
+    $dp = nutat_long($gdy, $gmn, $gyr);
+    $th = 0.27249 * sin($pm);
+    $di = $th + 0.0098902 - $pm;
+    $p = decimal_degrees_to_degree_hours(ec_ra($mm + $dp, 0.0, 0.0, $bm, 0.0, 0.0, $gdy, $gmn, $gyr));
+    $q = ec_dec($mm + $dp, 0.0, 0.0, $bm, 0.0, 0.0, $gdy, $gmn, $gyr);
+    $lu = rise_set_local_sidereal_time_set($p, 0.0, 0.0, $q, 0.0, 0.0, w_to_degrees($di), $gLat);
+    $au = rise_set_azimuth_set($p, 0.0, 0.0, $q, 0.0, 0.0, w_to_degrees($di), $gLat);
+
+    return array($mm, $bm, $pm, $dp, $th, $di, $p, $q, $lu, $lct, $au);
+}

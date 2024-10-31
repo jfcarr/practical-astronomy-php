@@ -26,6 +26,12 @@ use function PA\Macros\moon_dist;
 use function PA\Macros\moon_hp;
 use function PA\Macros\moon_long_lat_hp;
 use function PA\Macros\moon_phase_ma;
+use function PA\Macros\moon_rise_az;
+use function PA\Macros\moon_rise_lc_dmy;
+use function PA\Macros\moon_rise_lct;
+use function PA\Macros\moon_set_az;
+use function PA\Macros\moon_set_lc_dmy;
+use function PA\Macros\moon_set_lct;
 use function PA\Macros\moon_size;
 use function PA\Macros\new_moon;
 use function PA\Macros\nutat_long;
@@ -207,4 +213,35 @@ function moon_dist_ang_diam_hor_parallax($lctHour, $lctMin, $lctSec, $isDaylight
     $horParallaxSec = decimal_degrees_seconds($moonHorizontalParallax);
 
     return array($earthMoonDist, $angDiameterDeg, $angDiameterMin, $horParallaxDeg, $horParallaxMin, $horParallaxSec);
+}
+
+/** Calculate date/time of local moonrise and moonset. */
+function moonrise_and_moonset($localDateDay, $localDateMonth, $localDateYear, $isDaylightSaving, $zoneCorrectionHours, $geogLongDeg, $geogLatDeg)
+{
+    $daylightSaving = $isDaylightSaving ? 1 : 0;
+
+    $localTimeOfMoonriseHours = moon_rise_lct($localDateDay, $localDateMonth, $localDateYear, $daylightSaving, $zoneCorrectionHours, $geogLongDeg, $geogLatDeg);
+    list($moonRiseLCResult_dy1, $moonRiseLCResult_mn1, $moonRiseLCResult_yr1) =
+        moon_rise_lc_dmy($localDateDay, $localDateMonth, $localDateYear, $daylightSaving, $zoneCorrectionHours, $geogLongDeg, $geogLatDeg);
+    $localAzimuthDeg1 = moon_rise_az($localDateDay, $localDateMonth, $localDateYear, $daylightSaving, $zoneCorrectionHours, $geogLongDeg, $geogLatDeg);
+
+    $localTimeOfMoonsetHours = moon_set_lct($localDateDay, $localDateMonth, $localDateYear, $daylightSaving, $zoneCorrectionHours, $geogLongDeg, $geogLatDeg);
+    list($moonSetLCResult_dy1, $moonSetLCResult_mn1, $moonSetLCResult_yr1) =
+        moon_set_lc_dmy($localDateDay, $localDateMonth, $localDateYear, $daylightSaving, $zoneCorrectionHours, $geogLongDeg, $geogLatDeg);
+    $localAzimuthDeg2 = moon_set_az($localDateDay, $localDateMonth, $localDateYear, $daylightSaving, $zoneCorrectionHours, $geogLongDeg, $geogLatDeg);
+
+    $mrLTHour = decimal_hours_hour($localTimeOfMoonriseHours + 0.008333);
+    $mrLTMin = decimal_hours_minute($localTimeOfMoonriseHours + 0.008333);
+    $mrLocalDateDay = $moonRiseLCResult_dy1;
+    $mrLocalDateMonth = $moonRiseLCResult_mn1;
+    $mrLocalDateYear = $moonRiseLCResult_yr1;
+    $mrAzimuthDeg = round($localAzimuthDeg1, 2);
+    $msLTHour = decimal_hours_hour($localTimeOfMoonsetHours + 0.008333);
+    $msLTMin = decimal_hours_minute($localTimeOfMoonsetHours + 0.008333);
+    $msLocalDateDay = $moonSetLCResult_dy1;
+    $msLocalDateMonth = $moonSetLCResult_mn1;
+    $msLocalDateYear = $moonSetLCResult_yr1;
+    $msAzimuthDeg = round($localAzimuthDeg2, 2);
+
+    return array($mrLTHour, $mrLTMin, $mrLocalDateDay, $mrLocalDateMonth, $mrLocalDateYear, $mrAzimuthDeg, $msLTHour, $msLTMin, $msLocalDateDay, $msLocalDateMonth, $msLocalDateYear, $msAzimuthDeg);
 }
