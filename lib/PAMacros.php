@@ -7,6 +7,7 @@ include_once 'PATypes.php';
 use PA\Data\Planets\PlanetDataPrecise;
 use PA\Types as PA_Types;
 use PA\Types\AngleMeasure;
+use PA\Types\EclipseOccurrence;
 use PA\Types\RiseSetStatus;
 use PA\Types\TwilightStatus;
 use PA\Types\WarningFlag;
@@ -4166,4 +4167,83 @@ function moon_set_az_l6700($lct, $ds, $zc, $dy1, $mn1, $yr1, $gdy, $gmn, $gyr, $
     $au = rise_set_azimuth_set($p, 0.0, 0.0, $q, 0.0, 0.0, w_to_degrees($di), $gLat);
 
     return array($mm, $bm, $pm, $dp, $th, $di, $p, $q, $lu, $lct, $au);
+}
+
+/**
+ * Determine if a lunar eclipse is likely to occur.
+ * 
+ * Original macro name: LEOccurrence
+ */
+function lunar_eclipse_occurrence($ds, $zc, $dy, $mn, $yr)
+{
+    $d0 = local_civil_time_greenwich_day(12.0, 0.0, 0.0, $ds, $zc, $dy, $mn, $yr);
+    $m0 = local_civil_time_greenwich_month(12.0, 0.0, 0.0, $ds, $zc, $dy, $mn, $yr);
+    $y0 = local_civil_time_greenwich_year(12.0, 0.0, 0.0, $ds, $zc, $dy, $mn, $yr);
+
+    $j0 = civil_date_to_julian_date(0.0, 1, $y0);
+    $dj = civil_date_to_julian_date($d0, $m0, $y0);
+    $k = ($y0 - 1900.0 + (($dj - $j0) * 1.0 / 365.0)) * 12.3685;
+    $k = lint($k + 0.5);
+    $tn = $k / 1236.85;
+    $tf = ($k + 0.5) / 1236.85;
+    $t = $tn;
+    list($l6855result1_f, $l6855result1_dd, $l6855result1_e1, $l6855result1_b1, $l6855result1_a, $l6855result1_b) =
+        lunar_eclipse_occurrence_l6855($t, $k);
+    $t = $tf;
+    $k += 0.5;
+    list($l6855result2_f, $l6855result2_dd, $l6855result2_e1, $l6855result2_b1, $l6855result2_a, $l6855result2_b) =
+        lunar_eclipse_occurrence_l6855($t, $k);
+    $fb = $l6855result2_f;
+
+    $df = abs($fb - 3.141592654 * lint($fb / 3.141592654));
+
+    if ($df > 0.37)
+        $df = 3.141592654 - $df;
+
+    $s = EclipseOccurrence::EclipseCertain;
+    if ($df >= 0.242600766) {
+        $s = EclipseOccurrence::EclipsePossible;
+
+        if ($df > 0.37)
+            $s = EclipseOccurrence::NoEclipse;
+    }
+
+    return $s;
+}
+
+/** Helper function for lunar_eclipse_occurrence */
+function lunar_eclipse_occurrence_l6855($t, $k)
+{
+    $t2 = $t * $t;
+    $e = 29.53 * $k;
+    $c = 166.56 + (132.87 - 0.009173 * $t) * $t;
+    $c = deg2rad($c);
+    $b = 0.00058868 * $k + (0.0001178 - 0.000000155 * $t) * $t2;
+    $b = $b + 0.00033 * sin($c) + 0.75933;
+    $a = $k / 12.36886;
+    $a1 = 359.2242 + 360.0 * f_part($a) - (0.0000333 + 0.00000347 * $t) * $t2;
+    $a2 = 306.0253 + 360.0 * f_part($k / 0.9330851);
+    $a2 += (0.0107306 + 0.00001236 * $t) * $t2;
+    $a = $k / 0.9214926;
+    $f = 21.2964 + 360.0 * f_part($a) - (0.0016528 + 0.00000239 * $t) * $t2;
+    $a1 = unwind_deg($a1);
+    $a2 = unwind_deg($a2);
+    $f = unwind_deg($f);
+    $a1 = deg2rad($a1);
+    $a2 = deg2rad($a2);
+    $f = deg2rad($f);
+
+    $dd = (0.1734 - 0.000393 * $t) * sin($a1) + 0.0021 * sin(2.0 * $a1);
+    $dd = $dd - 0.4068 * sin($a2) + 0.0161 * sin(2.0 * $a2) - 0.0004 * sin(3.0 * $a2);
+    $dd = $dd + 0.0104 * sin(2.0 * $f) - 0.0051 * sin($a1 + $a2);
+    $dd = $dd - 0.0074 * sin($a1 - $a2) + 0.0004 * sin(2.0 * $f + $a1);
+    $dd = $dd - 0.0004 * sin(2.0 * $f - $a1) - 0.0006 * (2.0 * $f + $a2) + 0.001 * sin(2.0 * $f - $a2);
+    $dd += 0.0005 * sin($a1 + 2.0 * $a2);
+    $e1 = floor($e);
+    $b = $b + $dd + ($e - $e1);
+    $b1 = floor($b);
+    $a = $e1 + $b1;
+    $b -= $b1;
+
+    return array($f, $dd, $e1, $b1, $a, $b);
 }
