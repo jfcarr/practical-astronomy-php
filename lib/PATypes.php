@@ -48,3 +48,10 @@ enum TwilightStatus: string
     case SunTooFarBelowHorizon = "Sun too far below horizon";
     case GstToUtConversionWarning = "GST to UT conversion warning";
 }
+
+enum EclipseOccurrence: string
+{
+    case EclipseCertain = "EclipseCertain";
+    case EclipsePossible = "EclipsePossible";
+    case NoEclipse = "NoEclipse";
+}
