@@ -4247,3 +4247,702 @@ function lunar_eclipse_occurrence_l6855($t, $k)
 
     return array($f, $dd, $e1, $b1, $a, $b);
 }
+
+/**
+ * Calculate time of maximum shadow for lunar eclipse (UT)
+ * 
+ * Original macro name: UTMaxLunarEclipse
+ */
+function ut_max_lunar_eclipse($dy, $mn, $yr, $ds, $zc)
+{
+    $tp = 2.0 * pi();
+
+    if (lunar_eclipse_occurrence($ds, $zc, $dy, $mn, $yr) == EclipseOccurrence::NoEclipse)
+        return -99.0;
+
+    $dj = full_moon($ds, $zc, $dy, $mn, $yr);
+    $gday = julian_date_day($dj);
+    $gmonth = julian_date_month($dj);
+    $gyear = julian_date_year($dj);
+    $igday = floor($gday);
+    $xi = $gday - $igday;
+    $utfm = $xi * 24.0;
+    $ut = $utfm - 1.0;
+    $ly = deg2rad(sun_long($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+    $my = deg2rad(moon_long($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+    $by = deg2rad(moon_lat($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+    $hy = deg2rad(moon_hp($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+    $ut = $utfm + 1.0;
+    $sb = deg2rad(sun_long($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear)) - $ly;
+    $mz = deg2rad(moon_long($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+    $bz = deg2rad(moon_lat($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+    $hz = deg2rad(moon_hp($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+
+    if ($sb < 0.0)
+        $sb += $tp;
+
+    $xh = $utfm;
+    $x0 = $xh + 1.0 - (2.0 * $bz / ($bz - $by));
+    $dm = $mz - $my;
+
+    if ($dm < 0.0)
+        $dm += $tp;
+
+    $lj = ($dm - $sb) / 2.0;
+    $q = 0.0;
+    $mr = $my + ($dm * ($x0 - $xh + 1.0) / 2.0);
+    $ut = $x0 - 0.13851852;
+    $rr = sun_dist($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear);
+    $sr = deg2rad(sun_long($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+    $sr += deg2rad(nutat_long($igday, $gmonth, $gyear) - 0.00569);
+    $sr = $sr + pi() - lint(($sr + pi()) / $tp) * $tp;
+    $by -= $q;
+    $bz -= $q;
+    $p3 = 0.00004263;
+    $zh = ($sr - $mr) / $lj;
+    $tc = $x0 + $zh;
+    $sh = ((($bz - $by) * ($tc - $xh - 1.0) / 2.0) + $bz) / $lj;
+    $s2 = $sh * $sh;
+    $z2 = $zh * $zh;
+    $ps = $p3 / ($rr * $lj);
+    $z1 = ($zh * $z2 / ($z2 + $s2)) + $x0;
+    $h0 = ($hy + $hz) / (2.0 * $lj);
+    $rm = 0.272446 * $h0;
+    $rn = 0.00465242 / ($lj * $rr);
+    $hd = $h0 * 0.99834;
+    $rp = ($hd + $rn + $ps) * 1.02;
+    $r = $rm + $rp;
+    $dd = $z1 - $x0;
+    $dd = $dd * $dd - (($z2 - ($r * $r)) * $dd / $zh);
+
+    if ($dd < 0.0)
+        return -99.0;
+
+    return $z1;
+}
+
+/**
+ * Calculate time of first shadow contact for lunar eclipse (UT)
+ * 
+ * Original macro name: UTFirstContactLunarEclipse
+ */
+function ut_first_contact_lunar_eclipse($dy, $mn, $yr, $ds, $zc)
+{
+    $tp = 2.0 * pi();
+
+    if (lunar_eclipse_occurrence($ds, $zc, $dy, $mn, $yr) == EclipseOccurrence::NoEclipse)
+        return -99.0;
+
+    $dj = full_moon($ds, $zc, $dy, $mn, $yr);
+    $gday = julian_date_day($dj);
+    $gmonth = julian_date_month($dj);
+    $gyear = julian_date_year($dj);
+    $igday = floor($gday);
+    $xi = $gday - $igday;
+    $utfm = $xi * 24.0;
+    $ut = $utfm - 1.0;
+    $ly = deg2rad(sun_long($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+    $my = deg2rad(moon_long($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+    $by = deg2rad(moon_lat($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+    $hy = deg2rad(moon_hp($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+    $ut = $utfm + 1.0;
+    $sb = deg2rad(sun_long($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear)) - $ly;
+    $mz = deg2rad(moon_long($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+    $bz = deg2rad(moon_lat($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+    $hz = deg2rad(moon_hp($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+
+    if ($sb < 0.0)
+        $sb += $tp;
+
+    $xh = $utfm;
+    $x0 = $xh + 1.0 - (2.0 * $bz / ($bz - $by));
+    $dm = $mz - $my;
+
+    if ($dm < 0.0)
+        $dm += $tp;
+
+    $lj = ($dm - $sb) / 2.0;
+    $q = 0.0;
+    $mr = $my + ($dm * ($x0 - $xh + 1.0) / 2.0);
+    $ut = $x0 - 0.13851852;
+    $rr = sun_dist($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear);
+    $sr = deg2rad(sun_long($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+    $sr += deg2rad(nutat_long($igday, $gmonth, $gyear) - 0.00569);
+    $sr = $sr + pi() - lint(($sr + pi()) / $tp) * $tp;
+    $by -= $q;
+    $bz -= $q;
+    $p3 = 0.00004263;
+    $zh = ($sr - $mr) / $lj;
+    $tc = $x0 + $zh;
+    $sh = ((($bz - $by) * ($tc - $xh - 1.0) / 2.0) + $bz) / $lj;
+    $s2 = $sh * $sh;
+    $z2 = $zh * $zh;
+    $ps = $p3 / ($rr * $lj);
+    $z1 = ($zh * $z2 / ($z2 + $s2)) + $x0;
+    $h0 = ($hy + $hz) / (2.0 * $lj);
+    $rm = 0.272446 * $h0;
+    $rn = 0.00465242 / ($lj * $rr);
+    $hd = $h0 * 0.99834;
+    $rp = ($hd + $rn + $ps) * 1.02;
+    $r = $rm + $rp;
+    $dd = $z1 - $x0;
+    $dd = $dd * $dd - (($z2 - ($r * $r)) * $dd / $zh);
+
+    if ($dd < 0.0)
+        return -99.0;
+
+    $zd = sqrt($dd);
+    $z6 = $z1 - $zd;
+
+    if ($z6 < 0.0)
+        $z6 += 24.0;
+
+    return $z6;
+}
+
+/**
+ * Calculate time of last shadow contact for lunar eclipse (UT)
+ * 
+ * Original macro name: UTLastContactLunarEclipse
+ */
+function ut_last_contact_lunar_eclipse($dy, $mn, $yr, $ds, $zc)
+{
+    $tp = 2.0 * pi();
+
+    if (lunar_eclipse_occurrence($ds, $zc, $dy, $mn, $yr) == EclipseOccurrence::NoEclipse)
+        return -99.0;
+
+    $dj = full_moon($ds, $zc, $dy, $mn, $yr);
+    $gday = julian_date_day($dj);
+    $gmonth = julian_date_month($dj);
+    $gyear = julian_date_year($dj);
+    $igday = floor($gday);
+    $xi = $gday - $igday;
+    $utfm = $xi * 24.0;
+    $ut = $utfm - 1.0;
+    $ly = deg2rad(sun_long($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+    $my = deg2rad(moon_long($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+    $by = deg2rad(moon_lat($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+    $hy = deg2rad(moon_hp($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+    $ut = $utfm + 1.0;
+    $sb = deg2rad(sun_long($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear)) - $ly;
+    $mz = deg2rad(moon_long($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+    $bz = deg2rad(moon_lat($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+    $hz = deg2rad(moon_hp($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+
+    if ($sb < 0.0)
+        $sb += $tp;
+
+    $xh = $utfm;
+    $x0 = $xh + 1.0 - (2.0 * $bz / ($bz - $by));
+    $dm = $mz - $my;
+
+    if ($dm < 0.0)
+        $dm += $tp;
+
+    $lj = ($dm - $sb) / 2.0;
+    $q = 0.0;
+    $mr = $my + ($dm * ($x0 - $xh + 1.0) / 2.0);
+    $ut = $x0 - 0.13851852;
+    $rr = sun_dist($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear);
+    $sr = deg2rad(sun_long($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+    $sr += deg2rad(nutat_long($igday, $gmonth, $gyear) - 0.00569);
+    $sr = $sr + pi() - lint(($sr + pi()) / $tp) * $tp;
+    $by -= $q;
+    $bz -= $q;
+    $p3 = 0.00004263;
+    $zh = ($sr - $mr) / $lj;
+    $tc = $x0 + $zh;
+    $sh = ((($bz - $by) * ($tc - $xh - 1.0) / 2.0) + $bz) / $lj;
+    $s2 = $sh * $sh;
+    $z2 = $zh * $zh;
+    $ps = $p3 / ($rr * $lj);
+    $z1 = ($zh * $z2 / ($z2 + $s2)) + $x0;
+    $h0 = ($hy + $hz) / (2.0 * $lj);
+    $rm = 0.272446 * $h0;
+    $rn = 0.00465242 / ($lj * $rr);
+    $hd = $h0 * 0.99834;
+    $rp = ($hd + $rn + $ps) * 1.02;
+    $r = $rm + $rp;
+    $dd = $z1 - $x0;
+    $dd = $dd * $dd - (($z2 - ($r * $r)) * $dd / $zh);
+
+    if ($dd < 0.0)
+        return -99.0;
+
+    $zd = sqrt($dd);
+    $z7 = $z1 + $zd - lint(($z1 + $zd) / 24.0) * 24.0;
+
+    return $z7;
+}
+
+/**
+ * Calculate start time of umbra phase of lunar eclipse (UT)
+ * 
+ * Original macro name: UTStartUmbraLunarEclipse
+ */
+function ut_start_umbra_lunar_eclipse($dy, $mn, $yr, $ds, $zc)
+{
+    $tp = 2.0 * pi();
+
+    if (lunar_eclipse_occurrence($ds, $zc, $dy, $mn, $yr) == EclipseOccurrence::NoEclipse)
+        return -99.0;
+
+    $dj = full_moon($ds, $zc, $dy, $mn, $yr);
+    $gday = julian_date_day($dj);
+    $gmonth = julian_date_month($dj);
+    $gyear = julian_date_year($dj);
+    $igday = floor($gday);
+    $xi = $gday - $igday;
+    $utfm = $xi * 24.0;
+    $ut = $utfm - 1.0;
+    $ly = deg2rad(sun_long($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+    $my = deg2rad(moon_long($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+    $by = deg2rad(moon_lat($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+    $hy = deg2rad(moon_hp($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+    $ut = $utfm + 1.0;
+    $sb = deg2rad(sun_long($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear)) - $ly;
+    $mz = deg2rad(moon_long($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+    $bz = deg2rad(moon_lat($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+    $hz = deg2rad(moon_hp($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+
+    if ($sb < 0.0)
+        $sb += $tp;
+
+    $xh = $utfm;
+    $x0 = $xh + 1.0 - (2.0 * $bz / ($bz - $by));
+    $dm = $mz - $my;
+
+    if ($dm < 0.0)
+        $dm += $tp;
+
+    $lj = ($dm - $sb) / 2.0;
+    $q = 0.0;
+    $mr = $my + ($dm * ($x0 - $xh + 1.0) / 2.0);
+    $ut = $x0 - 0.13851852;
+    $rr = sun_dist($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear);
+    $sr = deg2rad(sun_long($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+    $sr += deg2rad(nutat_long($igday, $gmonth, $gyear) - 0.00569);
+    $sr = $sr + pi() - lint(($sr + pi()) / $tp) * $tp;
+    $by -= $q;
+    $bz -= $q;
+    $p3 = 0.00004263;
+    $zh = ($sr - $mr) / $lj;
+    $tc = $x0 + $zh;
+    $sh = ((($bz - $by) * ($tc - $xh - 1.0) / 2.0) + $bz) / $lj;
+    $s2 = $sh * $sh;
+    $z2 = $zh * $zh;
+    $ps = $p3 / ($rr * $lj);
+    $z1 = ($zh * $z2 / ($z2 + $s2)) + $x0;
+    $h0 = ($hy + $hz) / (2.0 * $lj);
+    $rm = 0.272446 * $h0;
+    $rn = 0.00465242 / ($lj * $rr);
+    $hd = $h0 * 0.99834;
+    $ru = ($hd - $rn + $ps) * 1.02;
+    $rp = ($hd + $rn + $ps) * 1.02;
+    $pj = abs($sh * $zh / sqrt($s2 + $z2));
+    $r = $rm + $rp;
+    $dd = $z1 - $x0;
+    $dd = $dd * $dd - (($z2 - ($r * $r)) * $dd / $zh);
+
+    if ($dd < 0.0)
+        return -99.0;
+
+    $zd = sqrt($dd);
+    $z6 = $z1 - $zd;
+
+    $r = $rm + $ru;
+    $dd = $z1 - $x0;
+    $dd = $dd * $dd - (($z2 - ($r * $r)) * $dd / $zh);
+
+    if ($dd < 0.0)
+        return -99.0;
+
+    $zd = sqrt($dd);
+    $z8 = $z1 - $zd;
+
+    if ($z8 < 0.0)
+        $z8 += 24.0;
+
+    return $z8;
+}
+
+/**
+ * Calculate end time of umbra phase of lunar eclipse (UT)
+ * 
+ * Original macro name: UTEndUmbraLunarEclipse
+ */
+function ut_end_umbra_lunar_eclipse($dy, $mn, $yr, $ds, $zc)
+{
+    $tp = 2.0 * pi();
+
+    if (lunar_eclipse_occurrence($ds, $zc, $dy, $mn, $yr) == EclipseOccurrence::NoEclipse)
+        return -99.0;
+
+    $dj = full_moon($ds, $zc, $dy, $mn, $yr);
+    $gday = julian_date_day($dj);
+    $gmonth = julian_date_month($dj);
+    $gyear = julian_date_year($dj);
+    $igday = floor($gday);
+    $xi = $gday - $igday;
+    $utfm = $xi * 24.0;
+    $ut = $utfm - 1.0;
+    $ly = deg2rad(sun_long($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+    $my = deg2rad(moon_long($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+    $by = deg2rad(moon_lat($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+    $hy = deg2rad(moon_hp($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+    $ut = $utfm + 1.0;
+    $sb = deg2rad(sun_long($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear)) - $ly;
+    $mz = deg2rad(moon_long($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+    $bz = deg2rad(moon_lat($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+    $hz = deg2rad(moon_hp($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+
+    if ($sb < 0.0)
+        $sb += $tp;
+
+    $xh = $utfm;
+    $x0 = $xh + 1.0 - (2.0 * $bz / ($bz - $by));
+    $dm = $mz - $my;
+
+    if ($dm < 0.0)
+        $dm += $tp;
+
+    $lj = ($dm - $sb) / 2.0;
+    $q = 0.0;
+    $mr = $my + ($dm * ($x0 - $xh + 1.0) / 2.0);
+    $ut = $x0 - 0.13851852;
+    $rr = sun_dist($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear);
+    $sr = deg2rad(sun_long($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+    $sr += deg2rad(nutat_long($igday, $gmonth, $gyear) - 0.00569);
+    $sr = $sr + pi() - lint(($sr + pi()) / $tp) * $tp;
+    $by -= $q;
+    $bz -= $q;
+    $p3 = 0.00004263;
+    $zh = ($sr - $mr) / $lj;
+    $tc = $x0 + $zh;
+    $sh = ((($bz - $by) * ($tc - $xh - 1.0) / 2.0) + $bz) / $lj;
+    $s2 = $sh * $sh;
+    $z2 = $zh * $zh;
+    $ps = $p3 / ($rr * $lj);
+    $z1 = ($zh * $z2 / ($z2 + $s2)) + $x0;
+    $h0 = ($hy + $hz) / (2.0 * $lj);
+    $rm = 0.272446 * $h0;
+    $rn = 0.00465242 / ($lj * $rr);
+    $hd = $h0 * 0.99834;
+    $ru = ($hd - $rn + $ps) * 1.02;
+    $rp = ($hd + $rn + $ps) * 1.02;
+    $pj = abs($sh * $zh / sqrt($s2 + $z2));
+    $r = $rm + $rp;
+    $dd = $z1 - $x0;
+    $dd = $dd * $dd - (($z2 - ($r * $r)) * $dd / $zh);
+
+    if ($dd < 0.0)
+        return -99.0;
+
+    $zd = sqrt($dd);
+    $z6 = $z1 - $zd;
+
+    $r = $rm + $ru;
+    $dd = $z1 - $x0;
+    $dd = $dd * $dd - (($z2 - ($r * $r)) * $dd / $zh);
+
+    if ($dd < 0.0)
+        return -99.0;
+
+    $zd = sqrt($dd);
+    $z9 = $z1 + $zd - lint(($z1 + $zd) / 24.0) * 24.0;
+
+    return $z9;
+}
+
+/**
+ * Calculate start time of total phase of lunar eclipse (UT)
+ * 
+ * Original macro name: UTStartTotalLunarEclipse
+ */
+function ut_start_total_lunar_eclipse($dy, $mn, $yr, $ds, $zc)
+{
+    $tp = 2.0 * pi();
+
+    if (lunar_eclipse_occurrence($ds, $zc, $dy, $mn, $yr) == EclipseOccurrence::NoEclipse)
+        return -99.0;
+
+    $dj = full_moon($ds, $zc, $dy, $mn, $yr);
+    $gday = julian_date_day($dj);
+    $gmonth = julian_date_month($dj);
+    $gyear = julian_date_year($dj);
+    $igday = floor($gday);
+    $xi = $gday - $igday;
+    $utfm = $xi * 24.0;
+    $ut = $utfm - 1.0;
+    $ly = deg2rad(sun_long($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+    $my = deg2rad(moon_long($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+    $by = deg2rad(moon_lat($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+    $hy = deg2rad(moon_hp($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+    $ut = $utfm + 1.0;
+    $sb = deg2rad(sun_long($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear)) - $ly;
+    $mz = deg2rad(moon_long($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+    $bz = deg2rad(moon_lat($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+    $hz = deg2rad(moon_hp($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+
+    if ($sb < 0.0)
+        $sb += $tp;
+
+    $xh = $utfm;
+    $x0 = $xh + 1.0 - (2.0 * $bz / ($bz - $by));
+    $dm = $mz - $my;
+
+    if ($dm < 0.0)
+        $dm += $tp;
+
+    $lj = ($dm - $sb) / 2.0;
+    $q = 0.0;
+    $mr = $my + ($dm * ($x0 - $xh + 1.0) / 2.0);
+    $ut = $x0 - 0.13851852;
+    $rr = sun_dist($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear);
+    $sr = deg2rad(sun_long($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+    $sr += deg2rad(nutat_long($igday, $gmonth, $gyear) - 0.00569);
+    $sr = $sr + pi() - lint(($sr + pi()) / $tp) * $tp;
+    $by -= $q;
+    $bz -= $q;
+    $p3 = 0.00004263;
+    $zh = ($sr - $mr) / $lj;
+    $tc = $x0 + $zh;
+    $sh = ((($bz - $by) * ($tc - $xh - 1.0) / 2.0) + $bz) / $lj;
+    $s2 = $sh * $sh;
+    $z2 = $zh * $zh;
+    $ps = $p3 / ($rr * $lj);
+    $z1 = ($zh * $z2 / ($z2 + $s2)) + $x0;
+    $h0 = ($hy + $hz) / (2.0 * $lj);
+    $rm = 0.272446 * $h0;
+    $rn = 0.00465242 / ($lj * $rr);
+    $hd = $h0 * 0.99834;
+    $ru = ($hd - $rn + $ps) * 1.02;
+    $rp = ($hd + $rn + $ps) * 1.02;
+    $pj = abs($sh * $zh / sqrt($s2 + $z2));
+    $r = $rm + $rp;
+    $dd = $z1 - $x0;
+    $dd = $dd * $dd - (($z2 - ($r * $r)) * $dd / $zh);
+
+    if ($dd < 0.0)
+        return -99.0;
+
+    $zd = sqrt($dd);
+    $z6 = $z1 - $zd;
+
+    $r = $rm + $ru;
+    $dd = $z1 - $x0;
+    $dd = $dd * $dd - (($z2 - ($r * $r)) * $dd / $zh);
+
+    if ($dd < 0.0)
+        return -99.0;
+
+    $zd = sqrt($dd);
+    $z8 = $z1 - $zd;
+
+    $r = $ru - $rm;
+    $dd = $z1 - $x0;
+    $dd = $dd * $dd - (($z2 - ($r * $r)) * $dd / $zh);
+
+    if ($dd < 0.0)
+        return -99.0;
+
+    $zd = sqrt($dd);
+    $zcc = $z1 - $zd;
+
+    if ($zcc < 0.0)
+        $zcc = $zc + 24.0;
+
+    return $zcc;
+}
+
+/**
+ * Calculate end time of total phase of lunar eclipse (UT)
+ * 
+ * Original macro name: UTEndTotalLunarEclipse
+ */
+function ut_end_total_lunar_eclipse($dy, $mn, $yr, $ds, $zc)
+{
+    $tp = 2.0 * pi();
+
+    if (lunar_eclipse_occurrence($ds, $zc, $dy, $mn, $yr) == EclipseOccurrence::NoEclipse)
+        return -99.0;
+
+    $dj = full_moon($ds, $zc, $dy, $mn, $yr);
+    $gday = julian_date_day($dj);
+    $gmonth = julian_date_month($dj);
+    $gyear = julian_date_year($dj);
+    $igday = floor($gday);
+    $xi = $gday - $igday;
+    $utfm = $xi * 24.0;
+    $ut = $utfm - 1.0;
+    $ly = deg2rad(sun_long($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+    $my = deg2rad(moon_long($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+    $by = deg2rad(moon_lat($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+    $hy = deg2rad(moon_hp($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+    $ut = $utfm + 1.0;
+    $sb = deg2rad(sun_long($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear)) - $ly;
+    $mz = deg2rad(moon_long($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+    $bz = deg2rad(moon_lat($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+    $hz = deg2rad(moon_hp($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+
+    if ($sb < 0.0)
+        $sb += $tp;
+
+    $xh = $utfm;
+    $x0 = $xh + 1.0 - (2.0 * $bz / ($bz - $by));
+    $dm = $mz - $my;
+
+    if ($dm < 0.0)
+        $dm += $tp;
+
+    $lj = ($dm - $sb) / 2.0;
+    $q = 0.0;
+    $mr = $my + ($dm * ($x0 - $xh + 1.0) / 2.0);
+    $ut = $x0 - 0.13851852;
+    $rr = sun_dist($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear);
+    $sr = deg2rad(sun_long($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+    $sr += deg2rad(nutat_long($igday, $gmonth, $gyear) - 0.00569);
+    $sr = $sr + pi() - lint(($sr + pi()) / $tp) * $tp;
+    $by -= $q;
+    $bz -= $q;
+    $p3 = 0.00004263;
+    $zh = ($sr - $mr) / $lj;
+    $tc = $x0 + $zh;
+    $sh = ((($bz - $by) * ($tc - $xh - 1.0) / 2.0) + $bz) / $lj;
+    $s2 = $sh * $sh;
+    $z2 = $zh * $zh;
+    $ps = $p3 / ($rr * $lj);
+    $z1 = ($zh * $z2 / ($z2 + $s2)) + $x0;
+    $h0 = ($hy + $hz) / (2.0 * $lj);
+    $rm = 0.272446 * $h0;
+    $rn = 0.00465242 / ($lj * $rr);
+    $hd = $h0 * 0.99834;
+    $ru = ($hd - $rn + $ps) * 1.02;
+    $rp = ($hd + $rn + $ps) * 1.02;
+    $pj = abs($sh * $zh / sqrt($s2 + $z2));
+    $r = $rm + $rp;
+    $dd = $z1 - $x0;
+    $dd = $dd * $dd - (($z2 - ($r * $r)) * $dd / $zh);
+
+    if ($dd < 0.0)
+        return -99.0;
+
+    $zd = sqrt($dd);
+    $z6 = $z1 - $zd;
+
+    $r = $rm + $ru;
+    $dd = $z1 - $x0;
+    $dd = $dd * $dd - (($z2 - ($r * $r)) * $dd / $zh);
+
+    if ($dd < 0.0)
+        return -99.0;
+
+    $zd = sqrt($dd);
+    $z8 = $z1 - $zd;
+
+    $r = $ru - $rm;
+    $dd = $z1 - $x0;
+    $dd = $dd * $dd - (($z2 - ($r * $r)) * $dd / $zh);
+
+    if ($dd < 0.0)
+        return -99.0;
+
+    $zd = sqrt($dd);
+    $zb = $z1 + $zd - lint(($z1 + $zd) / 24.0) * 24.0;
+
+    return $zb;
+}
+
+/**
+ * Calculate magnitude of lunar eclipse.
+ * 
+ * Original macro name: MagLunarEclipse
+ */
+function mag_lunar_eclipse($dy, $mn, $yr, $ds, $zc)
+{
+    $tp = 2.0 * pi();
+
+    if (lunar_eclipse_occurrence($ds, $zc, $dy, $mn, $yr) == EclipseOccurrence::NoEclipse)
+        return -99.0;
+
+    $dj = full_moon($ds, $zc, $dy, $mn, $yr);
+    $gday = julian_date_day($dj);
+    $gmonth = julian_date_month($dj);
+    $gyear = julian_date_year($dj);
+    $igday = floor($gday);
+    $xi = $gday - $igday;
+    $utfm = $xi * 24.0;
+    $ut = $utfm - 1.0;
+    $ly = deg2rad(sun_long($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+    $my = deg2rad(moon_long($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+    $by = deg2rad(moon_lat($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+    $hy = deg2rad(moon_hp($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+    $ut = $utfm + 1.0;
+    $sb = deg2rad(sun_long($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear)) - $ly;
+    $mz = deg2rad(moon_long($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+    $bz = deg2rad(moon_lat($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+    $hz = deg2rad(moon_hp($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+
+    if ($sb < 0.0)
+        $sb += $tp;
+
+    $xh = $utfm;
+    $x0 = $xh + 1.0 - (2.0 * $bz / ($bz - $by));
+    $dm = $mz - $my;
+
+    if ($dm < 0.0)
+        $dm += $tp;
+
+    $lj = ($dm - $sb) / 2.0;
+    $q = 0.0;
+    $mr = $my + ($dm * ($x0 - $xh + 1.0) / 2.0);
+    $ut = $x0 - 0.13851852;
+    $rr = sun_dist($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear);
+    $sr = deg2rad(sun_long($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+    $sr += deg2rad(nutat_long($igday, $gmonth, $gyear) - 0.00569);
+    $sr = $sr + pi() - lint(($sr + pi()) / $tp) * $tp;
+    $by -= $q;
+    $bz -= $q;
+    $p3 = 0.00004263;
+    $zh = ($sr - $mr) / $lj;
+    $tc = $x0 + $zh;
+    $sh = ((($bz - $by) * ($tc - $xh - 1.0) / 2.0) + $bz) / $lj;
+    $s2 = $sh * $sh;
+    $z2 = $zh * $zh;
+    $ps = $p3 / ($rr * $lj);
+    $z1 = ($zh * $z2 / ($z2 + $s2)) + $x0;
+    $h0 = ($hy + $hz) / (2.0 * $lj);
+    $rm = 0.272446 * $h0;
+    $rn = 0.00465242 / ($lj * $rr);
+    $hd = $h0 * 0.99834;
+    $ru = ($hd - $rn + $ps) * 1.02;
+    $rp = ($hd + $rn + $ps) * 1.02;
+    $pj = abs($sh * $zh / sqrt($s2 + $z2));
+    $r = $rm + $rp;
+    $dd = $z1 - $x0;
+    $dd = $dd * $dd - (($z2 - ($r * $r)) * $dd / $zh);
+
+    if ($dd < 0.0)
+        return -99.0;
+
+    $zd = sqrt($dd);
+    $z6 = $z1 - $zd;
+
+    $r = $rm + $ru;
+    $dd = $z1 - $x0;
+    $dd = $dd * $dd - (($z2 - ($r * $r)) * $dd / $zh);
+    $mg = ($rm + $rp - $pj) / (2.0 * $rm);
+
+    if ($dd < 0.0)
+        return $mg;
+
+    $zd = sqrt($dd);
+    $z8 = $z1 - $zd;
+
+    $r = $ru - $rm;
+    $dd = $z1 - $x0;
+    $mg = ($rm + $ru - $pj) / (2.0 * $rm);
+
+    return $mg;
+}
