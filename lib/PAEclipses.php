@@ -10,6 +10,8 @@ use function PA\Macros\julian_date_month;
 use function PA\Macros\julian_date_year;
 use function PA\Macros\lunar_eclipse_occurrence;
 use function PA\Macros\mag_lunar_eclipse;
+use function PA\Macros\new_moon;
+use function PA\Macros\solar_eclipse_occurrence as solar_eclipse_occurrence_ma;
 use function PA\Macros\universal_time_local_civil_day;
 use function PA\Macros\universal_time_local_civil_month;
 use function PA\Macros\universal_time_local_civil_year;
@@ -104,4 +106,29 @@ function lunar_eclipse_circumstances($localDateDay, $localDateMonth, $localDateY
     $eclipseMagnitude = ($eclipseMagnitude1 == -99.0) ? -99.0 : round($eclipseMagnitude1, 2);
 
     return array($lunarEclipseCertainDateDay, $lunarEclipseCertainDateMonth, $lunarEclipseCertainDateYear, $utStartPenPhaseHour, $utStartPenPhaseMinutes, $utStartUmbralPhaseHour, $utStartUmbralPhaseMinutes, $utStartTotalPhaseHour, $utStartTotalPhaseMinutes, $utMidEclipseHour, $utMidEclipseMinutes, $utEndTotalPhaseHour, $utEndTotalPhaseMinutes, $utEndUmbralPhaseHour, $utEndUmbralPhaseMinutes, $utEndPenPhaseHour, $utEndPenPhaseMinutes, $eclipseMagnitude);
+}
+
+/** Determine if a solar eclipse is likely to occur. */
+function solar_eclipse_occurrence($localDateDay, $localDateMonth, $localDateYear, $isDaylightSaving, $zoneCorrectionHours)
+{
+    $daylightSaving = $isDaylightSaving ? 1 : 0;
+
+    $julianDateOfNewMoon = new_moon($daylightSaving, $zoneCorrectionHours, $localDateDay, $localDateMonth, $localDateYear);
+    $gDateOfNewMoonDay = julian_date_day($julianDateOfNewMoon);
+    $integerDay = floor($gDateOfNewMoonDay);
+    $gDateOfNewMoonMonth = julian_date_month($julianDateOfNewMoon);
+    $gDateOfNewMoonYear = julian_date_year($julianDateOfNewMoon);
+    $utOfNewMoonHours = $gDateOfNewMoonDay - $integerDay;
+
+    $localCivilDateDay = universal_time_local_civil_day($utOfNewMoonHours, 0.0, 0.0, $daylightSaving, $zoneCorrectionHours, $integerDay, $gDateOfNewMoonMonth, $gDateOfNewMoonYear);
+    $localCivilDateMonth = universal_time_local_civil_month($utOfNewMoonHours, 0.0, 0.0, $daylightSaving, $zoneCorrectionHours, $integerDay, $gDateOfNewMoonMonth, $gDateOfNewMoonYear);
+    $localCivilDateYear = universal_time_local_civil_year($utOfNewMoonHours, 0.0, 0.0, $daylightSaving, $zoneCorrectionHours, $integerDay, $gDateOfNewMoonMonth, $gDateOfNewMoonYear);
+
+    $eclipseOccurrence = solar_eclipse_occurrence_ma($daylightSaving, $zoneCorrectionHours, $localDateDay, $localDateMonth, $localDateYear);
+    $status = $eclipseOccurrence;
+    $eventDateDay = $localCivilDateDay;
+    $eventDateMonth = $localCivilDateMonth;
+    $eventDateYear = $localCivilDateYear;
+
+    return array($status, $eventDateDay, $eventDateMonth, $eventDateYear);
 }
