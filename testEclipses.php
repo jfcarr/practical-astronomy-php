@@ -70,8 +70,31 @@ function solar_eclipse_occurrence($localDateDay, $localDateMonth, $localDateYear
     echo "[{$title}] PASSED\n";
 }
 
+function solar_eclipse_circumstances($localDateDay, $localDateMonth, $localDateYear, $isDaylightSaving, $zoneCorrectionHours, $geogLongitudeDeg, $geogLatitudeDeg, $expected_solarEclipseCertainDateDay, $expected_solarEclipseCertainDateMonth, $expected_solarEclipseCertainDateYear, $expected_utFirstContactHour, $expected_utFirstContactMinutes, $expected_utMidEclipseHour, $expected_utMidEclipseMinutes, $expected_utLastContactHour, $expected_utLastContactMinutes, $expected_eclipseMagnitude)
+{
+    $title = "Solar Eclipse Circumstances";
+
+    list($solarEclipseCertainDateDay, $solarEclipseCertainDateMonth, $solarEclipseCertainDateYear, $utFirstContactHour, $utFirstContactMinutes, $utMidEclipseHour, $utMidEclipseMinutes, $utLastContactHour, $utLastContactMinutes, $eclipseMagnitude) =
+        PA_Eclipses\solar_eclipse_circumstances($localDateDay, $localDateMonth, $localDateYear, $isDaylightSaving, $zoneCorrectionHours, $geogLongitudeDeg, $geogLatitudeDeg);
+
+    descriptive_assert("[{$title}] Certain Date - Day", $solarEclipseCertainDateDay, $expected_solarEclipseCertainDateDay);
+    descriptive_assert("[{$title}] Certain Date - Month", $solarEclipseCertainDateMonth, $expected_solarEclipseCertainDateMonth);
+    descriptive_assert("[{$title}] Certain Date - Year", $solarEclipseCertainDateYear, $expected_solarEclipseCertainDateYear);
+    descriptive_assert("[{$title}] First Contact - Hour", $utFirstContactHour, $expected_utFirstContactHour);
+    descriptive_assert("[{$title}] First Contact - Minutes", $utFirstContactMinutes, $expected_utFirstContactMinutes);
+    descriptive_assert("[{$title}] Mid-Eclipse - Hour", $utMidEclipseHour, $expected_utMidEclipseHour);
+    descriptive_assert("[{$title}] Mid-Eclipse - Minutes", $utMidEclipseMinutes, $expected_utMidEclipseMinutes);
+    descriptive_assert("[{$title}] Last Contact - Hour", $utLastContactHour, $expected_utLastContactHour);
+    descriptive_assert("[{$title}] Last Contact - Minutes", $utLastContactMinutes, $expected_utLastContactMinutes);
+    descriptive_assert("[{$title}] Magnitude", $eclipseMagnitude, $expected_eclipseMagnitude);
+
+    echo "[{$title}] PASSED\n";
+}
+
 lunar_eclipse_occurrence_details(1, 4, 2015, false, 10, EclipseOccurrence::EclipseCertain, 4, 4, 2015);
 
 lunar_eclipse_circumstances(1, 4, 2015, false, 10, 4, 4, 2015, 9, 0, 10, 16, 11, 55, 12, 1, 12, 7, 13, 46, 15, 1, 1.01);
 
 solar_eclipse_occurrence(1, 4, 2015, false, 0, EclipseOccurrence::EclipseCertain, 20, 3, 2015);
+
+solar_eclipse_circumstances(20, 3, 2015, false, 0, 0, 68.65, 20, 3, 2015, 8, 55, 9, 57, 10, 58, 1.016);

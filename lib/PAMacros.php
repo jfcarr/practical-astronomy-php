@@ -7,6 +7,7 @@ include_once 'PATypes.php';
 use PA\Data\Planets\PlanetDataPrecise;
 use PA\Types as PA_Types;
 use PA\Types\AngleMeasure;
+use PA\Types\CoordinateType;
 use PA\Types\EclipseOccurrence;
 use PA\Types\RiseSetStatus;
 use PA\Types\TwilightStatus;
@@ -905,11 +906,11 @@ function eccentric_anomaly($am, $ec)
  *
  * Original macro name: Refract
  */
-function refract($y2, PA_Types\CoordinateType $sw, $pr, $tr)
+function refract($y2, $sw, $pr, $tr)
 {
     $y = deg2rad($y2);
 
-    $d = ($sw == PA_Types\CoordinateType::True) ? -1.0 : 1.0;
+    $d = ($sw == CoordinateType::True) ? -1.0 : 1.0;
 
     if ($d == -1) {
         $y3 = $y;
@@ -969,7 +970,7 @@ function refract_l3035($pr, $tr, $y, $d)
  *
  * Original macro name: ParallaxHA
  */
-function parallax_ha($hh, $hm, $hs, $dd, $dm, $ds, PA_Types\CoordinateType $sw, $gp, $ht, $hp)
+function parallax_ha($hh, $hm, $hs, $dd, $dm, $ds, $sw, $gp, $ht, $hp)
 {
     $a = deg2rad($gp);
     $c1 = cos($a);
@@ -992,7 +993,7 @@ function parallax_ha($hh, $hm, $hs, $dd, $dm, $ds, PA_Types\CoordinateType $sw, 
     $y = deg2rad(degrees_minutes_seconds_to_decimal_degrees($dd, $dm, $ds));
     $y1 = $y;
 
-    $d = ($sw == PA_Types\CoordinateType::True) ? 1.0 : -1.0;
+    $d = ($sw == CoordinateType::True) ? 1.0 : -1.0;
 
     if ($d == 1) {
         list($p, $q) = parallax_ha_l2870($x, $y, $rc, $rp, $rs, $tp);
@@ -1052,7 +1053,7 @@ function parallax_ha_l2870($x, $y, $rc, $rp, $rs, $tp)
  *
  * Original macro name: ParallaxDec
  */
-function parallax_dec($hh, $hm, $hs, $dd, $dm, $ds, PA_Types\CoordinateType $sw, $gp, $ht, $hp)
+function parallax_dec($hh, $hm, $hs, $dd, $dm, $ds, $sw, $gp, $ht, $hp)
 {
     $a = deg2rad($gp);
     $c1 = cos($a);
@@ -1076,7 +1077,7 @@ function parallax_dec($hh, $hm, $hs, $dd, $dm, $ds, PA_Types\CoordinateType $sw,
     $y = deg2rad(degrees_minutes_seconds_to_decimal_degrees($dd, $dm, $ds));
     $y1 = $y;
 
-    $d = ($sw == PA_Types\CoordinateType::True) ? 1.0 : -1.0;
+    $d = ($sw == CoordinateType::True) ? 1.0 : -1.0;
 
     if ($d == 1) {
         list($p, $q) = parallax_dec_l2870($x, $y, $rc, $rp, $rs, $tp);
@@ -3511,7 +3512,7 @@ function f_part($w)
 function eq_e_lat($rah, $ram, $ras, $dd, $dm, $ds, $gd, $gm, $gy)
 {
     $a = deg2rad(degree_hours_to_decimal_degrees(hours_minutes_seconds_to_decimal_hours($rah, $ram, $ras)));
-    $b = deg2rad(degree_hours_to_decimal_degrees($dd, $dm, $ds));
+    $b = deg2rad(degrees_minutes_seconds_to_decimal_degrees($dd, $dm, $ds));
     $c = deg2rad(obliq($gd, $gm, $gy));
     $d = sin($b) * cos($c) - cos($b) * sin($c) * sin($a);
 
@@ -5023,4 +5024,468 @@ function solar_eclipse_occurrence_l6855($t, $k)
     $b -= $b1;
 
     return array($f, $dd, $e1, $b1, $a, $b);
+}
+
+/**
+ * Calculate time of maximum shadow for solar eclipse (UT)
+ * 
+ * Original macro name: UTMaxSolarEclipse
+ */
+function ut_max_solar_eclipse($dy, $mn, $yr, $ds, $zc, $glong, $glat)
+{
+    $tp = 2.0 * pi();
+
+    if (solar_eclipse_occurrence($ds, $zc, $dy, $mn, $yr) == EclipseOccurrence::NoEclipse)
+        return -99.0;
+
+    $dj = new_moon($ds, $zc, $dy, $mn, $yr);
+    $gday = julian_date_day($dj);
+    $gmonth = julian_date_month($dj);
+    $gyear = julian_date_year($dj);
+    $igday = floor($gday);
+    $xi = $gday - $igday;
+    $utnm = $xi * 24.0;
+    $ut = $utnm - 1.0;
+    $ly = deg2rad(sun_long($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+    $my = deg2rad(moon_long($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+    $by = deg2rad(moon_lat($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+    $hy = deg2rad(moon_hp($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+    $ut = $utnm + 1.0;
+    $sb = deg2rad(sun_long($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear)) - $ly;
+    $mz = deg2rad(moon_long($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+    $bz = deg2rad(moon_lat($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+    $hz = deg2rad(moon_hp($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+
+    if ($sb < 0.0)
+        $sb += $tp;
+
+    $xh = $utnm;
+    $x = $my;
+    $y = $by;
+    $tm = $xh - 1.0;
+    $hp = $hy;
+    list($l7390result1_paa, $l7390result1_qaa, $l7390result1_xaa, $l7390result1_pbb, $l7390result1_qbb, $l7390result1_xbb, $l7390result1_p, $l7390result1_q) =
+        ut_max_solar_eclipse_l7390($x, $y, $igday, $gmonth, $gyear, $tm, $glong, $glat, $hp);
+    $my = $l7390result1_p;
+    $by = $l7390result1_q;
+    $x = $mz;
+    $y = $bz;
+    $tm = $xh + 1.0;
+    $hp = $hz;
+    list($l7390result2_paa, $l7390result2_qaa, $l7390result2_xaa, $l7390result2_pbb, $l7390result2_qbb, $l7390result2_xbb, $l7390result2_p, $l7390result2_q) =
+        ut_max_solar_eclipse_l7390($x, $y, $igday, $gmonth, $gyear, $tm, $glong, $glat, $hp);
+    $mz = $l7390result2_p;
+    $bz = $l7390result2_q;
+
+    $x0 = $xh + 1.0 - (2.0 * $bz / ($bz - $by));
+    $dm = $mz - $my;
+
+    if ($dm < 0.0)
+        $dm += $tp;
+
+    $lj = ($dm - $sb) / 2.0;
+    $mr = $my + ($dm * ($x0 - $xh + 1.0) / 2.0);
+    $ut = $x0 - 0.13851852;
+    $rr = sun_dist($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear);
+    $sr = deg2rad(sun_long($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+    $sr += deg2rad(nutat_long($igday, $gmonth, $gyear) - 0.00569);
+    $x = $sr;
+    $y = 0.0;
+    $tm = $ut;
+    $hp = 0.00004263452 / $rr;
+    list($l7390result3_paa, $l7390result3_qaa, $l7390result3_xaa, $l7390result3_pbb, $l7390result3_qbb, $l7390result3_xbb, $l7390result3_p, $l7390result3_q) =
+        ut_max_solar_eclipse_l7390($x, $y, $igday, $gmonth, $gyear, $tm, $glong, $glat, $hp);
+    $sr = $l7390result3_p;
+    $by -= $l7390result3_q;
+    $bz -= $l7390result3_q;
+    $p3 = 0.00004263;
+    $zh = ($sr - $mr) / $lj;
+    $tc = $x0 + $zh;
+    $sh = ((($bz - $by) * ($tc - $xh - 1.0) / 2.0) + $bz) / $lj;
+    $s2 = $sh * $sh;
+    $z2 = $zh * $zh;
+    $ps = $p3 / ($rr * $lj);
+    $z1 = ($zh * $z2 / ($z2 + $s2)) + $x0;
+    $h0 = ($hy + $hz) / (2.0 * $lj);
+    $rm = 0.272446 * $h0;
+    $rn = 0.00465242 / ($lj * $rr);
+    $hd = $h0 * 0.99834;
+    $_ru = ($hd - $rn + $ps) * 1.02;
+    $_rp = ($hd + $rn + $ps) * 1.02;
+    $pj = abs($sh * $zh / sqrt($s2 + $z2));
+    $r = $rm + $rn;
+    $dd = $z1 - $x0;
+    $dd = $dd * $dd - (($z2 - ($r * $r)) * $dd / $zh);
+
+    if ($dd < 0.0)
+        return -99.0;
+
+    $zd = sqrt($dd);
+
+    return $z1;
+}
+
+/** Helper function for ut_max_solar_eclipse */
+function ut_max_solar_eclipse_l7390($x, $y, $igday, $gmonth, $gyear, $tm, $glong, $glat, $hp)
+{
+    $paa = ec_ra(w_to_degrees($x), 0.0, 0.0, w_to_degrees($y), 0.0, 0.0, $igday, $gmonth, $gyear);
+    $qaa = ec_dec(w_to_degrees($x), 0.0, 0.0, w_to_degrees($y), 0.0, 0.0, $igday, $gmonth, $gyear);
+    $xaa = right_ascension_to_hour_angle(decimal_degrees_to_degree_hours($paa), 0.0, 0.0, $tm, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear, $glong);
+    $pbb = parallax_ha($xaa, 0.0, 0.0, $qaa, 0.0, 0.0, CoordinateType::True, $glat, 0.0, w_to_degrees($hp));
+    $qbb = parallax_dec($xaa, 0.0, 0.0, $qaa, 0.0, 0.0, CoordinateType::True, $glat, 0.0, w_to_degrees($hp));
+    $xbb = hour_angle_to_right_ascension($pbb, 0.0, 0.0, $tm, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear, $glong);
+    $p = deg2rad(eq_e_long($xbb, 0.0, 0.0, $qbb, 0.0, 0.0, $igday, $gmonth, $gyear));
+    $q = deg2rad(eq_e_lat($xbb, 0.0, 0.0, $qbb, 0.0, 0.0, $igday, $gmonth, $gyear));
+
+    return array($paa, $qaa, $xaa, $pbb, $qbb, $xbb, $p, $q);
+}
+
+/**
+ * Calculate time of first contact for solar eclipse (UT)
+ * 
+ * Original macro name: UTFirstContactSolarEclipse
+ */
+function ut_first_contact_solar_eclipse($dy, $mn, $yr, $ds, $zc, $glong, $glat)
+{
+    $tp = 2.0 * pi();
+
+    if (solar_eclipse_occurrence($ds, $zc, $dy, $mn, $yr) == EclipseOccurrence::NoEclipse)
+        return -99.0;
+
+    $dj = new_moon($ds, $zc, $dy, $mn, $yr);
+    $gday = julian_date_day($dj);
+    $gmonth = julian_date_month($dj);
+    $gyear = julian_date_year($dj);
+    $igday = floor($gday);
+    $xi = $gday - $igday;
+    $utnm = $xi * 24.0;
+    $ut = $utnm - 1.0;
+    $ly = deg2rad(sun_long($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+    $my = deg2rad(moon_long($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+    $by = deg2rad(moon_lat($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+    $hy = deg2rad(moon_hp($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+    $ut = $utnm + 1.0;
+    $sb = deg2rad(sun_long($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear)) - $ly;
+    $mz = deg2rad(moon_long($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+    $bz = deg2rad(moon_lat($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+    $hz = deg2rad(moon_hp($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+
+    if ($sb < 0.0)
+        $sb += $tp;
+
+    $xh = $utnm;
+    $x = $my;
+    $y = $by;
+    $tm = $xh - 1.0;
+    $hp = $hy;
+
+    list($l7390result1_paa, $l7390result1_qaa, $l7390result1_xaa, $l7390result1_pbb, $l7390result1_qbb, $l7390result1_xbb, $l7390result1_p, $l7390result1_q) =
+        ut_first_contact_solar_eclipse_l7390($x, $y, $igday, $gmonth, $gyear, $tm, $glong, $glat, $hp);
+    $my = $l7390result1_p;
+    $by = $l7390result1_q;
+    $x = $mz;
+    $y = $bz;
+    $tm = $xh + 1.0;
+    $hp = $hz;
+    list($l7390result2_paa, $l7390result2_qaa, $l7390result2_xaa, $l7390result2_pbb, $l7390result2_qbb, $l7390result2_xbb, $l7390result2_p, $l7390result2_q) =
+        ut_first_contact_solar_eclipse_l7390($x, $y, $igday, $gmonth, $gyear, $tm, $glong, $glat, $hp);
+    $mz = $l7390result2_p;
+    $bz = $l7390result2_q;
+
+    $x0 = $xh + 1.0 - (2.0 * $bz / ($bz - $by));
+    $dm = $mz - $my;
+
+    if ($dm < 0.0)
+        $dm += $tp;
+
+    $lj = ($dm - $sb) / 2.0;
+    $mr = $my + ($dm * ($x0 - $xh + 1.0) / 2.0);
+    $ut = $x0 - 0.13851852;
+    $rr = sun_dist($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear);
+    $sr = deg2rad(sun_long($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+    $sr += deg2rad(nutat_long($igday, $gmonth, $gyear) - 0.00569);
+    $x = $sr;
+    $y = 0.0;
+    $tm = $ut;
+    $hp = 0.00004263452 / $rr;
+    list($l7390result3_paa, $l7390result3_qaa, $l7390result3_xaa, $l7390result3_pbb, $l7390result3_qbb, $l7390result3_xbb, $l7390result3_p, $l7390result3_q) =
+        ut_first_contact_solar_eclipse_l7390($x, $y, $igday, $gmonth, $gyear, $tm, $glong, $glat, $hp);
+    $sr = $l7390result3_p;
+    $by -= $l7390result3_q;
+    $bz -= $l7390result3_q;
+    $p3 = 0.00004263;
+    $zh = ($sr - $mr) / $lj;
+    $tc = $x0 + $zh;
+    $sh = ((($bz - $by) * ($tc - $xh - 1.0) / 2.0) + $bz) / $lj;
+    $s2 = $sh * $sh;
+    $z2 = $zh * $zh;
+    $ps = $p3 / ($rr * $lj);
+    $z1 = ($zh * $z2 / ($z2 + $s2)) + $x0;
+    $h0 = ($hy + $hz) / (2.0 * $lj);
+    $rm = 0.272446 * $h0;
+    $rn = 0.00465242 / ($lj * $rr);
+    $hd = $h0 * 0.99834;
+    $_ru = ($hd - $rn + $ps) * 1.02;
+    $_rp = ($hd + $rn + $ps) * 1.02;
+    $pj = abs($sh * $zh / sqrt($s2 + $z2));
+    $r = $rm + $rn;
+    $dd = $z1 - $x0;
+    $dd = $dd * $dd - (($z2 - ($r * $r)) * $dd / $zh);
+
+    if ($dd < 0.0)
+        return -99.0;
+
+    $zd = sqrt($dd);
+    $z6 = $z1 - $zd;
+
+    if ($z6 < 0.0)
+        $z6 += 24.0;
+
+    return $z6;
+}
+
+/** Helper function for ut_first_contact_solar_eclipse */
+function ut_first_contact_solar_eclipse_l7390($x, $y, $igday, $gmonth, $gyear, $tm, $glong, $glat, $hp)
+{
+    $paa = ec_ra(w_to_degrees($x), 0.0, 0.0, w_to_degrees($y), 0.0, 0.0, $igday, $gmonth, $gyear);
+    $qaa = ec_dec(w_to_degrees($x), 0.0, 0.0, w_to_degrees($y), 0.0, 0.0, $igday, $gmonth, $gyear);
+    $xaa = right_ascension_to_hour_angle(decimal_degrees_to_degree_hours($paa), 0.0, 0.0, $tm, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear, $glong);
+    $pbb = parallax_ha($xaa, 0.0, 0.0, $qaa, 0.0, 0.0, CoordinateType::True, $glat, 0.0, w_to_degrees($hp));
+    $qbb = parallax_dec($xaa, 0.0, 0.0, $qaa, 0.0, 0.0, CoordinateType::True, $glat, 0.0, w_to_degrees($hp));
+    $xbb = hour_angle_to_right_ascension($pbb, 0.0, 0.0, $tm, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear, $glong);
+    $p = deg2rad(eq_e_long($xbb, 0.0, 0.0, $qbb, 0.0, 0.0, $igday, $gmonth, $gyear));
+    $q = deg2rad(eq_e_lat($xbb, 0.0, 0.0, $qbb, 0.0, 0.0, $igday, $gmonth, $gyear));
+
+    return array($paa, $qaa, $xaa, $pbb, $qbb, $xbb, $p, $q);
+}
+
+/**
+ * Calculate time of last contact for solar eclipse (UT)
+ * 
+ * Original macro name: UTLastContactSolarEclipse
+ */
+function ut_last_contact_solar_eclipse($dy, $mn, $yr, $ds, $zc, $glong, $glat)
+{
+    $tp = 2.0 * pi();
+
+    if (solar_eclipse_occurrence($ds, $zc, $dy, $mn, $yr) == EclipseOccurrence::NoEclipse)
+        return -99.0;
+
+    $dj = new_moon($ds, $zc, $dy, $mn, $yr);
+    $gday = julian_date_day($dj);
+    $gmonth = julian_date_month($dj);
+    $gyear = julian_date_year($dj);
+    $igday = floor($gday);
+    $xi = $gday - $igday;
+    $utnm = $xi * 24.0;
+    $ut = $utnm - 1.0;
+    $ly = deg2rad(sun_long($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+    $my = deg2rad(moon_long($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+    $by = deg2rad(moon_lat($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+    $hy = deg2rad(moon_hp($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+    $ut = $utnm + 1.0;
+    $sb = deg2rad(sun_long($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear)) - $ly;
+    $mz = deg2rad(moon_long($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+    $bz = deg2rad(moon_lat($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+    $hz = deg2rad(moon_hp($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+
+    if ($sb < 0.0)
+        $sb += $tp;
+
+    $xh = $utnm;
+    $x = $my;
+    $y = $by;
+    $tm = $xh - 1.0;
+    $hp = $hy;
+    list($l7390result1_paa, $l7390result1_qaa, $l7390result1_xaa, $l7390result1_pbb, $l7390result1_qbb, $l7390result1_xbb, $l7390result1_p, $l7390result1_q) =
+        ut_last_contact_solar_eclipse_l7390($x, $y, $igday, $gmonth, $gyear, $tm, $glong, $glat, $hp);
+    $my = $l7390result1_p;
+    $by = $l7390result1_q;
+    $x = $mz;
+    $y = $bz;
+    $tm = $xh + 1.0;
+    $hp = $hz;
+    list($l7390result2_paa, $l7390result2_qaa, $l7390result2_xaa, $l7390result2_pbb, $l7390result2_qbb, $l7390result2_xbb, $l7390result2_p, $l7390result2_q) =
+        ut_last_contact_solar_eclipse_l7390($x, $y, $igday, $gmonth, $gyear, $tm, $glong, $glat, $hp);
+    $mz = $l7390result2_p;
+    $bz = $l7390result2_q;
+
+    $x0 = $xh + 1.0 - (2.0 * $bz / ($bz - $by));
+    $dm = $mz - $my;
+
+    if ($dm < 0.0)
+        $dm += $tp;
+
+    $lj = ($dm - $sb) / 2.0;
+    $mr = $my + ($dm * ($x0 - $xh + 1.0) / 2.0);
+    $ut = $x0 - 0.13851852;
+    $rr = sun_dist($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear);
+    $sr = deg2rad(sun_long($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+    $sr += deg2rad(nutat_long($igday, $gmonth, $gyear) - 0.00569);
+    $x = $sr;
+    $y = 0.0;
+    $tm = $ut;
+    $hp = 0.00004263452 / $rr;
+    list($l7390result3_paa, $l7390result3_qaa, $l7390result3_xaa, $l7390result3_pbb, $l7390result3_qbb, $l7390result3_xbb, $l7390result3_p, $l7390result3_q) =
+        ut_last_contact_solar_eclipse_l7390($x, $y, $igday, $gmonth, $gyear, $tm, $glong, $glat, $hp);
+    $sr = $l7390result3_p;
+    $by -= $l7390result3_q;
+    $bz -= $l7390result3_q;
+    $p3 = 0.00004263;
+    $zh = ($sr - $mr) / $lj;
+    $tc = $x0 + $zh;
+    $sh = ((($bz - $by) * ($tc - $xh - 1.0) / 2.0) + $bz) / $lj;
+    $s2 = $sh * $sh;
+    $z2 = $zh * $zh;
+    $ps = $p3 / ($rr * $lj);
+    $z1 = ($zh * $z2 / ($z2 + $s2)) + $x0;
+    $h0 = ($hy + $hz) / (2.0 * $lj);
+    $rm = 0.272446 * $h0;
+    $rn = 0.00465242 / ($lj * $rr);
+    $hd = $h0 * 0.99834;
+    $_ru = ($hd - $rn + $ps) * 1.02;
+    $_rp = ($hd + $rn + $ps) * 1.02;
+    $pj = abs($sh * $zh / sqrt($s2 + $z2));
+    $r = $rm + $rn;
+    $dd = $z1 - $x0;
+    $dd = $dd * $dd - (($z2 - ($r * $r)) * $dd / $zh);
+
+    if ($dd < 0.0)
+        return -99.0;
+
+    $zd = sqrt($dd);
+    $z7 = $z1 + $zd - lint(($z1 + $zd) / 24.0) * 24.0;
+
+    return $z7;
+}
+
+/** Helper function for ut_last_contact_solar_eclipse */
+function ut_last_contact_solar_eclipse_l7390($x, $y, $igday, $gmonth, $gyear, $tm, $glong, $glat, $hp)
+{
+    $paa = ec_ra(w_to_degrees($x), 0.0, 0.0, w_to_degrees($y), 0.0, 0.0, $igday, $gmonth, $gyear);
+    $qaa = ec_dec(w_to_degrees($x), 0.0, 0.0, w_to_degrees($y), 0.0, 0.0, $igday, $gmonth, $gyear);
+    $xaa = right_ascension_to_hour_angle(decimal_degrees_to_degree_hours($paa), 0.0, 0.0, $tm, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear, $glong);
+    $pbb = parallax_ha($xaa, 0.0, 0.0, $qaa, 0.0, 0.0, CoordinateType::True, $glat, 0.0, w_to_degrees($hp));
+    $qbb = parallax_dec($xaa, 0.0, 0.0, $qaa, 0.0, 0.0, CoordinateType::True, $glat, 0.0, w_to_degrees($hp));
+    $xbb = hour_angle_to_right_ascension($pbb, 0.0, 0.0, $tm, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear, $glong);
+    $p = deg2rad(eq_e_long($xbb, 0.0, 0.0, $qbb, 0.0, 0.0, $igday, $gmonth, $gyear));
+    $q = deg2rad(eq_e_lat($xbb, 0.0, 0.0, $qbb, 0.0, 0.0, $igday, $gmonth, $gyear));
+
+    return array($paa, $qaa, $xaa, $pbb, $qbb, $xbb, $p, $q);
+}
+
+/**
+ * Calculate magnitude of solar eclipse.
+ * 
+ * Original macro name: MagSolarEclipse
+ */
+function mag_solar_eclipse($dy, $mn, $yr, $ds, $zc, $glong, $glat)
+{
+    $tp = 2.0 * pi();
+
+    if (solar_eclipse_occurrence($ds, $zc, $dy, $mn, $yr) == EclipseOccurrence::NoEclipse)
+        return -99.0;
+
+    $dj = new_moon($ds, $zc, $dy, $mn, $yr);
+    $gday = julian_date_day($dj);
+    $gmonth = julian_date_month($dj);
+    $gyear = julian_date_year($dj);
+    $igday = floor($gday);
+    $xi = $gday - $igday;
+    $utnm = $xi * 24.0;
+    $ut = $utnm - 1.0;
+    $ly = deg2rad(sun_long($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+    $my = deg2rad(moon_long($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+    $by = deg2rad(moon_lat($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+    $hy = deg2rad(moon_hp($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+    $ut = $utnm + 1.0;
+    $sb = deg2rad(sun_long($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear)) - $ly;
+    $mz = deg2rad(moon_long($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+    $bz = deg2rad(moon_lat($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+    $hz = deg2rad(moon_hp($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+
+    if ($sb < 0.0)
+        $sb += $tp;
+
+    $xh = $utnm;
+    $x = $my;
+    $y = $by;
+    $tm = $xh - 1.0;
+    $hp = $hy;
+    list($l7390result1_paa, $l7390result1_qaa, $l7390result1_xaa, $l7390result1_pbb, $l7390result1_qbb, $l7390result1_xbb, $l7390result1_p, $l7390result1_q) =
+        mag_solar_eclipse_l7390($x, $y, $igday, $gmonth, $gyear, $tm, $glong, $glat, $hp);
+    $my = $l7390result1_p;
+    $by = $l7390result1_q;
+    $x = $mz;
+    $y = $bz;
+    $tm = $xh + 1.0;
+    $hp = $hz;
+    list($l7390result2_paa, $l7390result2_qaa, $l7390result2_xaa, $l7390result2_pbb, $l7390result2_qbb, $l7390result2_xbb, $l7390result2_p, $l7390result2_q) =
+        mag_solar_eclipse_l7390($x, $y, $igday, $gmonth, $gyear, $tm, $glong, $glat, $hp);
+    $mz = $l7390result2_p;
+    $bz = $l7390result2_q;
+
+    $x0 = $xh + 1.0 - (2.0 * $bz / ($bz - $by));
+    $dm = $mz - $my;
+
+    if ($dm < 0.0)
+        $dm += $tp;
+
+    $lj = ($dm - $sb) / 2.0;
+    $mr = $my + ($dm * ($x0 - $xh + 1.0) / 2.0);
+    $ut = $x0 - 0.13851852;
+    $rr = sun_dist($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear);
+    $sr = deg2rad(sun_long($ut, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear));
+    $sr += deg2rad(nutat_long($igday, $gmonth, $gyear) - 0.00569);
+    $x = $sr;
+    $y = 0.0;
+    $tm = $ut;
+    $hp = 0.00004263452 / $rr;
+    list($l7390result3_paa, $l7390result3_qaa, $l7390result3_xaa, $l7390result3_pbb, $l7390result3_qbb, $l7390result3_xbb, $l7390result3_p, $l7390result3_q) =
+        mag_solar_eclipse_l7390($x, $y, $igday, $gmonth, $gyear, $tm, $glong, $glat, $hp);
+    $sr = $l7390result3_p;
+    $by -= $l7390result3_q;
+    $bz -= $l7390result3_q;
+    $p3 = 0.00004263;
+    $zh = ($sr - $mr) / $lj;
+    $tc = $x0 + $zh;
+    $sh = ((($bz - $by) * ($tc - $xh - 1.0) / 2.0) + $bz) / $lj;
+    $s2 = $sh * $sh;
+    $z2 = $zh * $zh;
+    $ps = $p3 / ($rr * $lj);
+    $z1 = ($zh * $z2 / ($z2 + $s2)) + $x0;
+    $h0 = ($hy + $hz) / (2.0 * $lj);
+    $rm = 0.272446 * $h0;
+    $rn = 0.00465242 / ($lj * $rr);
+    $hd = $h0 * 0.99834;
+    $_ru = ($hd - $rn + $ps) * 1.02;
+    $_rp = ($hd + $rn + $ps) * 1.02;
+    $pj = abs($sh * $zh / sqrt($s2 + $z2));
+    $r = $rm + $rn;
+    $dd = $z1 - $x0;
+    $dd = $dd * $dd - (($z2 - ($r * $r)) * $dd / $zh);
+
+    if ($dd < 0.0)
+        return -99.0;
+
+    $zd = sqrt($dd);
+
+    $mg = ($rm + $rn - $pj) / (2.0 * $rn);
+
+    return $mg;
+}
+
+/** Helper function for mag_solar_eclipse */
+function mag_solar_eclipse_l7390($x, $y, $igday, $gmonth, $gyear, $tm, $glong, $glat, $hp)
+{
+    $paa = ec_ra(w_to_degrees($x), 0.0, 0.0, w_to_degrees($y), 0.0, 0.0, $igday, $gmonth, $gyear);
+    $qaa = ec_dec(w_to_degrees($x), 0.0, 0.0, w_to_degrees($y), 0.0, 0.0, $igday, $gmonth, $gyear);
+    $xaa = right_ascension_to_hour_angle(decimal_degrees_to_degree_hours($paa), 0.0, 0.0, $tm, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear, $glong);
+    $pbb = parallax_ha($xaa, 0.0, 0.0, $qaa, 0.0, 0.0, CoordinateType::True, $glat, 0.0, w_to_degrees($hp));
+    $qbb = parallax_dec($xaa, 0.0, 0.0, $qaa, 0.0, 0.0, CoordinateType::True, $glat, 0.0, w_to_degrees($hp));
+    $xbb = hour_angle_to_right_ascension($pbb, 0.0, 0.0, $tm, 0.0, 0.0, 0, 0, $igday, $gmonth, $gyear, $glong);
+    $p = deg2rad(eq_e_long($xbb, 0.0, 0.0, $qbb, 0.0, 0.0, $igday, $gmonth, $gyear));
+    $q = deg2rad(eq_e_lat($xbb, 0.0, 0.0, $qbb, 0.0, 0.0, $igday, $gmonth, $gyear));
+
+    return array($paa, $qaa, $xaa, $pbb, $qbb, $xbb, $p, $q);
 }
