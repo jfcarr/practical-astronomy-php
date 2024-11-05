@@ -73,4 +73,4 @@ If you're interested in this topic, please buy the book! It provides far more de
 - [x] Calculate -> Lunar eclipse occurrence
 - [x] Calculate -> Lunar eclipse circumstances
 - [x] Calculate -> Solar eclipse occurrence
-- [ ] Calculate -> Solar eclipse circumstances
+- [x] Calculate -> Solar eclipse circumstances
